@@ -290,7 +290,6 @@ function MapboxMap() {
               minHeight: 80,
               border: "2px solid #fff",
               borderRadius: 24,
-              border: "2px solid #fff",
               background: isDragActive
                 ? "rgba(76,175,80,0.18)"
                 : "rgba(76,175,80,0.10)",
