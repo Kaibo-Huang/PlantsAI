@@ -171,7 +171,7 @@ function MapboxMap() {
           color: '#fff',
         }}>
           <div style={{display: 'flex', width: '100%', justifyContent: 'space-between', alignItems: 'center'}}>
-            <h3 style={{margin: 0, fontSize: 32, color: '#fff', fontWeight: 800, letterSpacing: 0.5, fontFamily: 'system-ui, Avenir, Helvetica, Arial, sans-serif'}}>Log Plant</h3>
+            <h3 style={{margin: 0, fontSize: 32, color: '#fff', fontWeight: 800, letterSpacing: 0.5, fontFamily: 'system-ui, Avenir, Helvetica, Arial, sans-serif'}}>Log Plant 🌱</h3>
             <button onClick={handleCancel} style={{ 
               background: 'rgba(255,255,255,0.15)',
               border: '2px solid rgba(255,255,255,0.4)',
@@ -193,7 +193,7 @@ function MapboxMap() {
             }} title="Close">×</button>
           </div>
           <div style={{ marginBottom: 8, fontSize: 19, color: '#fff', fontWeight: 600, letterSpacing: 0.2, fontFamily: 'system-ui, Avenir, Helvetica, Arial, sans-serif' }}>
-            <span>Lat: {pendingPin?.lat.toFixed(4)}, Lng: {pendingPin?.lng.toFixed(4)}</span>
+            <span>Location: {pendingPin ? `${pendingPin.lat.toFixed(4)}, ${pendingPin.lng.toFixed(4)}` : ''}</span>
           </div>
           {/* Drag-and-drop file upload area */}
           <div {...getRootProps()}
@@ -201,8 +201,8 @@ function MapboxMap() {
               width: '100%',
               aspectRatio: '1 / 1',
               borderRadius: 24,
-              border: '2px solid #fff',
-              background: isDragActive ? 'rgba(76,175,80,0.18)' : 'rgba(76,175,80,0.10)',
+              border: '2px solid rgba(120,120,120,0.35)',
+              background: isDragActive ? 'rgba(80,80,80,0.32)' : 'rgba(80,80,80,0.22)',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
