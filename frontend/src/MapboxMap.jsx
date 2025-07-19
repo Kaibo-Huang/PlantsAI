@@ -47,6 +47,12 @@ function MapboxMap() {
       const marker = new mapboxgl.Marker()
         .setLngLat([lng, lat])
         .addTo(map);
+      // Add click event to remove marker
+      marker.getElement().addEventListener('click', (event) => {
+        event.stopPropagation();
+        marker.remove();
+        markersRef.current = markersRef.current.filter(m => m !== marker);
+      });
       markersRef.current.push(marker);
     });
 
