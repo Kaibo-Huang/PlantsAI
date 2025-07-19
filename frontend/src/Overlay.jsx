@@ -31,7 +31,7 @@ const Overlay = () => {
               transform: 'translate(-50%, -50%)',
               width: 440,
               minHeight: 320,
-              background: 'rgba(255,255,255,0.35)',
+              background: 'rgba(76,175,80,0.10)',
               borderRadius: 48,
               border: '2px solid #fff',
               boxShadow: '0 2px 32px rgba(0,0,0,0.18)',
@@ -90,7 +90,7 @@ const Overlay = () => {
                 minHeight: 120,
                 border: '2px solid #fff',
                 borderRadius: 32,
-                background: isDragActive ? 'rgba(255,255,255,0.30)' : 'rgba(255,255,255,0.18)',
+                background: isDragActive ? 'rgba(76,175,80,0.18)' : 'rgba(76,175,80,0.10)',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
@@ -111,11 +111,11 @@ const Overlay = () => {
             >
               <input {...getInputProps()} />
               {uploadedFile ? (
-                <span style={{ color: '#fff', fontWeight: 700, fontSize: 20, letterSpacing: 0.2 }}>Selected file: <b style={{ color: '#fff', fontWeight: 700 }}>{uploadedFile.name}</b></span>
+                <span style={{ color: '#fff', fontWeight: 700, fontSize: 18, letterSpacing: 0.2, fontFamily: 'system-ui, Avenir, Helvetica, Arial, sans-serif' }}>Selected file: <b style={{ color: '#fff', fontWeight: 700 }}>{uploadedFile.name}</b></span>
               ) : isDragActive ? (
-                <span style={{ color: '#4caf50', fontWeight: 700, fontSize: 20, letterSpacing: 0.2 }}>Drop the file here ...</span>
+                <span style={{ color: '#4caf50', fontWeight: 700, fontSize: 18, letterSpacing: 0.2, fontFamily: 'system-ui, Avenir, Helvetica, Arial, sans-serif' }}>Drop the file here ...</span>
               ) : (
-                <span style={{ color: '#fff', fontWeight: 600, fontSize: 20, letterSpacing: 0.2 }}>Drag & drop a file here, or <span style={{ color: '#4caf50', textDecoration: 'underline', fontWeight: 700 }}>click to upload</span></span>
+                <span style={{ color: '#fff', fontWeight: 600, fontSize: 18, letterSpacing: 0.2, fontFamily: 'system-ui, Avenir, Helvetica, Arial, sans-serif' }}>Drag & drop a file here, or <span style={{ color: '#4caf50', textDecoration: 'underline', fontWeight: 700 }}>click to upload</span></span>
               )}
             </div>
             <div style={{ width: '100%', display: 'flex', flexDirection: 'row', gap: 32, marginTop: 8, justifyContent: 'center', alignItems: 'center' }}>
@@ -159,7 +159,7 @@ const Overlay = () => {
                     fontSize: 22,
                     fontWeight: 600,
                     outline: 'none',
-                    background: 'rgba(255,255,255,0.35)',
+                    background: 'rgba(76,175,80,0.10)',
                     color: '#fff',
                     boxShadow: '0 2px 16px rgba(0,0,0,0.10)',
                     backdropFilter: 'blur(8px)',
@@ -195,7 +195,7 @@ const Overlay = () => {
                   aspectRatio: '1 / 1',
                   borderRadius: '9999px',
                   backdropFilter: 'blur(6px)',
-                  background: 'rgba(255,255,255,0.15)',
+                  background: 'rgba(76,175,80,0.08)',
                   border: '2px solid rgba(255,255,255,0.4)',
                   boxShadow: '0 2px 16px rgba(0,0,0,0.10)',
                   color: '#fff',
