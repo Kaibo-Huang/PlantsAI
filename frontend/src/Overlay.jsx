@@ -1,10 +1,11 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { RiPlantFill } from "react-icons/ri";
 import { useDropzone } from 'react-dropzone';
 import Switch from '@mui/material/Switch';
 import FormControlLabel from '@mui/material/FormControlLabel';
 import { MdOutlineFileUpload } from "react-icons/md";
 import { MdClose } from "react-icons/md";
+import { getUserLocation } from './getUserLocation';
 
 const Overlay = () => {
   const [search, setSearch] = useState('');
@@ -12,6 +13,22 @@ const Overlay = () => {
   const [uploadedFile, setUploadedFile] = useState(null);
   const [alertForCare, setAlertForCare] = useState(false);
   const [favoriteOnMap, setFavoriteOnMap] = useState(false);
+  const [userLocation, setUserLocation] = useState(null);
+  const [locationError, setLocationError] = useState(null);
+
+  useEffect(() => {
+    if (showAddPlantOverlay) {
+      getUserLocation()
+        .then(loc => {
+          setUserLocation(loc);
+          setLocationError(null);
+        })
+        .catch(err => {
+          setUserLocation(null);
+          setLocationError('Location unavailable');
+        });
+    }
+  }, [showAddPlantOverlay]);
 
   const onDrop = (acceptedFiles) => {
     if (acceptedFiles && acceptedFiles.length > 0) {
@@ -32,7 +49,7 @@ const Overlay = () => {
               left: '50%',
               transform: 'translate(-50%, -50%)',
               width: 440,
-              minHeight: 320,
+              minHeight: 220,
               background: 'rgba(76,175,80,0.10)',
               borderRadius: 48,
               border: '2px solid #fff',
@@ -42,8 +59,8 @@ const Overlay = () => {
               flexDirection: 'column',
               alignItems: 'center',
               justifyContent: 'center',
-              padding: '40px 32px',
-              gap: 24,
+              padding: '18px 18px',
+              gap: 10,
               pointerEvents: 'auto',
               backdropFilter: 'blur(16px)',
               WebkitBackdropFilter: 'blur(16px)',
@@ -81,10 +98,20 @@ const Overlay = () => {
               fontWeight: 700, 
               fontSize: 32, 
               margin: 0, 
-              marginBottom: 16, 
+              marginBottom: 0, 
               letterSpacing: 0.5,
               fontFamily: 'system-ui, Avenir, Helvetica, Arial, sans-serif',
             }}>Log a New Plant 🌱 </h2>
+            {/* Show current location */}
+            <div style={{ marginBottom: 12, marginTop: 0, fontSize: 19, color: '#fff', fontWeight: 600, letterSpacing: 0.2, fontFamily: 'system-ui, Avenir, Helvetica, Arial, sans-serif' }}>
+              {userLocation ? (
+                <span>Location: {userLocation.lat.toFixed(4)}, {userLocation.lng.toFixed(4)}</span>
+              ) : locationError ? (
+                <span style={{ color: '#f44336' }}>Location unavailable</span>
+              ) : (
+                <span>Getting location...</span>
+              )}
+            </div>
             {/* Drag-and-drop file upload area */}
             <div {...getRootProps()}
               style={{
