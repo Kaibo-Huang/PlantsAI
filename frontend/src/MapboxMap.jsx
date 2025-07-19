@@ -45,10 +45,14 @@ function MapboxMap() {
       })
     );
 
-    // On map click, show popup instead of placing marker
+    // On map click, add a pin and show popup. Remove pin if popup is closed, keep if submitted.
     map.on('click', (e) => {
       const { lng, lat } = e.lngLat;
-      setPendingPin({ lng, lat });
+      // Place a temporary marker
+      const tempMarker = new mapboxgl.Marker({ color: '#888' })
+        .setLngLat([lng, lat])
+        .addTo(map);
+      setPendingPin({ lng, lat, marker: tempMarker });
       setShowPopup(true);
     });
 
@@ -62,17 +66,26 @@ function MapboxMap() {
   }, []);
 
   // Handler for submit button in popup
+  // Handler for submit button in popup
   const handleSubmit = () => {
     if (!pendingPin || !mapRef.current) return;
-    const marker = new mapboxgl.Marker()
-      .setLngLat([pendingPin.lng, pendingPin.lat])
-      .addTo(mapRef.current);
+    const marker = pendingPin.marker;
+    // Make the marker permanent and add click-to-delete logic
     marker.getElement().addEventListener('click', (event) => {
       event.stopPropagation();
       setDeletePin({ marker, lng: pendingPin.lng, lat: pendingPin.lat });
       setShowDeletePopup(true);
     });
     markersRef.current.push(marker);
+    setShowPopup(false);
+    setPendingPin(null);
+  };
+
+  // Remove the temp marker if popup is closed without submitting
+  const handleCancel = () => {
+    if (pendingPin && pendingPin.marker) {
+      pendingPin.marker.remove();
+    }
     setShowPopup(false);
     setPendingPin(null);
   };
@@ -107,7 +120,7 @@ function MapboxMap() {
         }}>
           <div style={{display: 'flex', width: '100%', justifyContent: 'space-between', alignItems: 'center'}}>
             <h3 style={{margin: 0, fontSize: 20}}>Add Pin</h3>
-            <button onClick={() => { setShowPopup(false); setPendingPin(null); }} style={{ background: 'none', border: 'none', fontSize: 22, color: '#888', cursor: 'pointer', lineHeight: 1 }} title="Close">×</button>
+            <button onClick={handleCancel} style={{ background: 'none', border: 'none', fontSize: 22, color: '#888', cursor: 'pointer', lineHeight: 1 }} title="Close">×</button>
           </div>
           <div style={{ marginBottom: 8, fontSize: 15, color: '#444' }}>
             <span>Lat: {pendingPin?.lat.toFixed(4)}, Lng: {pendingPin?.lng.toFixed(4)}</span>
