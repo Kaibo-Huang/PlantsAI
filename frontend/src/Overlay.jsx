@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { RiPlantFill } from "react-icons/ri";
 
-const Overlay = () => {
+const Overlay = ({ centerMapOnUser }) => {
   const [search, setSearch] = useState('');
   return (
     <>
@@ -78,7 +78,7 @@ const Overlay = () => {
             boxSizing: 'border-box',
             flexShrink: 0,
           }}
-          onClick={() => {/* handle add plant click here */}}
+          onClick={centerMapOnUser}
           title="Add Plant"
         >
           <RiPlantFill size={40} style={{ display: 'block' }} />
