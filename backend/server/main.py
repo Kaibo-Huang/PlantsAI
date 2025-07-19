@@ -21,61 +21,61 @@ db = client["plantmap"]
 detections = db["detections"]
 
 # pulls weather temperature, geographic location in coordinates, and species of plant
-latitude = 43.772915
-longitude = -79.499285
+# latitude = 43.772915
+# longitude = -79.499285
 
-# Get weather data
-weather_data = get_weather_data(latitude, longitude)
-weather = weather_data.get('weather', [{}])[0].get('main', 'unknown')
+# # Get weather data
+# weather_data = get_weather_data(latitude, longitude)
+# weather = weather_data.get('weather', [{}])[0].get('main', 'unknown')
 
-# Get plant data (you'll need to provide image path)
-# For now, using a default plant name - you can modify this based on your needs
-plant = "moneytree"  # This could be extracted from plant identification results
-model = genai.GenerativeModel('gemini-1.5-flash-8b')
-prompt = (
-    "Given the weather condition: " + weather +
-    ", location (latitude: " + str(latitude) + ", longitude: " + str(longitude) + 
-    ") and the species of the plant: " + plant +
-    ", provide a 50 word blurb of tips in taking care of the plant with technical gardening details. "
-    "Also, output a JSON object with the following fields: "
-    "soil_pH (number), time_between_waterings (in days, number), optimal_light_level (string: e.g. 'full sun', 'partial shade', etc.), endangered (boolean true or false, according to canadian sources), invasive (boolean true or false, according to canadian sources). "
-    "Format the JSON as the last part of your response."
-)
-try:
-    response = model.generate_content(prompt)
-except google.api_core.exceptions.ResourceExhausted as e:
-    print("Gemini API quota exceeded. Please wait for quota reset or upgrade your plan.")
-    response = None
+# # Get plant data (you'll need to provide image path)
+# # For now, using a default plant name - you can modify this based on your needs
+# plant = "moneytree"  # This could be extracted from plant identification results
+# model = genai.GenerativeModel('gemini-1.5-flash-8b')
+# prompt = (
+#     "Given the weather condition: " + weather +
+#     ", location (latitude: " + str(latitude) + ", longitude: " + str(longitude) + 
+#     ") and the species of the plant: " + plant +
+#     ", provide a 50 word blurb of tips in taking care of the plant with technical gardening details. "
+#     "Also, output a JSON object with the following fields: "
+#     "soil_pH (number), time_between_waterings (in days, number), optimal_light_level (string: e.g. 'full sun', 'partial shade', etc.), endangered (boolean true or false, according to canadian sources), invasive (boolean true or false, according to canadian sources). "
+#     "Format the JSON as the last part of your response."
+# )
+# try:
+#     response = model.generate_content(prompt)
+# except google.api_core.exceptions.ResourceExhausted as e:
+#     print("Gemini API quota exceeded. Please wait for quota reset or upgrade your plan.")
+#     response = None
 
-if response:
-    text = response.text
+# if response:
+#     text = response.text
 
-    # Find JSON in the response (assuming it's the last code block)
-    match = re.search(r'\{.*\}', text, re.DOTALL)
-    if match:
-        json_str = match.group(0)
-        try:
-            data = json.loads(json_str)
-            # Save to file
-            with open('plant_care.json', 'w') as f:
-                json.dump(data, f, indent=2)
+#     # Find JSON in the response (assuming it's the last code block)
+#     match = re.search(r'\{.*\}', text, re.DOTALL)
+#     if match:
+#         json_str = match.group(0)
+#         try:
+#             data = json.loads(json_str)
+#             # Save to file
+#             with open('plant_care.json', 'w') as f:
+#                 json.dump(data, f, indent=2)
             
-            # Extract the blurb (everything before the JSON)
-            blurb = text[:text.find('{')].strip()
+#             # Extract the blurb (everything before the JSON)
+#             blurb = text[:text.find('{')].strip()
             
-            # Print only the formatted values and blurb
-            print(f"Soil pH: {data.get('soil_pH', 'N/A')}")
-            print(f"Watering Frequency: {data.get('time_between_waterings', 'N/A')} Days")
-            print(f"Optimal Light Levels: {data.get('optimal_light_level', 'N/A')}")
-            print(f"Endangered: {data.get('endangered', 'N/A')}")
-            print(f"Invasive: {data.get('invasive', 'N/A')}")
-            print("\n" + blurb)
-        except json.JSONDecodeError:
-            print("Could not decode JSON from Gemini response.")
-    else:
-        print("No JSON found in Gemini response.")
-else:
-    print("No Gemini response due to quota limits.")
+#             # Print only the formatted values and blurb
+#             print(f"Soil pH: {data.get('soil_pH', 'N/A')}")
+#             print(f"Watering Frequency: {data.get('time_between_waterings', 'N/A')} Days")
+#             print(f"Optimal Light Levels: {data.get('optimal_light_level', 'N/A')}")
+#             print(f"Endangered: {data.get('endangered', 'N/A')}")
+#             print(f"Invasive: {data.get('invasive', 'N/A')}")
+#             print("\n" + blurb)
+#         except json.JSONDecodeError:
+#             print("Could not decode JSON from Gemini response.")
+#     else:
+#         print("No JSON found in Gemini response.")
+# else:
+#     print("No Gemini response due to quota limits.")
 
 @app.route('/home', methods=['GET'])
 def home():
