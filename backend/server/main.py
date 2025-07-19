@@ -19,6 +19,52 @@ genai.configure(api_key=api_key)
 client = MongoClient("mongodb+srv://stringbot:u2ZG9kM5q8L0WaNW@plantmap.ipx3g1d.mongodb.net/")
 db = client["plantmap"]
 detections = db["detections"]
+db.detections.create_index([("geometry", "2dsphere")])
+
+@app.route('/pins/near', methods=['GET'])
+def get_pins_near():
+    lat = request.args.get('lat')
+    lon = request.args.get('lon')
+    max_distance_meters = float(request.args.get('max_distance', 1000))
+    print(lat, lon, max_distance_meters)
+    query = {
+        "geometry": {
+            "$near": {
+                "$geometry": {
+                    "type": "Point",
+                    "coordinates": [float(lat), float(lon)]
+                },
+                "$maxDistance": max_distance_meters
+            }
+        }
+    }
+    res = list(db.detections.find(query, {"_id": 0}))
+    print(res)
+    return res
+
+@app.route('/pins/cluster', methods=['GET'])
+def cluster_pins_grid(cell_size_meters=500):
+    pipeline = [
+        {
+            "$group": {
+                "_id": {
+                    "lat": { "$trunc": [{ "$arrayElemAt": ["$geometry.coordinates", 0] }, int(cell_size_meters / 111320)] },
+                    "lon": { "$trunc": [{ "$arrayElemAt": ["$geometry.coordinates", 1] }, int(cell_size_meters / 111320)] }
+                },
+                "count": { "$sum": 1 },
+                "pins": { "$push": "$$ROOT" }
+            }
+        }
+    ]
+    return list(db.detections.aggregate(pipeline))
+
+@app.route('/pins/bbox', methods=['GET'])
+def get_pins_in_bbox(min_lat, min_lon, max_lat, max_lon):
+    query = {
+        "geometry.coordinates.0": { "$gte": float(min_lat), "$lte": float(max_lat) },
+        "geometry.coordinates.1": { "$gte": float(min_lon), "$lte": float(max_lon) }
+    }
+    return list(db.detections.find(query, {"_id": 0}))
 
 @app.route('/admin/add', methods=['POST'])
 def add_pin():

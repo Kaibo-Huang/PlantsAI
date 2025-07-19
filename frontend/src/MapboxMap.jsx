@@ -1,4 +1,4 @@
-import { useRef, useEffect, useState } from 'react';
+import React, { useRef, useEffect, useState, forwardRef, useImperativeHandle } from 'react';
 import mapboxgl from 'mapbox-gl';
 import Overlay from './Overlay';
 import 'mapbox-gl/dist/mapbox-gl.css';
@@ -8,6 +8,7 @@ import FormControlLabel from '@mui/material/FormControlLabel';
 import { MdOutlineFileUpload } from "react-icons/md";
 import { MdClose } from "react-icons/md";
 import { MdLocationOn, MdOpacity, MdScience, MdDeviceThermostat, MdWarning } from "react-icons/md";
+import PinQueryCard from './PinQueryCard';
 
 // Realistic potted plant SVG icon for marker (shaft is now orange, base is separate for animation)
 const plantSVG = `<svg width="56" height="56" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -22,9 +23,10 @@ const plantSVG = `<svg width="56" height="56" viewBox="0 0 40 40" fill="none" xm
 
 mapboxgl.accessToken = 'pk.eyJ1Ijoia2FpYm9odWFuZyIsImEiOiJjbWQ5ZjBsY3IwNzQ1MnBxMTcwbTU5djNqIn0.EAoOvgDb4m_eShy5rxM72g';
 
-function MapboxMap() {
+const MapboxMap = forwardRef((props, ref) => {
   const mapRef = useRef(null);
   const markersRef = useRef([]);
+  const [pins, setPins] = useState([]);
   const [pendingPin, setPendingPin] = useState(null);
   const [showPopup, setShowPopup] = useState(false);
   const showPopupRef = useRef(false);
@@ -35,6 +37,9 @@ function MapboxMap() {
   const [favoriteOnMap, setFavoriteOnMap] = useState(false);
   const [inputMode, setInputMode] = useState('file'); // 'file' or 'text'
   const [textValue, setTextValue] = useState('');
+  const [isEndangered, setIsEndangered] = useState(true); // Example: set dynamically
+  const [isInvasive, setIsInvasive] = useState(true);     // Example: set dynamically
+
   // No animation or swipe state
   // No swipe or animation handlers
 
@@ -102,6 +107,12 @@ function MapboxMap() {
   };
 
   useEffect(() => {
+    fetch('http://localhost:8000/admin/view')
+      .then(res => res.json())
+      .then(data => setPins(data));
+  }, []);
+
+  useEffect(() => {
     const map = new mapboxgl.Map({
       container: 'map',
       style: 'mapbox://styles/mapbox/satellite-streets-v11',
@@ -158,6 +169,38 @@ function MapboxMap() {
       if (map) map.off('click', handleMapClick);
     };
   }, [showPopup]);
+
+  useEffect(() => {
+    if (!mapRef.current || !pins || !Array.isArray(pins)) return;
+
+    // Remove old markers
+    markersRef.current.forEach(marker => marker.remove());
+    markersRef.current = [];
+
+    // Add markers for each pin
+    pins.forEach(pin => {
+      if (
+        pin.geometry &&
+        pin.geometry.coordinates &&
+        pin.geometry.coordinates.length === 2
+      ) {
+        const [lat, lon] = pin.geometry.coordinates;
+        const el = document.createElement('div');
+        el.innerHTML = plantSVG;
+        el.style.width = '56px';
+        el.style.height = '56px';
+        el.style.display = 'flex';
+        el.style.alignItems = 'center';
+        el.style.justifyContent = 'center';
+
+        const marker = new mapboxgl.Marker({ element: el })
+          .setLngLat([lon, lat])
+          .addTo(mapRef.current);
+
+        markersRef.current.push(marker);
+      }
+    });
+  }, [pins]);
 
   const setShowPopupAndRef = (val) => {
     showPopupRef.current = val;
@@ -237,9 +280,9 @@ function MapboxMap() {
       method: 'POST',
       body: formData
     })
-    .then(res => res.json())
-    .then(data => console.log(data))
-    .catch(err => console.error(err));
+      .then(res => res.json())
+      .then(data => console.log(data))
+      .catch(err => console.error(err));
 
     setShowPopupAndRef(false);
     setPendingPin(null);
@@ -372,38 +415,69 @@ function MapboxMap() {
     );
   }
 
+  useImperativeHandle(ref, () => ({
+    flyToLocation: (lat, lng) => {
+      if (mapRef.current) {
+        mapRef.current.flyTo({ center: [lng, lat], zoom: 16, essential: true });
+      }
+    }
+  }));
+
   return (
     <div style={{ position: 'relative', height: '100vh', width: '100vw' }}>
       <div id="map" className="map" style={{ height: '100vh', width: '100vw' }} />
+      <div style={{
+        position: 'fixed',
+        left: '50%',
+        bottom: 32,
+        transform: 'translateX(-50%)',
+        zIndex: 1000,
+        background: 'rgba(76,175,80,0.10)',
+        borderRadius: 32,
+        border: '2px solid #fff',
+        boxShadow: '0 2px 16px rgba(0,0,0,0.10)',
+        backdropFilter: 'blur(12px)',
+        WebkitBackdropFilter: 'blur(12px)',
+        color: '#fff',
+        padding: '24px 28px 20px 28px',
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        gap: 12,
+        minWidth: 320,
+        maxWidth: 400,
+      }}>
+        <PinQueryCard />
+      </div>
       <Overlay />
       {showPopup && (
         <div
-          onTouchStart={() => {}}
-          onTouchEnd={() => {}}
-          onMouseDown={() => {}}
-          onMouseUp={() => {}}
+          onTouchStart={() => { }}
+          onTouchEnd={() => { }}
+          onMouseDown={() => { }}
+          onMouseUp={() => { }}
           style={{
-          position: 'absolute',
-          top: 32,
-          right: 32,
-          width: 340,
-          background: 'rgba(76,175,80,0.10)',
-          borderRadius: 32,
-          border: '2px solid #fff',
-          boxShadow: '0 2px 16px rgba(0,0,0,0.10)',
-          zIndex: 10,
-          display: 'flex',
-          flexDirection: 'column',
-          alignItems: 'flex-start',
-          padding: '24px 28px 20px 28px',
-          gap: 12,
-          backdropFilter: 'blur(12px)',
-          WebkitBackdropFilter: 'blur(12px)',
-          color: '#fff',
-        }}>
-          <div style={{display: 'flex', width: '100%', justifyContent: 'space-between', alignItems: 'center'}}>
-            <h3 style={{margin: 0, fontSize: 32, color: '#fff', fontWeight: 800, letterSpacing: 0.5, fontFamily: 'system-ui, Avenir, Helvetica, Arial, sans-serif'}}>Log Plant 🌱</h3>
-            <button onClick={handleCancel} style={{ 
+            position: 'absolute',
+            top: 32,
+            right: 32,
+            width: 340,
+            background: 'rgba(76,175,80,0.10)',
+            borderRadius: 32,
+            border: '2px solid #fff',
+            boxShadow: '0 2px 16px rgba(0,0,0,0.10)',
+            zIndex: 10,
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'flex-start',
+            padding: '24px 28px 20px 28px',
+            gap: 12,
+            backdropFilter: 'blur(12px)',
+            WebkitBackdropFilter: 'blur(12px)',
+            color: '#fff',
+          }}>
+          <div style={{ display: 'flex', width: '100%', justifyContent: 'space-between', alignItems: 'center' }}>
+            <h3 style={{ margin: 0, fontSize: 32, color: '#fff', fontWeight: 800, letterSpacing: 0.5, fontFamily: 'system-ui, Avenir, Helvetica, Arial, sans-serif' }}>Log Plant 🌱</h3>
+            <button onClick={handleCancel} style={{
               background: 'rgba(255,255,255,0.15)',
               border: '2px solid rgba(255,255,255,0.4)',
               borderRadius: '9999px',
@@ -574,7 +648,7 @@ function MapboxMap() {
               aria-label="Input text"
             />
           </div>
-          <button onClick={handleSubmit} style={{ 
+          <button onClick={handleSubmit} style={{
             padding: '14px 0',
             width: '100%',
             fontSize: 18,
@@ -589,7 +663,6 @@ function MapboxMap() {
             backdropFilter: 'blur(6px)',
             WebkitBackdropFilter: 'blur(6px)',
             letterSpacing: 0.2,
-            transition: 'background 0.2s',
           }}>Submit</button>
         </div>
       )}
@@ -599,7 +672,12 @@ function MapboxMap() {
           top: 32,
           right: 32,
           width: 340,
-          background: 'rgba(76,175,80,0.08)',
+          // Overlay tint logic: red if endangered, yellow if invasive, else green
+          background: isEndangered
+            ? 'rgba(229,57,53,0.13)'
+            : isInvasive
+              ? 'rgba(255,179,0,0.13)'
+              : 'rgba(76,175,80,0.08)',
           borderRadius: 32,
           border: '2px solid #fff',
           boxShadow: '0 2px 16px rgba(0,0,0,0.10)',
@@ -613,9 +691,9 @@ function MapboxMap() {
           WebkitBackdropFilter: 'blur(12px)',
           color: '#fff',
         }}>
-          <div style={{display: 'flex', width: '100%', justifyContent: 'space-between', alignItems: 'center'}}>
-            <h3 style={{margin: 0, fontSize: 22, color: '#fff', fontWeight: 700, letterSpacing: 0.5}}>INSERT PLANT NAME</h3>
-            <button onClick={() => { setShowDeletePopup(false); setDeletePin(null); }} style={{ 
+          <div style={{ display: 'flex', width: '100%', justifyContent: 'space-between', alignItems: 'center' }}>
+            <h3 style={{ margin: 0, fontSize: 22, color: '#fff', fontWeight: 700, letterSpacing: 0.5 }}>INSERT PLANT NAME</h3>
+            <button onClick={() => { setShowDeletePopup(false); setDeletePin(null); }} style={{
               background: 'rgba(255,255,255,0.15)',
               border: '2px solid rgba(255,255,255,0.4)',
               borderRadius: '9999px',
@@ -644,128 +722,216 @@ function MapboxMap() {
             margin: '8px 0 0 0'
           }}>
             {/* Location Indicator */}
-            <div style={{
-              display: 'flex',
-              alignItems: 'center',
-              gap: 10,
-              background: 'rgba(255,255,255,0.10)',
-              borderRadius: 12,
-              padding: '8px 12px',
-              fontWeight: 600,
-              fontSize: 15,
-              color: '#fff'
-            }}>
+            <div
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: 10,
+                background: 'rgba(255,255,255,0.10)',
+                borderRadius: 12,
+                padding: '8px 12px',
+                fontWeight: 600,
+                fontSize: 15,
+                color: '#fff',
+                transition: 'transform 0.18s cubic-bezier(.4,1.3,.6,1), box-shadow 0.18s cubic-bezier(.4,1.3,.6,1)',
+                cursor: 'pointer'
+              }}
+              className="indicator-hover"
+            >
               {/* Icon */}
               <MdLocationOn size={20} color="#2196f3" style={{ flexShrink: 0 }} />
-              <span style={{
-                width: 10, height: 10, borderRadius: '50%', background: '#2196f3', display: 'inline-block'
-              }} />
+              {/* Removed blue dot */}
               <span>
-                Lat: <span style={{fontWeight: 700}}>{deletePin?.lat?.toFixed(4)}</span>, Lng: <span style={{fontWeight: 700}}>{deletePin?.lng?.toFixed(4)}</span>
+                Lat: <span style={{ fontWeight: 700 }}>{deletePin?.lat?.toFixed(4)}</span>, Lng: <span style={{ fontWeight: 700 }}>{deletePin?.lng?.toFixed(4)}</span>
               </span>
             </div>
             {/* Next Water Timer */}
-            <div style={{
-              display: 'flex',
-              alignItems: 'center',
-              gap: 10,
-              background: 'rgba(255,255,255,0.10)',
-              borderRadius: 12,
-              padding: '8px 12px',
-              fontWeight: 600,
-              fontSize: 15,
-              color: '#fff'
-            }}>
+            <div
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: 10,
+                background: 'rgba(255,255,255,0.10)',
+                borderRadius: 12,
+                padding: '8px 12px',
+                fontWeight: 600,
+                fontSize: 15,
+                color: '#fff',
+                transition: 'transform 0.18s cubic-bezier(.4,1.3,.6,1), box-shadow 0.18s cubic-bezier(.4,1.3,.6,1)',
+                cursor: 'pointer'
+              }}
+              className="indicator-hover"
+            >
               <CircularIndicator
-                percent={0.7} // Example: 70% time left until next water
+                percent={0.7}
                 icon={<MdOpacity size={18} color={getStatusColor(0.7)} />}
               />
               <span>
-                <span style={{ color: "#fff" }}>Next watering in</span> <span style={{fontWeight: 700, color: getStatusColor(0.7)}}>DATE</span>
+                <span style={{ color: "#fff" }}>Next watering in</span> <span style={{ fontWeight: 700, color: getStatusColor(0.7) }}>DATE</span>
               </span>
             </div>
             {/* pH Indicator */}
-            <div style={{
-              display: 'flex',
-              alignItems: 'center',
-              gap: 10,
-              background: 'rgba(255,255,255,0.10)',
-              borderRadius: 12,
-              padding: '8px 12px',
-              fontWeight: 600,
-              fontSize: 15,
-              color: '#fff'
-            }}>
+            <div
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: 10,
+                background: 'rgba(255,255,255,0.10)',
+                borderRadius: 12,
+                padding: '8px 12px',
+                fontWeight: 600,
+                fontSize: 15,
+                color: '#fff',
+                transition: 'transform 0.18s cubic-bezier(.4,1.3,.6,1), box-shadow 0.18s cubic-bezier(.4,1.3,.6,1)',
+                cursor: 'pointer'
+              }}
+              className="indicator-hover"
+            >
               <CircularIndicator
-                percent={0.5} // Example: 50% (mid pH range)
+                percent={0.5}
                 icon={<MdScience size={18} color={getStatusColor(0.5)} />}
               />
               <span>
-                <span style={{ color: "#fff" }}>Soil pH:</span> <span style={{fontWeight: 700, color: getStatusColor(0.5)}}>INSERT SOIL PH</span>
-                <span style={{color: getStatusColor(0.5), fontWeight: 700, marginLeft: 4}}>{0.5 > 0.3 ? 'Good' : 'Bad'}</span>
+                <span style={{ color: "#fff" }}>Soil pH:</span> <span style={{ fontWeight: 700, color: getStatusColor(0.5) }}>INSERT SOIL PH</span>
+                <span style={{ color: getStatusColor(0.5), fontWeight: 700, marginLeft: 4 }}>{0.5 > 0.3 ? 'Good' : 'Bad'}</span>
               </span>
             </div>
             {/* Temperature Indicator */}
-            <div style={{
-              display: 'flex',
-              alignItems: 'center',
-              gap: 10,
-              background: 'rgba(255,255,255,0.10)',
-              borderRadius: 12,
-              padding: '8px 12px',
-              fontWeight: 600,
-              fontSize: 15,
-              color: '#fff'
-            }}>
+            <div
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: 10,
+                background: 'rgba(255,255,255,0.10)',
+                borderRadius: 12,
+                padding: '8px 12px',
+                fontWeight: 600,
+                fontSize: 15,
+                color: '#fff',
+                transition: 'transform 0.18s cubic-bezier(.4,1.3,.6,1), box-shadow 0.18s cubic-bezier(.4,1.3,.6,1)',
+                cursor: 'pointer'
+              }}
+              className="indicator-hover"
+            >
               <CircularIndicator
-                percent={0.2} // Example: 20% (too cold/hot)
+                percent={0.2}
                 icon={<MdDeviceThermostat size={18} color={getStatusColor(0.2)} />}
               />
               <span>
-                <span style={{ color: "#fff" }}>Temperature:</span> <span style={{fontWeight: 700, color: getStatusColor(0.2)}}>TEMPERATURE°C</span>
-                <span style={{color: getStatusColor(0.2), fontWeight: 700, marginLeft: 4}}>{0.2 > 0.3 ? 'Good' : 'Too Low'}</span>
+                <span style={{ color: "#fff" }}>Temperature:</span> <span style={{ fontWeight: 700, color: getStatusColor(0.2) }}>TEMPERATURE°C</span>
+                <span style={{ color: getStatusColor(0.2), fontWeight: 700, marginLeft: 4 }}>{0.2 > 0.3 ? 'Good' : 'Too Low'}</span>
               </span>
             </div>
-            {/* Endangered/Invasive Indicator */}
-            <div style={{
-              display: 'flex',
-              alignItems: 'center',
-              gap: 10,
-              background: 'rgba(255,255,255,0.10)',
-              borderRadius: 12,
-              padding: '8px 12px',
-              fontWeight: 600,
-              fontSize: 15,
-              color: '#fff'
-            }}>
-              <MdWarning size={20} color="#e53935" style={{ flexShrink: 0 }} />
-              <span style={{
-                width: 10, height: 10, borderRadius: '50%', background: '#e53935', display: 'inline-block'
-              }} />
+            {/* Endangered Indicator */}
+            {isEndangered && (
+              <div
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 10,
+                  background: 'rgba(255,255,255,0.10)',
+                  borderRadius: 12,
+                  padding: '8px 12px',
+                  fontWeight: 600,
+                  fontSize: 15,
+                  color: '#fff',
+                  transition: 'transform 0.18s cubic-bezier(.4,1.3,.6,1), box-shadow 0.18s cubic-bezier(.4,1.3,.6,1)',
+                  cursor: 'pointer'
+                }}
+                className="indicator-hover"
+              >
+                <MdWarning size={20} color="#e53935" style={{ flexShrink: 0 }} />
+                <span>
+                  <span style={{ fontWeight: 700, color: '#e53935' }}>Endangered</span>
+                </span>
+              </div>
+            )}
+            {/* Invasive Indicator */}
+            {isInvasive && (
+              <div
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 10,
+                  background: 'rgba(255,255,255,0.10)',
+                  borderRadius: 12,
+                  padding: '8px 12px',
+                  fontWeight: 600,
+                  fontSize: 15,
+                  color: '#fff',
+                  transition: 'transform 0.18s cubic-bezier(.4,1.3,.6,1), box-shadow 0.18s cubic-bezier(.4,1.3,.6,1)',
+                  cursor: 'pointer'
+                }}
+                className="indicator-hover"
+              >
+                <MdWarning size={20} color="#ffb300" style={{ flexShrink: 0 }} />
+                <span>
+                  <span style={{ fontWeight: 700, color: '#ffb300' }}>Invasive</span>
+                </span>
+              </div>
+            )}
+            {/* Summary Header */}
+            <div
+              style={{
+                fontWeight: 700,
+                fontSize: 17,
+                color: '#fff',
+                marginTop: 8,
+                marginBottom: 2,
+                letterSpacing: 0.2,
+                fontFamily: 'system-ui, Avenir, Helvetica, Arial, sans-serif'
+                // No hover/transition/cursor here
+              }}
+            >
+              Summary
+            </div>
+            {/* Plant Description */}
+            <div
+              style={{
+                background: 'rgba(255,255,255,0.10)',
+                borderRadius: 12,
+                padding: '12px 14px',
+                fontWeight: 500,
+                fontSize: 15,
+                color: '#fff',
+                marginTop: 2,
+                minHeight: 60,
+                lineHeight: 1.5,
+                letterSpacing: 0.1,
+                fontFamily: 'system-ui, Avenir, Helvetica, Arial, sans-serif',
+                transition: 'transform 0.18s cubic-bezier(.4,1.3,.6,1), box-shadow 0.18s cubic-bezier(.4,1.3,.6,1)',
+                cursor: 'pointer'
+              }}
+              className="indicator-hover"
+            >
+              {/* Replace with actual plant description */}
               <span>
-                <span style={{fontWeight: 700, color: '#e53935'}}>Endangered</span>
-                {/* or: <span style={{fontWeight: 700, color: '#ffb300'}}>Invasive</span> */}
+                This is a placeholder for a plant description. It should be up to 50 words and provide information about the plant, its habitat, care requirements, and any interesting facts or notes relevant to its identification or conservation.
               </span>
             </div>
           </div>
           {/* --- End Plant Status Indicators --- */}
-          <button onClick={handleDelete} style={{ 
-            padding: '14px 0',
-            width: '100%',
-            fontSize: 18,
-            background: 'rgba(76,175,80,0.08)',
-            color: '#fff',
-            border: '2px solid rgba(255,255,255,0.4)',
-            borderRadius: 32,
-            cursor: 'pointer',
-            marginTop: 8,
-            fontWeight: 700,
-            boxShadow: '0 2px 16px rgba(0,0,0,0.10)',
-            backdropFilter: 'blur(6px)',
-            WebkitBackdropFilter: 'blur(6px)',
-            letterSpacing: 0.2,
-            transition: 'background 0.2s',
-          }}>Delete</button>
+          <button
+            onClick={handleDelete}
+            style={{
+              padding: '14px 0',
+              width: '100%',
+              fontSize: 18,
+              background: 'rgba(76,175,80,0.08)',
+              color: '#fff',
+              border: '2px solid rgba(255,255,255,0.4)',
+              borderRadius: 32,
+              cursor: 'pointer',
+              marginTop: 8,
+              fontWeight: 700,
+              boxShadow: '0 2px 16px rgba(0,0,0,0.10)',
+              backdropFilter: 'blur(6px)',
+              WebkitBackdropFilter: 'blur(6px)',
+              letterSpacing: 0.2,
+              transition: 'background 0.2s, transform 0.18s cubic-bezier(.4,1.3,.6,1), box-shadow 0.18s cubic-bezier(.4,1.3,.6,1)'
+            }}
+            className="indicator-hover"
+          >Delete</button>
         </div>
       )}
       {/* Liquid glass button and search bar hover animation styles */}
@@ -781,6 +947,11 @@ function MapboxMap() {
         .mapboxgl-ctrl-logo,
         .mapboxgl-ctrl-attrib {
           display: none !important;
+        }
+        /* Indicator hover effect */
+        .indicator-hover:hover {
+          transform: scale(1.045);
+          box-shadow: 0 4px 18px 0 rgba(76,175,80,0.13), 0 2px 8px 0 rgba(255,255,255,0.13);
         }
         /* Removed searchbar hover/focus animation */
         /*
@@ -886,6 +1057,6 @@ function MapboxMap() {
       `}</style>
     </div>
   );
-}
+});
 
 export default MapboxMap;
