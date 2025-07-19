@@ -1,7 +1,7 @@
 {
-  "soil_pH": 6.25,
+  "soil_pH": 6.5,
   "time_between_waterings": 7,
-  "optimal_light_level": "bright, indirect light",
+  "optimal_light_level": "partial shade",
   "endangered": false,
   "invasive": false
 }
