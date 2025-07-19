@@ -19,10 +19,11 @@ const Overlay = () => {
   const [inputMode, setInputMode] = useState('file'); // 'file' or 'text'
 
   const handleSearch = async (e) => {
-    e.preventDefault();
+    if (e) e.preventDefault();
     const res = await fetch(`http://localhost:8000/admin/search?q=${encodeURIComponent(search)}`);
     const data = await res.json();
     setSearchResults(data);
+    console.log('Search results:', data);
   };
 
   useEffect(() => {
@@ -370,6 +371,11 @@ const Overlay = () => {
                   placeholder="Search..."
                   value={search}
                   onChange={e => setSearch(e.target.value)}
+                  onKeyDown={e => {
+                    if (e.key === 'Enter') {
+                      handleSearch(e);
+                    }
+                  }}
                   style={{
                     width: 420,
                     padding: '15px 32px 15px 48px',
