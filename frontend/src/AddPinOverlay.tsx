@@ -28,6 +28,7 @@ const AddPinOverlay: React.FC<AddPinOverlayProps> = ({
       alignItems: "flex-start",
       padding: "24px 28px 20px 28px",
       gap: 12,
+      animation: 'pulse 0.6s infinite',
     }}
   >
     <div
@@ -38,7 +39,7 @@ const AddPinOverlay: React.FC<AddPinOverlayProps> = ({
         alignItems: "center",
       }}
     >
-      <h3 style={{ margin: 0, fontSize: 20 }}>Add Pin</h3>
+      <h3 style={{ margin: 0, fontSize: 20 }}>Log Plant</h3>
       <button
         onClick={onCancel}
         style={{
@@ -71,10 +72,33 @@ const AddPinOverlay: React.FC<AddPinOverlayProps> = ({
         borderRadius: 8,
         cursor: "pointer",
         marginTop: 8,
+        animation: 'pulse 0.6s infinite',
       }}
     >
       Submit
     </button>
+    <style>{`
+      @keyframes pulse {
+        0% {
+          box-shadow:
+            0 0 0 0 rgba(76,175,80,0.95),
+            0 0 0 0 rgba(56,142,60,0.75),
+            0 0 0 0 rgba(139,195,74,0.55);
+        }
+        70% {
+          box-shadow:
+            0 0 0 60px rgba(76,175,80,0.55),
+            0 0 0 90px rgba(56,142,60,0.35),
+            0 0 0 120px rgba(139,195,74,0.18);
+        }
+        100% {
+          box-shadow:
+            0 0 0 0 rgba(76,175,80,0.95),
+            0 0 0 0 rgba(56,142,60,0.75),
+            0 0 0 0 rgba(139,195,74,0.55);
+        }
+      }
+    `}</style>
   </div>
 );
 
