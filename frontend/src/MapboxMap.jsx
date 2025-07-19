@@ -142,8 +142,8 @@ function MapboxMap() {
   };
 
   return (
-    <div style={{ position: 'relative', height: '100%' }}>
-      <div id="map" className="map" style={{ height: '100%' }} />
+    <div style={{ position: 'relative', height: '100vh', width: '100vw' }}>
+      <div id="map" className="map" style={{ height: '100vh', width: '100vw' }} />
       <Overlay />
       {showPopup && (
         <div style={{
@@ -166,7 +166,7 @@ function MapboxMap() {
           color: '#fff',
         }}>
           <div style={{display: 'flex', width: '100%', justifyContent: 'space-between', alignItems: 'center'}}>
-            <h3 style={{margin: 0, fontSize: 22, color: '#fff', fontWeight: 700, letterSpacing: 0.5, fontFamily: 'system-ui, Avenir, Helvetica, Arial, sans-serif'}}>Add Pin</h3>
+            <h3 style={{margin: 0, fontSize: 32, color: '#fff', fontWeight: 800, letterSpacing: 0.5, fontFamily: 'system-ui, Avenir, Helvetica, Arial, sans-serif'}}>Log Plant</h3>
             <button onClick={handleCancel} style={{ 
               background: 'rgba(255,255,255,0.15)',
               border: '2px solid rgba(255,255,255,0.4)',
@@ -187,16 +187,16 @@ function MapboxMap() {
               transition: 'background 0.2s',
             }} title="Close">×</button>
           </div>
-          <div style={{ marginBottom: 8, fontSize: 16, color: '#fff', fontWeight: 500, letterSpacing: 0.2 }}>
+          <div style={{ marginBottom: 8, fontSize: 19, color: '#fff', fontWeight: 600, letterSpacing: 0.2, fontFamily: 'system-ui, Avenir, Helvetica, Arial, sans-serif' }}>
             <span>Lat: {pendingPin?.lat.toFixed(4)}, Lng: {pendingPin?.lng.toFixed(4)}</span>
           </div>
           {/* Drag-and-drop file upload area */}
           <div {...getRootProps()}
             style={{
               width: '100%',
-              minHeight: 80,
-              border: '2px solid #fff',
+              aspectRatio: '1 / 1',
               borderRadius: 24,
+              border: '2px solid #fff',
               background: isDragActive ? 'rgba(76,175,80,0.18)' : 'rgba(76,175,80,0.10)',
               display: 'flex',
               alignItems: 'center',
@@ -224,19 +224,6 @@ function MapboxMap() {
             ) : (
               <span style={{ color: '#fff', fontWeight: 600, fontSize: 16, letterSpacing: 0.2, fontFamily: 'system-ui, Avenir, Helvetica, Arial, sans-serif' }}>Drag & drop a file here, or <span style={{ color: '#4caf50', textDecoration: 'underline', fontWeight: 700 }}>click to upload</span></span>
             )}
-          </div>
-          {/* Toggle switches */}
-          <div style={{ width: '100%', display: 'flex', flexDirection: 'row', gap: 20, marginTop: 4, justifyContent: 'center', alignItems: 'center' }}>
-            <FormControlLabel
-              control={<Switch checked={alertForCare} onChange={e => setAlertForCare(e.target.checked)} color="success" />}
-              label={<span style={{ color: '#fff', fontWeight: 600, fontSize: 15, fontFamily: 'system-ui, Avenir, Helvetica, Arial, sans-serif', letterSpacing: 0.2 }}>Alert for care</span>}
-              style={{ marginLeft: 0 }}
-            />
-            <FormControlLabel
-              control={<Switch checked={favoriteOnMap} onChange={e => setFavoriteOnMap(e.target.checked)} color="success" />}
-              label={<span style={{ color: '#fff', fontWeight: 600, fontSize: 15, fontFamily: 'system-ui, Avenir, Helvetica, Arial, sans-serif', letterSpacing: 0.2 }}>Favorite on Map</span>}
-              style={{ marginLeft: 0 }}
-            />
           </div>
           <button onClick={handleSubmit} style={{ 
             padding: '14px 0',

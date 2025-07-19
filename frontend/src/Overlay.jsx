@@ -87,10 +87,11 @@ const Overlay = () => {
             <div {...getRootProps()}
               style={{
                 width: '100%',
-                minHeight: 120,
+                aspectRatio: '1 / 1',
+                borderRadius: 32,
                 border: '2px solid #fff',
                 borderRadius: 32,
-                background: isDragActive ? 'rgba(76,175,80,0.18)' : 'rgba(76,175,80,0.10)',
+                background: isDragActive ? 'rgba(40,60,40,0.38)' : 'rgba(40,60,40,0.28)',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
@@ -118,18 +119,6 @@ const Overlay = () => {
                 <span style={{ color: '#fff', fontWeight: 600, fontSize: 18, letterSpacing: 0.2, fontFamily: 'system-ui, Avenir, Helvetica, Arial, sans-serif' }}>Drag & drop a file here, or <span style={{ color: '#4caf50', textDecoration: 'underline', fontWeight: 700 }}>click to upload</span></span>
               )}
             </div>
-            <div style={{ width: '100%', display: 'flex', flexDirection: 'row', gap: 32, marginTop: 8, justifyContent: 'center', alignItems: 'center' }}>
-              <FormControlLabel
-                control={<Switch checked={alertForCare} onChange={e => setAlertForCare(e.target.checked)} color="success" />}
-                label={<span style={{ color: '#fff', fontWeight: 600, fontSize: 18, fontFamily: 'system-ui, Avenir, Helvetica, Arial, sans-serif', letterSpacing: 0.2 }}>Alert for care</span>}
-                style={{ marginLeft: 0 }}
-              />
-              <FormControlLabel
-                control={<Switch checked={favoriteOnMap} onChange={e => setFavoriteOnMap(e.target.checked)} color="success" />}
-                label={<span style={{ color: '#fff', fontWeight: 600, fontSize: 18, fontFamily: 'system-ui, Avenir, Helvetica, Arial, sans-serif', letterSpacing: 0.2 }}>Favorite on Map</span>}
-                style={{ marginLeft: 0 }}
-              />
-            </div>
           </div>
         )}
         {/* Hide these when add-plant overlay is open */}
@@ -153,10 +142,10 @@ const Overlay = () => {
                   onChange={e => setSearch(e.target.value)}
                   style={{
                     width: 420,
-                    padding: '18px 32px 18px 48px',
+                    padding: '15px 32px 15px 48px',
                     borderRadius: 32,
                     border: '2px solid #fff',
-                    fontSize: 22,
+                    fontSize: 18,
                     fontWeight: 600,
                     outline: 'none',
                     background: 'rgba(76,175,80,0.10)',
@@ -216,6 +205,10 @@ const Overlay = () => {
         )}
         <style>{`
           .searchbar-white-placeholder::placeholder {
+            color: #fff !important;
+            opacity: 1;
+          }
+          input[placeholder="Search..."]::placeholder {
             color: #fff !important;
             opacity: 1;
           }
