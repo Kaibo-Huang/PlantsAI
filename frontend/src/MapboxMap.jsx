@@ -8,13 +8,15 @@ import FormControlLabel from '@mui/material/FormControlLabel';
 import { MdOutlineFileUpload } from "react-icons/md";
 import { MdClose } from "react-icons/md";
 
-// Realistic potted plant SVG icon for marker
+// Realistic potted plant SVG icon for marker (shaft is now orange, base is separate for animation)
 const plantSVG = `<svg width="56" height="56" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
-  <ellipse cx="20" cy="34" rx="10" ry="4" fill="#795548"/>
-  <rect x="15" y="20" width="10" height="14" rx="5" fill="#8BC34A"/>
-  <path d="M20 20C20 10 30 10 30 20" stroke="#388E3C" stroke-width="2" fill="none"/>
-  <path d="M20 20C20 10 10 10 10 20" stroke="#388E3C" stroke-width="2" fill="none"/>
-  <circle cx="20" cy="16" r="3" fill="#4CAF50"/>
+  <ellipse class="plant-base" cx="20" cy="34" rx="10" ry="4" fill="#795548"/>
+  <g class="plant-top">
+    <rect x="15" y="20" width="10" height="14" rx="5" fill="#ff9800"/>
+    <path d="M20 20C20 10 30 10 30 20" stroke="#388E3C" stroke-width="2" fill="none"/>
+    <path d="M20 20C20 10 10 10 10 20" stroke="#388E3C" stroke-width="2" fill="none"/>
+    <circle cx="20" cy="16" r="3" fill="#4CAF50"/>
+  </g>
 </svg>`;
 
 mapboxgl.accessToken = 'pk.eyJ1Ijoia2FpYm9odWFuZyIsImEiOiJjbWQ5ZjBsY3IwNzQ1MnBxMTcwbTU5djNqIn0.EAoOvgDb4m_eShy5rxM72g';
@@ -35,6 +37,9 @@ function MapboxMap() {
   // No animation or swipe state
   // No swipe or animation handlers
 
+  // Track the last selected marker for robust cleanup
+  const lastSelectedMarkerRef = useRef(null);
+
   const onDrop = (acceptedFiles) => {
     // Only accept image files
     const imageFile = acceptedFiles.find(file => file.type.startsWith('image/'));
@@ -52,7 +57,42 @@ function MapboxMap() {
     const el = document.createElement('div');
     el.style.width = '56px';
     el.style.height = '56px';
-    el.innerHTML = plantSVG;
+    el.style.display = 'flex';
+    el.style.alignItems = 'center';
+    el.style.justifyContent = 'center';
+    const inner = document.createElement('div');
+    inner.className = 'pending-marker';
+    inner.innerHTML = plantSVG;
+    el.appendChild(inner);
+    // Function to emit dirt
+    function emitDirt() {
+      const dirtContainer = document.createElement('div');
+      dirtContainer.className = 'dirt-container';
+      for (let i = 0; i < 10; i++) {
+        const dirt = document.createElement('div');
+        dirt.className = 'dirt-pixel';
+        // Randomize angle and distance
+        const angle = Math.random() * Math.PI - Math.PI / 2; // -90deg to +90deg
+        const dist = 18 + Math.random() * 18; // px
+        const x = Math.cos(angle) * dist;
+        const y = -Math.abs(Math.sin(angle) * dist) - 8; // always up
+        const delay = Math.random() * 0.18;
+        dirt.style.setProperty('--dirt-x', `${x}px`);
+        dirt.style.setProperty('--dirt-y', `${y}px`);
+        dirt.style.animationDelay = `${delay}s`;
+        dirtContainer.appendChild(dirt);
+      }
+      el.appendChild(dirtContainer);
+      setTimeout(() => {
+        if (dirtContainer && dirtContainer.parentNode) {
+          dirtContainer.parentNode.removeChild(dirtContainer);
+        }
+      }, 700);
+    }
+    // Start dirt emission interval
+    emitDirt();
+    const dirtInterval = setInterval(emitDirt, 700);
+    el._dirtInterval = dirtInterval;
     const tempMarker = new mapboxgl.Marker({ element: el })
       .setLngLat([lng, lat])
       .addTo(mapRef.current);
@@ -123,12 +163,61 @@ function MapboxMap() {
     if (!pendingPin || !mapRef.current) return;
     const marker = pendingPin.marker;
     // Make the marker permanent and add click-to-delete logic
-    
     marker.getElement().addEventListener('click', (event) => {
       event.stopPropagation();
       setDeletePin({ marker, lng: pendingPin.lng, lat: pendingPin.lat });
       setShowDeletePopup(true);
+      // Add shake to selected marker (after popup is shown)
+      setTimeout(() => {
+        const el = marker.getElement();
+        if (el) {
+          // Find the correct inner div (pending or not)
+          let inner = el.querySelector('.pending-marker');
+          if (!inner) inner = el.querySelector('div');
+          if (inner && !inner.classList.contains('pending-marker')) inner.classList.add('pending-marker');
+          // Start dirt emission interval for selected marker
+          if (!el._dirtInterval) {
+            function emitDirt() {
+              const dirtContainer = document.createElement('div');
+              dirtContainer.className = 'dirt-container';
+              for (let i = 0; i < 10; i++) {
+                const dirt = document.createElement('div');
+                dirt.className = 'dirt-pixel';
+                const angle = Math.random() * Math.PI - Math.PI / 2;
+                const dist = 18 + Math.random() * 18;
+                const x = Math.cos(angle) * dist;
+                const y = -Math.abs(Math.sin(angle) * dist) - 8;
+                const delay = Math.random() * 0.18;
+                dirt.style.setProperty('--dirt-x', `${x}px`);
+                dirt.style.setProperty('--dirt-y', `${y}px`);
+                dirt.style.animationDelay = `${delay}s`;
+                dirtContainer.appendChild(dirt);
+              }
+              el.appendChild(dirtContainer);
+              setTimeout(() => {
+                if (dirtContainer && dirtContainer.parentNode) {
+                  dirtContainer.parentNode.removeChild(dirtContainer);
+                }
+              }, 700);
+            }
+            emitDirt();
+            el._dirtInterval = setInterval(emitDirt, 700);
+          }
+          lastSelectedMarkerRef.current = el;
+        }
+      }, 0);
     });
+    // Remove the pending-marker class from the inner div so it stops shaking
+    const el = marker.getElement();
+    if (el) {
+      const inner = el.querySelector('.pending-marker');
+      if (inner) inner.classList.remove('pending-marker');
+      // Stop dirt emission
+      if (el._dirtInterval) {
+        clearInterval(el._dirtInterval);
+        el._dirtInterval = null;
+      }
+    }
     markersRef.current.push(marker);
     // Send pin location to backend
     const formData = new FormData();
@@ -154,6 +243,12 @@ function MapboxMap() {
   // Remove the temp marker if popup is closed without submitting
   const handleCancel = () => {
     if (pendingPin && pendingPin.marker) {
+      // Stop dirt emission
+      const el = pendingPin.marker.getElement();
+      if (el && el._dirtInterval) {
+        clearInterval(el._dirtInterval);
+        el._dirtInterval = null;
+      }
       pendingPin.marker.remove();
     }
     setShowPopupAndRef(false);
@@ -163,11 +258,60 @@ function MapboxMap() {
   // Handler for delete button in delete popup
   const handleDelete = () => {
     if (!deletePin) return;
+    // Remove shake from marker
+    const el = deletePin.marker.getElement();
+    if (el) {
+      let inner = el.querySelector('.pending-marker');
+      if (!inner) inner = el.querySelector('div');
+      if (inner && inner.classList.contains('pending-marker')) inner.classList.remove('pending-marker');
+      // Stop dirt emission
+      if (el._dirtInterval) {
+        clearInterval(el._dirtInterval);
+        el._dirtInterval = null;
+      }
+      // Play pullout animation
+      if (inner) {
+        // Add marker-pullout class to the wrapper
+        inner.classList.add('marker-pullout');
+        // Animate plant-top and plant-base separately
+        const svg = inner.querySelector('svg');
+        if (svg) {
+          const top = svg.querySelector('.plant-top');
+          const base = svg.querySelector('.plant-base');
+          if (top) top.classList.add('marker-pullout-top');
+          if (base) base.classList.add('marker-pullout-base');
+        }
+        setTimeout(() => {
+          deletePin.marker.remove();
+          markersRef.current = markersRef.current.filter(m => m !== deletePin.marker);
+          setShowDeletePopup(false);
+          setDeletePin(null);
+        }, 700);
+        return;
+      }
+    }
+    // fallback if no inner
     deletePin.marker.remove();
     markersRef.current = markersRef.current.filter(m => m !== deletePin.marker);
     setShowDeletePopup(false);
     setDeletePin(null);
   };
+
+  // Remove shake and dirt when delete popup is closed (not deleted)
+  useEffect(() => {
+    if (!showDeletePopup && lastSelectedMarkerRef.current) {
+      const el = lastSelectedMarkerRef.current;
+      let inner = el.querySelector('.pending-marker');
+      if (!inner) inner = el.querySelector('div');
+      if (inner && inner.classList.contains('pending-marker')) inner.classList.remove('pending-marker');
+      if (el._dirtInterval) {
+        clearInterval(el._dirtInterval);
+        el._dirtInterval = null;
+      }
+      lastSelectedMarkerRef.current = null;
+    }
+    // eslint-disable-next-line
+  }, [showDeletePopup]);
 
   return (
     <div style={{ position: 'relative', height: '100vh', width: '100vw' }}>
@@ -473,6 +617,93 @@ function MapboxMap() {
           color: #1b3a2b;
           backdrop-filter: blur(16px) saturate(1.2);
           -webkit-backdrop-filter: blur(16px) saturate(1.2);
+        }
+      `}</style>
+      {/* Pending marker and dirt animation style */}
+      <style>{`
+        .pending-marker {
+          animation: shake-grow 0.7s infinite;
+          transform: scale(1.18);
+          z-index: 9999 !important;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+        }
+        @keyframes shake-grow {
+          0% { transform: scale(1.18) translateX(0); }
+          20% { transform: scale(1.18) translateX(-4px); }
+          40% { transform: scale(1.18) translateX(4px); }
+          60% { transform: scale(1.18) translateX(-4px); }
+          80% { transform: scale(1.18) translateX(4px); }
+          100% { transform: scale(1.18) translateX(0); }
+        }
+        .dirt-container {
+          position: absolute;
+          left: 50%;
+          top: 50%;
+          width: 0;
+          height: 0;
+          pointer-events: none;
+        }
+        .dirt-pixel {
+          position: absolute;
+          left: 0;
+          top: 0;
+          width: 6px;
+          height: 6px;
+          border-radius: 50%;
+          background: #6d4c2b;
+          opacity: 0.85;
+          box-shadow: 0 1px 2px #3e2723;
+          animation: dirt-fly 0.7s cubic-bezier(.4,1.3,.6,1) forwards;
+        }
+        @keyframes dirt-fly {
+          0% {
+            opacity: 0.85;
+            transform: translate(0,0) scale(1);
+          }
+          60% {
+            opacity: 1;
+            transform: translate(var(--dirt-x), var(--dirt-y)) scale(1.1);
+          }
+          100% {
+            opacity: 0;
+            transform: translate(var(--dirt-x), var(--dirt-y)) scale(0.7);
+          }
+        }
+      `}</style>
+      {/* Marker pullout animation style */}
+      <style>{`
+        .marker-pullout {
+          /* no-op, just for targeting */
+        }
+        .marker-pullout-top {
+          animation: marker-pullout-top-anim 0.7s cubic-bezier(.4,1.3,.6,1) forwards;
+        }
+        .marker-pullout-base {
+          animation: marker-pullout-base-anim 0.7s cubic-bezier(.4,1.3,.6,1) forwards;
+        }
+        @keyframes marker-pullout-top-anim {
+          0% {
+            opacity: 1;
+            transform: translateY(0);
+          }
+          60% {
+            opacity: 1;
+            transform: translateY(-18px);
+          }
+          100% {
+            opacity: 0;
+            transform: translateY(-48px);
+          }
+        }
+        @keyframes marker-pullout-base-anim {
+          0% {
+            opacity: 1;
+          }
+          100% {
+            opacity: 0;
+          }
         }
       `}</style>
     </div>
