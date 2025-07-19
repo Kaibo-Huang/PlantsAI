@@ -15,6 +15,7 @@ const Overlay = () => {
   const [favoriteOnMap, setFavoriteOnMap] = useState(false);
   const [userLocation, setUserLocation] = useState(null);
   const [locationError, setLocationError] = useState(null);
+  const [inputMode, setInputMode] = useState('file'); // 'file' or 'text'
 
   useEffect(() => {
     if (showAddPlantOverlay) {
@@ -96,7 +97,7 @@ const Overlay = () => {
             <h2 style={{ 
               color: '#222', 
               fontWeight: 700, 
-              fontSize: 32, 
+              fontSize: 37, 
               margin: 0, 
               marginBottom: 0, 
               letterSpacing: 0.5,
@@ -112,76 +113,151 @@ const Overlay = () => {
                 <span>Getting location...</span>
               )}
             </div>
-            {/* Drag-and-drop file upload area */}
-            <div {...getRootProps()}
-              style={{
-                width: '100%',
-                minHeight: 180,
-                height: 400,
-                border: '2px solid rgba(120,120,120,0.35)',
-                borderRadius: 24,
-                background: isDragActive ? 'rgba(80,80,80,0.32)' : 'rgba(80,80,80,0.22)',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                color: '#fff',
-                fontSize: 16,
-                fontWeight: 600,
-                cursor: 'pointer',
-                margin: '12px 0',
-                transition: 'background 0.2s, border 0.2s',
-                outline: isDragActive ? '2.5px solid #4caf50' : 'none',
-                boxShadow: '0 2px 16px rgba(0,0,0,0.10)',
-                textAlign: 'center',
-                pointerEvents: 'auto',
-                backdropFilter: 'blur(8px)',
-                WebkitBackdropFilter: 'blur(8px)',
-                letterSpacing: 0.2,
-              }}
-            >
-              <input {...getInputProps()} />
-              {uploadedFile ? (
-                <span style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                  <span style={{
-                    color: '#fff',
-                    fontWeight: 700,
-                    fontSize: 16,
-                    letterSpacing: 0.2,
-                    fontFamily: 'system-ui, Avenir, Helvetica, Arial, sans-serif',
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: 8
-                  }}>
-                    <MdOutlineFileUpload size={22} color="#4caf50" />
-                    Photo uploaded
-                  </span>
-                  <button
-                    type="button"
-                    onClick={e => { e.stopPropagation(); setUploadedFile(null); }}
-                    style={{
-                      background: 'transparent',
-                      border: 'none',
-                      marginLeft: 6,
-                      cursor: 'pointer',
+            {/* Drag-and-drop file upload area or text input */}
+            {inputMode === 'file' ? (
+              <div {...getRootProps()}
+                style={{
+                  width: '100%',
+                  minHeight: 180,
+                  height: 400,
+                  border: '2px solid rgba(120,120,120,0.35)',
+                  borderRadius: 24,
+                  background: isDragActive ? 'rgba(80,80,80,0.32)' : 'rgba(80,80,80,0.22)',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  color: '#fff',
+                  fontSize: 16,
+                  fontWeight: 600,
+                  cursor: 'pointer',
+                  margin: '12px 0 4px 0',
+                  transition: 'background 0.2s, border 0.2s',
+                  outline: isDragActive ? '2.5px solid #4caf50' : 'none',
+                  boxShadow: '0 2px 16px rgba(0,0,0,0.10)',
+                  textAlign: 'center',
+                  pointerEvents: 'auto',
+                  backdropFilter: 'blur(8px)',
+                  WebkitBackdropFilter: 'blur(8px)',
+                  letterSpacing: 0.2,
+                }}
+              >
+                <input {...getInputProps()} />
+                {uploadedFile ? (
+                  <span style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                    <span style={{
+                      color: '#fff',
+                      fontWeight: 700,
+                      fontSize: 16,
+                      letterSpacing: 0.2,
+                      fontFamily: 'system-ui, Avenir, Helvetica, Arial, sans-serif',
                       display: 'flex',
                       alignItems: 'center',
-                      padding: 0
-                    }}
-                    title="Remove file"
-                  >
-                    <MdClose size={22} color="#fff" />
-                  </button>
-                </span>
-              ) : isDragActive ? (
-                <span style={{ color: '#4caf50', fontWeight: 700, fontSize: 16, letterSpacing: 0.2, fontFamily: 'system-ui, Avenir, Helvetica, Arial, sans-serif' }}>Drop the file here ...</span>
-              ) : (
-                <span style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-                  <MdOutlineFileUpload size={28} color="#4caf50" />
-                  <span style={{ color: '#fff', fontWeight: 600, fontSize: 16, fontFamily: 'system-ui, Avenir, Helvetica, Arial, sans-serif', letterSpacing: 0.2 }}>
-                    Upload plant image
+                      gap: 8
+                    }}>
+                      <MdOutlineFileUpload size={22} color="#4caf50" />
+                      Photo uploaded
+                    </span>
+                    <button
+                      type="button"
+                      onClick={e => { e.stopPropagation(); setUploadedFile(null); }}
+                      style={{
+                        background: 'transparent',
+                        border: 'none',
+                        marginLeft: 6,
+                        cursor: 'pointer',
+                        display: 'flex',
+                        alignItems: 'center',
+                        padding: 0
+                      }}
+                      title="Remove file"
+                    >
+                      <MdClose size={22} color="#fff" />
+                    </button>
                   </span>
-                </span>
-              )}
+                ) : isDragActive ? (
+                  <span style={{ color: '#4caf50', fontWeight: 700, fontSize: 16, letterSpacing: 0.2, fontFamily: 'system-ui, Avenir, Helvetica, Arial, sans-serif' }}>Drop the file here ...</span>
+                ) : (
+                  <span style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                    <MdOutlineFileUpload size={28} color="#4caf50" />
+                    <span style={{ color: '#fff', fontWeight: 600, fontSize: 16, fontFamily: 'system-ui, Avenir, Helvetica, Arial, sans-serif', letterSpacing: 0.2 }}>
+                      Upload plant image
+                    </span>
+                  </span>
+                )}
+              </div>
+            ) : (
+              <textarea
+                style={{
+                  width: '100%',
+                  minHeight: 180,
+                  height: 400,
+                  border: '2px solid rgba(120,120,120,0.35)',
+                  borderRadius: 24,
+                  background: 'rgba(80,80,80,0.22)',
+                  color: '#fff',
+                  fontSize: 26,
+                  fontWeight: 600,
+                  margin: '12px 0 4px 0',
+                  padding: 0,
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  resize: 'none',
+                  outline: 'none',
+                  boxShadow: '0 2px 16px rgba(0,0,0,0.10)',
+                  fontFamily: 'system-ui, Avenir, Helvetica, Arial, sans-serif',
+                  letterSpacing: 0.2,
+                  backdropFilter: 'blur(8px)',
+                  WebkitBackdropFilter: 'blur(8px)',
+                  textAlign: 'center',
+                }}
+                placeholder="Input plant name and info"
+              />
+            )}
+            {/* Input mode switch circles */}
+            <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: 7, marginTop: 0, marginBottom: 2 }}>
+              <button
+                type="button"
+                onClick={() => setInputMode('file')}
+                style={{
+                  width: 13,
+                  height: 13,
+                  borderRadius: '50%',
+                  border: '2px solid #bbb',
+                  background: inputMode === 'file' ? '#f5f5f5' : '#bdbdbd',
+                  margin: 0,
+                  padding: 0,
+                  cursor: 'pointer',
+                  outline: 'none',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  transition: 'border 0.2s, background 0.2s',
+                }}
+                title="Upload image"
+                aria-label="Upload image"
+              />
+              <button
+                type="button"
+                onClick={() => setInputMode('text')}
+                style={{
+                  width: 13,
+                  height: 13,
+                  borderRadius: '50%',
+                  border: '2px solid #bbb',
+                  background: inputMode === 'text' ? '#f5f5f5' : '#bdbdbd',
+                  margin: 0,
+                  padding: 0,
+                  cursor: 'pointer',
+                  outline: 'none',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  transition: 'border 0.2s, background 0.2s',
+                }}
+                title="Input text"
+                aria-label="Input text"
+              />
             </div>
             {/* Submit button */}
             <button
@@ -252,6 +328,7 @@ const Overlay = () => {
             </div>
             {/* Bottom left add plant button */}
             <div
+              className="add-plant-btn-outer"
               style={{
                 position: 'absolute',
                 left: 40,
@@ -260,6 +337,7 @@ const Overlay = () => {
               }}
             >
               <div
+                className="add-plant-btn-glass"
                 style={{
                   display: 'flex',
                   flexDirection: 'column',
@@ -283,6 +361,7 @@ const Overlay = () => {
                   userSelect: 'none',
                   boxSizing: 'border-box',
                   flexShrink: 0,
+                  transition: 'background 0.35s cubic-bezier(.4,1.3,.6,1), color 0.35s cubic-bezier(.4,1.3,.6,1), border 0.35s cubic-bezier(.4,1.3,.6,1), box-shadow 0.35s cubic-bezier(.4,1.3,.6,1), transform 0.35s cubic-bezier(.4,1.3,.6,1), backdrop-filter 0.35s cubic-bezier(.4,1.3,.6,1)',
                 }}
                 onClick={() => setShowAddPlantOverlay(true)}
                 title="Add Plant"
@@ -307,6 +386,18 @@ const Overlay = () => {
             height: 100vh !important;
             margin: 0 !important;
             padding: 0 !important;
+          }
+          .add-plant-btn-glass {
+            transition: background 0.35s cubic-bezier(.4,1.3,.6,1), color 0.35s cubic-bezier(.4,1.3,.6,1), border 0.35s cubic-bezier(.4,1.3,.6,1), box-shadow 0.35s cubic-bezier(.4,1.3,.6,1), transform 0.35s cubic-bezier(.4,1.3,.6,1), backdrop-filter 0.35s cubic-bezier(.4,1.3,.6,1);
+          }
+          .add-plant-btn-glass:hover, .add-plant-btn-glass:focus-visible {
+            transform: scale(1.09);
+            box-shadow: 0 8px 32px 0 rgba(76,175,80,0.22), 0 2px 12px 0 rgba(255,255,255,0.18);
+            background: rgba(255,255,255,0.28);
+            border-color: #aee9c7;
+            color: #1b3a2b;
+            backdrop-filter: blur(16px) saturate(1.2);
+            -webkit-backdrop-filter: blur(16px) saturate(1.2);
           }
         `}</style>
       </div>
