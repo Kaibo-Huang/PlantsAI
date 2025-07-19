@@ -7,12 +7,13 @@ import google.generativeai as genai
 import requests
 import json
 import re
+import google.api_core.exceptions
 from utils import get_weather_data, get_plantnet_data
 from pymongo import MongoClient
 
 app = Flask(__name__)
 cors = CORS(app, resources={r"/*": {"origins": "*"}})
-api_key = 'AIzaSyB3Ik2aYCuAIRRHFWIgrY6fBCxDG-RX054'
+api_key = 'AIzaSyB6fEHUqwOnsEibGm6P6rz42h4ZzizufhQ'
 genai.configure(api_key=api_key)
 
 client = MongoClient("mongodb+srv://stringbot:u2ZG9kM5q8L0WaNW@plantmap.ipx3g1d.mongodb.net/")
@@ -40,35 +41,41 @@ prompt = (
     "soil_pH (number), time_between_waterings (in days, number), optimal_light_level (string: e.g. 'full sun', 'partial shade', etc.), endangered (boolean true or false, according to canadian sources), invasive (boolean true or false, according to canadian sources). "
     "Format the JSON as the last part of your response."
 )
-response = model.generate_content(prompt)
+try:
+    response = model.generate_content(prompt)
+except google.api_core.exceptions.ResourceExhausted as e:
+    print("Gemini API quota exceeded. Please wait for quota reset or upgrade your plan.")
+    response = None
 
-# After getting response.text
-text = response.text
+if response:
+    text = response.text
 
-# Find JSON in the response (assuming it's the last code block)
-match = re.search(r'\{.*\}', text, re.DOTALL)
-if match:
-    json_str = match.group(0)
-    try:
-        data = json.loads(json_str)
-        # Save to file
-        with open('plant_care.json', 'w') as f:
-            json.dump(data, f, indent=2)
-        
-        # Extract the blurb (everything before the JSON)
-        blurb = text[:text.find('{')].strip()
-        
-        # Print only the formatted values and blurb
-        print(f"Soil pH: {data.get('soil_pH', 'N/A')}")
-        print(f"Watering Frequency: {data.get('time_between_waterings', 'N/A')} Days")
-        print(f"Optimal Light Levels: {data.get('optimal_light_level', 'N/A')}")
-        print(f"Endangered: {data.get('endangered', 'N/A')}")
-        print(f"Invasive: {data.get('invasive', 'N/A')}")
-        print("\n" + blurb)
-    except json.JSONDecodeError:
-        print("Could not decode JSON from Gemini response.")
+    # Find JSON in the response (assuming it's the last code block)
+    match = re.search(r'\{.*\}', text, re.DOTALL)
+    if match:
+        json_str = match.group(0)
+        try:
+            data = json.loads(json_str)
+            # Save to file
+            with open('plant_care.json', 'w') as f:
+                json.dump(data, f, indent=2)
+            
+            # Extract the blurb (everything before the JSON)
+            blurb = text[:text.find('{')].strip()
+            
+            # Print only the formatted values and blurb
+            print(f"Soil pH: {data.get('soil_pH', 'N/A')}")
+            print(f"Watering Frequency: {data.get('time_between_waterings', 'N/A')} Days")
+            print(f"Optimal Light Levels: {data.get('optimal_light_level', 'N/A')}")
+            print(f"Endangered: {data.get('endangered', 'N/A')}")
+            print(f"Invasive: {data.get('invasive', 'N/A')}")
+            print("\n" + blurb)
+        except json.JSONDecodeError:
+            print("Could not decode JSON from Gemini response.")
+    else:
+        print("No JSON found in Gemini response.")
 else:
-    print("No JSON found in Gemini response.")
+    print("No Gemini response due to quota limits.")
 
 @app.route('/home', methods=['GET'])
 def home():
@@ -96,11 +103,40 @@ def plantnet():
         file_path = os.path.join('uploads', file.filename)
         file.save(file_path)
         file_paths.append(file_path)
-        
+
     plant_data = get_plantnet_data(file_paths)
 
     return jsonify(plant_data)
 
+# @app.route('/admin/add', methods=['POST'])
+# def add_pin():
+#     data = request.json
+#     if not data:
+#         print("No data provided for insertion.")
+#         return jsonify({"error": "No data provided"}), 400
+#     try:
+#         lat = data['lat']
+#         lon = data['lng']
+#         data = {
+#             "type": "Feature",
+#             "geometry": {
+#                 "type": "Point",
+#                 "coordinates": [lat, lon]
+#             },
+#             "properties": {
+#                 "alert": data['alertForCare'],
+#                 "favorite": data['favoriteOnMap'],
+#                 # 'fileName': data['fileName'],
+#                 "weather": jsonify(get_weather_data(lat, lon)),
+#                 "plant": jsonify(get_plantnet_data([data['fileName']])),
+#             }
+#         }
+#         detections.insert_one(data)
+#         print("Data inserted successfully:", data)
+#         return jsonify({"message": "Detection added successfully"}), 201
+#     except Exception as e:
+#         print("Error inserting data:", e)
+#         return jsonify({"error": str(e)}), 500
 @app.route('/admin/add', methods=['POST'])
 def add_pin():
     lat = request.form.get('lat')
