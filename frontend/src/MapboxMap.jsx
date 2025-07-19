@@ -8,6 +8,7 @@ import FormControlLabel from '@mui/material/FormControlLabel';
 import { MdOutlineFileUpload } from "react-icons/md";
 import { MdClose } from "react-icons/md";
 import { MdLocationOn, MdOpacity, MdScience, MdDeviceThermostat, MdWarning } from "react-icons/md";
+import PinQueryCard from './PinQueryCard';
 
 // Realistic potted plant SVG icon for marker (shaft is now orange, base is separate for animation)
 const plantSVG = `<svg width="56" height="56" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -375,6 +376,29 @@ function MapboxMap() {
   return (
     <div style={{ position: 'relative', height: '100vh', width: '100vw' }}>
       <div id="map" className="map" style={{ height: '100vh', width: '100vw' }} />
+      <div style={{
+        position: 'fixed',
+        left: '50%',
+        bottom: 32,
+        transform: 'translateX(-50%)',
+        zIndex: 1000,
+        background: 'rgba(76,175,80,0.10)',
+        borderRadius: 32,
+        border: '2px solid #fff',
+        boxShadow: '0 2px 16px rgba(0,0,0,0.10)',
+        backdropFilter: 'blur(12px)',
+        WebkitBackdropFilter: 'blur(12px)',
+        color: '#fff',
+        padding: '24px 28px 20px 28px',
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        gap: 12,
+        minWidth: 320,
+        maxWidth: 400,
+      }}>
+        <PinQueryCard />
+      </div>
       <Overlay />
       {showPopup && (
         <div
