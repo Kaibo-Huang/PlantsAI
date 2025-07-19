@@ -156,8 +156,12 @@ function MapboxMap() {
   };
 
   return (
-    <div style={{ position: "relative", height: "100%" }}>
-      <div id="map" className="map" style={{ height: "100%" }} />
+    <div style={{ position: "relative", height: "100vh", width: "100vw" }}>
+      <div
+        id="map"
+        className="map"
+        style={{ height: "100vh", width: "100vw" }}
+      />
       <Overlay />
       <div
         style={{
