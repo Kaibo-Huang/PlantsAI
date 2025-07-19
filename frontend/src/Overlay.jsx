@@ -1,8 +1,11 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { RiPlantFill } from "react-icons/ri";
 import { useDropzone } from 'react-dropzone';
 import Switch from '@mui/material/Switch';
 import FormControlLabel from '@mui/material/FormControlLabel';
+import { MdOutlineFileUpload } from "react-icons/md";
+import { MdClose } from "react-icons/md";
+import { getUserLocation } from './getUserLocation';
 
 const Overlay = () => {
   const [search, setSearch] = useState('');
@@ -10,6 +13,22 @@ const Overlay = () => {
   const [uploadedFile, setUploadedFile] = useState(null);
   const [alertForCare, setAlertForCare] = useState(false);
   const [favoriteOnMap, setFavoriteOnMap] = useState(false);
+  const [userLocation, setUserLocation] = useState(null);
+  const [locationError, setLocationError] = useState(null);
+
+  useEffect(() => {
+    if (showAddPlantOverlay) {
+      getUserLocation()
+        .then(loc => {
+          setUserLocation(loc);
+          setLocationError(null);
+        })
+        .catch(err => {
+          setUserLocation(null);
+          setLocationError('Location unavailable');
+        });
+    }
+  }, [showAddPlantOverlay]);
 
   const onDrop = (acceptedFiles) => {
     if (acceptedFiles && acceptedFiles.length > 0) {
@@ -30,7 +49,7 @@ const Overlay = () => {
               left: '50%',
               transform: 'translate(-50%, -50%)',
               width: 440,
-              minHeight: 320,
+              minHeight: 220,
               background: 'rgba(76,175,80,0.10)',
               borderRadius: 48,
               border: '2px solid #fff',
@@ -40,8 +59,8 @@ const Overlay = () => {
               flexDirection: 'column',
               alignItems: 'center',
               justifyContent: 'center',
-              padding: '40px 32px',
-              gap: 24,
+              padding: '18px 18px',
+              gap: 10,
               pointerEvents: 'auto',
               backdropFilter: 'blur(16px)',
               WebkitBackdropFilter: 'blur(16px)',
@@ -79,27 +98,37 @@ const Overlay = () => {
               fontWeight: 700, 
               fontSize: 32, 
               margin: 0, 
-              marginBottom: 16, 
+              marginBottom: 0, 
               letterSpacing: 0.5,
               fontFamily: 'system-ui, Avenir, Helvetica, Arial, sans-serif',
-            }}>Add a New Plant</h2>
+            }}>Log a New Plant 🌱 </h2>
+            {/* Show current location */}
+            <div style={{ marginBottom: 12, marginTop: 0, fontSize: 19, color: '#fff', fontWeight: 600, letterSpacing: 0.2, fontFamily: 'system-ui, Avenir, Helvetica, Arial, sans-serif' }}>
+              {userLocation ? (
+                <span>Location: {userLocation.lat.toFixed(4)}, {userLocation.lng.toFixed(4)}</span>
+              ) : locationError ? (
+                <span style={{ color: '#f44336' }}>Location unavailable</span>
+              ) : (
+                <span>Getting location...</span>
+              )}
+            </div>
             {/* Drag-and-drop file upload area */}
             <div {...getRootProps()}
               style={{
                 width: '100%',
-                aspectRatio: '1 / 1',
-                borderRadius: 32,
-                border: '2px solid #fff',
-                borderRadius: 32,
-                background: isDragActive ? 'rgba(40,60,40,0.38)' : 'rgba(40,60,40,0.28)',
+                minHeight: 180,
+                height: 400,
+                border: '2px solid rgba(120,120,120,0.35)',
+                borderRadius: 24,
+                background: isDragActive ? 'rgba(80,80,80,0.32)' : 'rgba(80,80,80,0.22)',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
                 color: '#fff',
-                fontSize: 20,
+                fontSize: 16,
                 fontWeight: 600,
                 cursor: 'pointer',
-                margin: '18px 0',
+                margin: '12px 0',
                 transition: 'background 0.2s, border 0.2s',
                 outline: isDragActive ? '2.5px solid #4caf50' : 'none',
                 boxShadow: '0 2px 16px rgba(0,0,0,0.10)',
@@ -112,13 +141,74 @@ const Overlay = () => {
             >
               <input {...getInputProps()} />
               {uploadedFile ? (
-                <span style={{ color: '#fff', fontWeight: 700, fontSize: 18, letterSpacing: 0.2, fontFamily: 'system-ui, Avenir, Helvetica, Arial, sans-serif' }}>Selected file: <b style={{ color: '#fff', fontWeight: 700 }}>{uploadedFile.name}</b></span>
+                <span style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                  <span style={{
+                    color: '#fff',
+                    fontWeight: 700,
+                    fontSize: 16,
+                    letterSpacing: 0.2,
+                    fontFamily: 'system-ui, Avenir, Helvetica, Arial, sans-serif',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: 8
+                  }}>
+                    <MdOutlineFileUpload size={22} color="#4caf50" />
+                    Photo uploaded
+                  </span>
+                  <button
+                    type="button"
+                    onClick={e => { e.stopPropagation(); setUploadedFile(null); }}
+                    style={{
+                      background: 'transparent',
+                      border: 'none',
+                      marginLeft: 6,
+                      cursor: 'pointer',
+                      display: 'flex',
+                      alignItems: 'center',
+                      padding: 0
+                    }}
+                    title="Remove file"
+                  >
+                    <MdClose size={22} color="#fff" />
+                  </button>
+                </span>
               ) : isDragActive ? (
-                <span style={{ color: '#4caf50', fontWeight: 700, fontSize: 18, letterSpacing: 0.2, fontFamily: 'system-ui, Avenir, Helvetica, Arial, sans-serif' }}>Drop the file here ...</span>
+                <span style={{ color: '#4caf50', fontWeight: 700, fontSize: 16, letterSpacing: 0.2, fontFamily: 'system-ui, Avenir, Helvetica, Arial, sans-serif' }}>Drop the file here ...</span>
               ) : (
-                <span style={{ color: '#fff', fontWeight: 600, fontSize: 18, letterSpacing: 0.2, fontFamily: 'system-ui, Avenir, Helvetica, Arial, sans-serif' }}>Drag & drop a file here, or <span style={{ color: '#4caf50', textDecoration: 'underline', fontWeight: 700 }}>click to upload</span></span>
+                <span style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                  <MdOutlineFileUpload size={28} color="#4caf50" />
+                  <span style={{ color: '#fff', fontWeight: 600, fontSize: 16, fontFamily: 'system-ui, Avenir, Helvetica, Arial, sans-serif', letterSpacing: 0.2 }}>
+                    Upload plant image
+                  </span>
+                </span>
               )}
             </div>
+            {/* Submit button */}
+            <button
+              type="button"
+              style={{
+                width: '100%',
+                padding: '14px 0',
+                marginTop: 8,
+                borderRadius: 32,
+                border: '2px solid rgba(255,255,255,0.4)',
+                background: 'rgba(255,255,255,0.15)',
+                color: '#fff',
+                fontWeight: 700,
+                fontSize: 18,
+                letterSpacing: 0.2,
+                fontFamily: 'system-ui, Avenir, Helvetica, Arial, sans-serif',
+                boxShadow: '0 2px 16px rgba(0,0,0,0.10)',
+                cursor: 'pointer',
+                transition: 'background 0.2s',
+                outline: 'none',
+                backdropFilter: 'blur(6px)',
+                WebkitBackdropFilter: 'blur(6px)',
+              }}
+              onClick={() => {/* TODO: handle submit */}}
+            >
+              Submit
+            </button>
           </div>
         )}
         {/* Hide these when add-plant overlay is open */}
@@ -191,7 +281,6 @@ const Overlay = () => {
                   fontWeight: 600,
                   cursor: 'pointer',
                   userSelect: 'none',
-                  overflow: 'hidden',
                   boxSizing: 'border-box',
                   flexShrink: 0,
                 }}
@@ -211,6 +300,13 @@ const Overlay = () => {
           input[placeholder="Search..."]::placeholder {
             color: #fff !important;
             opacity: 1;
+          }
+          html, body {
+            overflow: hidden !important;
+            width: 100vw !important;
+            height: 100vh !important;
+            margin: 0 !important;
+            padding: 0 !important;
           }
         `}</style>
       </div>

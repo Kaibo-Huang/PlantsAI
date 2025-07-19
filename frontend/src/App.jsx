@@ -15,7 +15,7 @@ function App() {
 
   return (
     <>
-      <div style={{ minHeight: '100vh', width: '100vw', position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden' }}>
+      <div style={{ minHeight: '100vh', width: '100vw', position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
         {/* Background image */}
         <div style={{
           position: 'absolute',
@@ -93,7 +93,6 @@ function App() {
                 borderBottom: '2.5px solid rgba(255,255,255,0.25)',
                 transition: 'border 0.2s',
                 boxSizing: 'border-box',
-                animation: 'pulse 0.6s infinite',
               }}
             />
             <input
@@ -118,7 +117,6 @@ function App() {
                 borderBottom: '2.5px solid rgba(255,255,255,0.25)',
                 transition: 'border 0.2s',
                 boxSizing: 'border-box',
-                animation: 'pulse 0.6s infinite',
               }}
             />
             <button type="submit" style={{

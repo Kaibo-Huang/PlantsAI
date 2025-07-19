@@ -72,7 +72,6 @@ else:
 
 @app.route('/home', methods=['GET'])
 def home():
-
     data = {"message": "Welcome to the Flask API!"}
     return jsonify(data)
 
@@ -97,10 +96,43 @@ def plantnet():
         file_path = os.path.join('uploads', file.filename)
         file.save(file_path)
         file_paths.append(file_path)
-
+        
     plant_data = get_plantnet_data(file_paths)
 
     return jsonify(plant_data)
+
+@app.route('/admin/add', methods=['POST'])
+def add_pin():
+    lat = request.form.get('lat')
+    lon = request.form.get('lng')
+    alert = request.form.get('alertForCare')
+    favorite = request.form.get('favoriteOnMap')
+    file = request.files.get('file')
+    file_name = None
+    if file:
+        UPLOAD_FOLDER = 'uploads'
+        if not os.path.exists(UPLOAD_FOLDER):
+            os.makedirs(UPLOAD_FOLDER)
+        file_path = os.path.join(UPLOAD_FOLDER, file.filename)
+        file.save(file_path)
+        file_name = file.filename
+
+    data = {
+        "type": "Feature",
+        "geometry": {
+            "type": "Point",
+            "coordinates": [float(lat), float(lon)]
+        },
+        "properties": {
+        "alert": alert,
+        "favorite": favorite,
+        "fileName": file_name,
+        "weather": get_weather_data(lat, lon),
+        "plant": get_plantnet_data([file_path]) if file_name else None
+        }
+    }
+    detections.insert_one(data)
+    return jsonify({"message": "Detection added successfully"}), 201
 
 @app.route("/admin/view")
 def view_all():

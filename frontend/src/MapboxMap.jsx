@@ -131,6 +131,23 @@ function MapboxMap() {
       setShowDeletePopup(true);
     });
     markersRef.current.push(marker);
+    // Send pin location to backend
+    const formData = new FormData();
+    formData.append("lat", pendingPin.lat);
+    formData.append("lng", pendingPin.lng);
+    formData.append("alertForCare", alertForCare);
+    formData.append("favoriteOnMap", favoriteOnMap);
+    if (uploadedFile) {
+      formData.append("file", uploadedFile);
+    }
+    fetch("http://localhost:8000/admin/add", {
+      method: "POST",
+      body: formData,
+    })
+      .then((res) => res.json())
+      .then((data) => console.log(data))
+      .catch((err) => console.error(err));
+
     setShowPopupAndRef(false);
     setPendingPin(null);
   };
@@ -215,14 +232,14 @@ function MapboxMap() {
             <h3
               style={{
                 margin: 0,
-                fontSize: 22,
+                fontSize: 32,
                 color: "#fff",
-                fontWeight: 700,
+                fontWeight: 800,
                 letterSpacing: 0.5,
                 fontFamily: "system-ui, Avenir, Helvetica, Arial, sans-serif",
               }}
             >
-              Add Pin
+              Log Plant
             </h3>
             <button
               onClick={handleCancel}
@@ -253,10 +270,11 @@ function MapboxMap() {
           <div
             style={{
               marginBottom: 8,
-              fontSize: 16,
+              fontSize: 19,
               color: "#fff",
-              fontWeight: 500,
+              fontWeight: 600,
               letterSpacing: 0.2,
+              fontFamily: "system-ui, Avenir, Helvetica, Arial, sans-serif",
             }}
           >
             <span>
@@ -272,6 +290,7 @@ function MapboxMap() {
               minHeight: 80,
               border: "2px solid #fff",
               borderRadius: 24,
+              border: "2px solid #fff",
               background: isDragActive
                 ? "rgba(76,175,80,0.18)"
                 : "rgba(76,175,80,0.10)",
