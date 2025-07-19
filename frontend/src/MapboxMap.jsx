@@ -193,6 +193,45 @@ const MapboxMap = forwardRef((props, ref) => {
         el.style.alignItems = 'center';
         el.style.justifyContent = 'center';
 
+        el.addEventListener('click', (event) => {
+          event.stopPropagation();
+          setDeletePin({ marker, lng: lon, lat: lat });
+          setShowDeletePopup(true);
+          setTimeout(() => {
+            let inner = el.querySelector('.pending-marker');
+            if (!inner) inner = el.querySelector('div');
+            if (inner && !inner.classList.contains('pending-marker')) inner.classList.add('pending-marker');
+            if (!el._dirtInterval) {
+              function emitDirt() {
+                const dirtContainer = document.createElement('div');
+                dirtContainer.className = 'dirt-container';
+                for (let i = 0; i < 10; i++) {
+                  const dirt = document.createElement('div');
+                  dirt.className = 'dirt-pixel';
+                  const angle = Math.random() * Math.PI - Math.PI / 2;
+                  const dist = 18 + Math.random() * 18;
+                  const x = Math.cos(angle) * dist;
+                  const y = -Math.abs(Math.sin(angle) * dist) - 8;
+                  const delay = Math.random() * 0.18;
+                  dirt.style.setProperty('--dirt-x', `${x}px`);
+                  dirt.style.setProperty('--dirt-y', `${y}px`);
+                  dirt.style.animationDelay = `${delay}s`;
+                  dirtContainer.appendChild(dirt);
+                }
+                el.appendChild(dirtContainer);
+                setTimeout(() => {
+                  if (dirtContainer && dirtContainer.parentNode) {
+                    dirtContainer.parentNode.removeChild(dirtContainer);
+                  }
+                }, 700);
+              }
+              emitDirt();
+              el._dirtInterval = setInterval(emitDirt, 700);
+            }
+            lastSelectedMarkerRef.current = el;
+          }, 0);
+        });
+
         const marker = new mapboxgl.Marker({ element: el })
           .setLngLat([lon, lat])
           .addTo(mapRef.current);
