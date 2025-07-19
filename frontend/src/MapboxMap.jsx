@@ -112,6 +112,15 @@ function MapboxMap() {
       },
     });
 
+    let geolocateControl = new mapboxgl.GeolocateControl({
+      positionOptions: {
+        enableHighAccuracy: true
+      },
+      trackUserLocation: true,
+      showUserHeading: true
+    });
+    map.addControl(geolocateControl);
+
     map.on('load', () => {
       map.addLayer({
         id: 'terrain-data',
@@ -122,17 +131,9 @@ function MapboxMap() {
         },
         'source-layer': 'contour',
       });
+      // Automatically trigger geolocation on load
+      geolocateControl.trigger();
     });
-
-    map.addControl(
-      new mapboxgl.GeolocateControl({
-        positionOptions: {
-          enableHighAccuracy: true
-        },
-        trackUserLocation: true,
-        showUserHeading: true
-      })
-    );
 
     map.on('click', handleMapClick);
     mapRef.current = map;
