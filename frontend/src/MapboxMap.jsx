@@ -7,6 +7,7 @@ import Switch from '@mui/material/Switch';
 import FormControlLabel from '@mui/material/FormControlLabel';
 import { MdOutlineFileUpload } from "react-icons/md";
 import { MdClose } from "react-icons/md";
+import { MdLocationOn, MdOpacity, MdScience, MdDeviceThermostat, MdWarning } from "react-icons/md";
 
 // Realistic potted plant SVG icon for marker (shaft is now orange, base is separate for animation)
 const plantSVG = `<svg width="56" height="56" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -313,6 +314,60 @@ function MapboxMap() {
     // eslint-disable-next-line
   }, [showDeletePopup]);
 
+  // Utility: get color based on percent (0-1)
+  function getStatusColor(percent) {
+    if (percent > 0.6) return "#4caf50"; // green
+    if (percent > 0.3) return "#ffb300"; // yellow
+    return "#e53935"; // red
+  }
+
+  // CircularIndicator: icon in center, progress ring around
+  function CircularIndicator({ percent, icon, size = 32 }) {
+    const strokeWidth = 4;
+    const radius = (size - strokeWidth) / 2;
+    const circumference = 2 * Math.PI * radius;
+    const progress = Math.max(0, Math.min(1, percent));
+    const strokeColor = getStatusColor(progress);
+
+    return (
+      <span style={{ position: "relative", width: size, height: size, display: "inline-block" }}>
+        <svg width={size} height={size} style={{ position: "absolute", top: 0, left: 0 }}>
+          <circle
+            cx={size / 2}
+            cy={size / 2}
+            r={radius}
+            fill="none"
+            stroke="#e0e0e0"
+            strokeWidth={strokeWidth}
+          />
+          <circle
+            cx={size / 2}
+            cy={size / 2}
+            r={radius}
+            fill="none"
+            stroke={strokeColor}
+            strokeWidth={strokeWidth}
+            strokeDasharray={circumference}
+            strokeDashoffset={circumference * (1 - progress)}
+            strokeLinecap="round"
+            style={{ transition: "stroke 0.3s, stroke-dashoffset 0.3s" }}
+          />
+        </svg>
+        <span style={{
+          position: "absolute",
+          top: "50%",
+          left: "50%",
+          transform: "translate(-50%,-50%)",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center"
+        }}>
+          {icon}
+        </span>
+      </span>
+    );
+  }
+
   return (
     <div style={{ position: 'relative', height: '100vh', width: '100vw' }}>
       <div id="map" className="map" style={{ height: '100vh', width: '100vw' }} />
@@ -555,7 +610,7 @@ function MapboxMap() {
           color: '#fff',
         }}>
           <div style={{display: 'flex', width: '100%', justifyContent: 'space-between', alignItems: 'center'}}>
-            <h3 style={{margin: 0, fontSize: 22, color: '#fff', fontWeight: 700, letterSpacing: 0.5}}>Delete Pin</h3>
+            <h3 style={{margin: 0, fontSize: 22, color: '#fff', fontWeight: 700, letterSpacing: 0.5}}>INSERT PLANT NAME</h3>
             <button onClick={() => { setShowDeletePopup(false); setDeletePin(null); }} style={{ 
               background: 'rgba(255,255,255,0.15)',
               border: '2px solid rgba(255,255,255,0.4)',
@@ -576,9 +631,120 @@ function MapboxMap() {
               transition: 'background 0.2s',
             }} title="Close">×</button>
           </div>
-          <div style={{ marginBottom: 8, fontSize: 16, color: '#fff', fontWeight: 500, letterSpacing: 0.2 }}>
-            <span>Lat: {deletePin?.lat?.toFixed(4)}, Lng: {deletePin?.lng?.toFixed(4)}</span>
+          {/* --- Added Plant Status Indicators --- */}
+          <div style={{
+            width: '100%',
+            display: 'flex',
+            flexDirection: 'column',
+            gap: 10,
+            margin: '8px 0 0 0'
+          }}>
+            {/* Location Indicator */}
+            <div style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: 10,
+              background: 'rgba(255,255,255,0.10)',
+              borderRadius: 12,
+              padding: '8px 12px',
+              fontWeight: 600,
+              fontSize: 15,
+              color: '#fff'
+            }}>
+              {/* Icon */}
+              <MdLocationOn size={20} color="#2196f3" style={{ flexShrink: 0 }} />
+              <span style={{
+                width: 10, height: 10, borderRadius: '50%', background: '#2196f3', display: 'inline-block'
+              }} />
+              <span>
+                Lat: <span style={{fontWeight: 700}}>{deletePin?.lat?.toFixed(4)}</span>, Lng: <span style={{fontWeight: 700}}>{deletePin?.lng?.toFixed(4)}</span>
+              </span>
+            </div>
+            {/* Next Water Timer */}
+            <div style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: 10,
+              background: 'rgba(255,255,255,0.10)',
+              borderRadius: 12,
+              padding: '8px 12px',
+              fontWeight: 600,
+              fontSize: 15,
+              color: '#fff'
+            }}>
+              <CircularIndicator
+                percent={0.7} // Example: 70% time left until next water
+                icon={<MdOpacity size={18} color={getStatusColor(0.7)} />}
+              />
+              <span>
+                <span style={{ color: "#fff" }}>Next watering in</span> <span style={{fontWeight: 700, color: getStatusColor(0.7)}}>DATE</span>
+              </span>
+            </div>
+            {/* pH Indicator */}
+            <div style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: 10,
+              background: 'rgba(255,255,255,0.10)',
+              borderRadius: 12,
+              padding: '8px 12px',
+              fontWeight: 600,
+              fontSize: 15,
+              color: '#fff'
+            }}>
+              <CircularIndicator
+                percent={0.5} // Example: 50% (mid pH range)
+                icon={<MdScience size={18} color={getStatusColor(0.5)} />}
+              />
+              <span>
+                <span style={{ color: "#fff" }}>Soil pH:</span> <span style={{fontWeight: 700, color: getStatusColor(0.5)}}>INSERT SOIL PH</span>
+                <span style={{color: getStatusColor(0.5), fontWeight: 700, marginLeft: 4}}>{0.5 > 0.3 ? 'Good' : 'Bad'}</span>
+              </span>
+            </div>
+            {/* Temperature Indicator */}
+            <div style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: 10,
+              background: 'rgba(255,255,255,0.10)',
+              borderRadius: 12,
+              padding: '8px 12px',
+              fontWeight: 600,
+              fontSize: 15,
+              color: '#fff'
+            }}>
+              <CircularIndicator
+                percent={0.2} // Example: 20% (too cold/hot)
+                icon={<MdDeviceThermostat size={18} color={getStatusColor(0.2)} />}
+              />
+              <span>
+                <span style={{ color: "#fff" }}>Temperature:</span> <span style={{fontWeight: 700, color: getStatusColor(0.2)}}>TEMPERATURE°C</span>
+                <span style={{color: getStatusColor(0.2), fontWeight: 700, marginLeft: 4}}>{0.2 > 0.3 ? 'Good' : 'Too Low'}</span>
+              </span>
+            </div>
+            {/* Endangered/Invasive Indicator */}
+            <div style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: 10,
+              background: 'rgba(255,255,255,0.10)',
+              borderRadius: 12,
+              padding: '8px 12px',
+              fontWeight: 600,
+              fontSize: 15,
+              color: '#fff'
+            }}>
+              <MdWarning size={20} color="#e53935" style={{ flexShrink: 0 }} />
+              <span style={{
+                width: 10, height: 10, borderRadius: '50%', background: '#e53935', display: 'inline-block'
+              }} />
+              <span>
+                <span style={{fontWeight: 700, color: '#e53935'}}>Endangered</span>
+                {/* or: <span style={{fontWeight: 700, color: '#ffb300'}}>Invasive</span> */}
+              </span>
+            </div>
           </div>
+          {/* --- End Plant Status Indicators --- */}
           <button onClick={handleDelete} style={{ 
             padding: '14px 0',
             width: '100%',
