@@ -96,40 +96,11 @@ def plantnet():
         file_path = os.path.join('uploads', file.filename)
         file.save(file_path)
         file_paths.append(file_path)
-
+        
     plant_data = get_plantnet_data(file_paths)
 
     return jsonify(plant_data)
 
-# @app.route('/admin/add', methods=['POST'])
-# def add_pin():
-#     data = request.json
-#     if not data:
-#         print("No data provided for insertion.")
-#         return jsonify({"error": "No data provided"}), 400
-#     try:
-#         lat = data['lat']
-#         lon = data['lng']
-#         data = {
-#             "type": "Feature",
-#             "geometry": {
-#                 "type": "Point",
-#                 "coordinates": [lat, lon]
-#             },
-#             "properties": {
-#                 "alert": data['alertForCare'],
-#                 "favorite": data['favoriteOnMap'],
-#                 # 'fileName': data['fileName'],
-#                 "weather": jsonify(get_weather_data(lat, lon)),
-#                 "plant": jsonify(get_plantnet_data([data['fileName']])),
-#             }
-#         }
-#         detections.insert_one(data)
-#         print("Data inserted successfully:", data)
-#         return jsonify({"message": "Detection added successfully"}), 201
-#     except Exception as e:
-#         print("Error inserting data:", e)
-#         return jsonify({"error": str(e)}), 500
 @app.route('/admin/add', methods=['POST'])
 def add_pin():
     lat = request.form.get('lat')
