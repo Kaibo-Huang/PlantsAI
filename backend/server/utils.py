@@ -31,7 +31,7 @@ def get_plantnet_data(file_paths):
 """get weather data"""
 def get_weather_data(lat, lon):
     weather_key = os.getenv("WEATHER_API_KEY")  # Your OpenWeatherMap API key here
-    api_endpoint = f"https://api.openweathermap.org/data/2.5/weather?lat={lat}&lon={lon}&appid={weather_key}"
+    api_endpoint = f"https://api.openweathermap.org/data/2.5/weather?lat={lat}&lon={lon}&appid={weather_key}&units=metric"
     return requests.get(api_endpoint).json()
 
 def add_plant_data(plant_data):
