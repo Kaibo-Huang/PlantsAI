@@ -47,8 +47,8 @@ def cluster_pins_grid(cell_size_meters=500):
         {
             "$group": {
                 "_id": {
-                    "lat": { "$trunc": [{ "$arrayElemAt": ["$geometry.coordinates", 0] }, cell_size_meters / 111320] },
-                    "lon": { "$trunc": [{ "$arrayElemAt": ["$geometry.coordinates", 1] }, cell_size_meters / 111320] }
+                    "lat": { "$trunc": [{ "$arrayElemAt": ["$geometry.coordinates", 0] }, int(cell_size_meters / 111320)] },
+                    "lon": { "$trunc": [{ "$arrayElemAt": ["$geometry.coordinates", 1] }, int(cell_size_meters / 111320)] }
                 },
                 "count": { "$sum": 1 },
                 "pins": { "$push": "$$ROOT" }
