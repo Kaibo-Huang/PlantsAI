@@ -1,5 +1,6 @@
 import { useRef, useEffect, useState } from 'react';
 import mapboxgl from 'mapbox-gl';
+import Overlay from './Overlay';
 import 'mapbox-gl/dist/mapbox-gl.css';
 
 mapboxgl.accessToken = 'pk.eyJ1Ijoia2FpYm9odWFuZyIsImEiOiJjbWQ5ZjBsY3IwNzQ1MnBxMTcwbTU5djNqIn0.EAoOvgDb4m_eShy5rxM72g';
@@ -117,6 +118,7 @@ function MapboxMap() {
   return (
     <div style={{ position: 'relative', height: '100%' }}>
       <div id="map" className="map" style={{ height: '100%' }} />
+      <Overlay />
       {showPopup && (
         <div style={{
           position: 'absolute',
