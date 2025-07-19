@@ -6,11 +6,22 @@ mapboxgl.accessToken = 'pk.eyJ1Ijoia2FpYm9odWFuZyIsImEiOiJjbWQ5ZjBsY3IwNzQ1MnBxM
 
 function MapboxMap() {
   const mapRef = useRef(null);
-  const markersRef = useRef([]); // Store marker instances
-  const [pendingPin, setPendingPin] = useState(null); // {lng, lat} or null
+  const markersRef = useRef([]);
+  const [pendingPin, setPendingPin] = useState(null);
   const [showPopup, setShowPopup] = useState(false);
-  const [deletePin, setDeletePin] = useState(null); // {marker, lng, lat} or null
+  const showPopupRef = useRef(false);
+  const [deletePin, setDeletePin] = useState(null);
   const [showDeletePopup, setShowDeletePopup] = useState(false);
+
+  const handleMapClick = (e) => {
+    if (showPopup) return;
+    const { lng, lat } = e.lngLat;
+    const tempMarker = new mapboxgl.Marker({ color: '#888' })
+      .setLngLat([lng, lat])
+      .addTo(mapRef.current);
+    setPendingPin({ lng, lat, marker: tempMarker });
+    setShowPopup(true);
+  };
 
   useEffect(() => {
     const map = new mapboxgl.Map({
@@ -45,28 +56,32 @@ function MapboxMap() {
       })
     );
 
-    // On map click, add a pin and show popup. Remove pin if popup is closed, keep if submitted.
-    map.on('click', (e) => {
-      const { lng, lat } = e.lngLat;
-      // Place a temporary marker
-      const tempMarker = new mapboxgl.Marker({ color: '#888' })
-        .setLngLat([lng, lat])
-        .addTo(map);
-      setPendingPin({ lng, lat, marker: tempMarker });
-      setShowPopup(true);
-    });
-
+    map.on('click', handleMapClick);
     mapRef.current = map;
 
     return () => {
       markersRef.current.forEach(marker => marker.remove());
       markersRef.current = [];
+      map.off('click', handleMapClick);
       map.remove();
     };
   }, []);
 
-  // Handler for submit button in popup
-  // Handler for submit button in popup
+  useEffect(() => {
+    const map = mapRef.current;
+    if (!map) return;
+    map.off('click', handleMapClick);
+    map.on('click', handleMapClick);
+    return () => {
+      if (map) map.off('click', handleMapClick);
+    };
+  }, [showPopup]);
+
+  const setShowPopupAndRef = (val) => {
+    showPopupRef.current = val;
+    setShowPopup(val);
+  };
+
   const handleSubmit = () => {
     if (!pendingPin || !mapRef.current) return;
     const marker = pendingPin.marker;
@@ -77,7 +92,7 @@ function MapboxMap() {
       setShowDeletePopup(true);
     });
     markersRef.current.push(marker);
-    setShowPopup(false);
+    setShowPopupAndRef(false);
     setPendingPin(null);
   };
 
@@ -86,7 +101,7 @@ function MapboxMap() {
     if (pendingPin && pendingPin.marker) {
       pendingPin.marker.remove();
     }
-    setShowPopup(false);
+    setShowPopupAndRef(false);
     setPendingPin(null);
   };
 
