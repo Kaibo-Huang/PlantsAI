@@ -7,7 +7,7 @@ import { MdOutlineFileUpload } from "react-icons/md";
 import { MdClose } from "react-icons/md";
 import { getUserLocation } from './getUserLocation';
 
-const Overlay = () => {
+const Overlay = ({ onSearchResultClick }) => {
   const [search, setSearch] = useState('');
   const [searchResults, setSearchResults] = useState([]);
   const [showAddPlantOverlay, setShowAddPlantOverlay] = useState(false);
@@ -390,7 +390,7 @@ const Overlay = () => {
                               WebkitBackdropFilter: 'blur(12px)',
                               transition: 'background 0.2s, box-shadow 0.2s',
                             }}
-                            onClick={() => flyToLocation(coords[0], coords[1])}
+                            onClick={() => onSearchResultClick(coords[0], coords[1])}
                           >
                             Location: {coords[0]?.toFixed(4)},{coords[1]?.toFixed(4)}
                           </button>
