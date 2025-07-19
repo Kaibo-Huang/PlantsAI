@@ -2,13 +2,16 @@ from pprint import pprint
 import json
 import requests
 import os
+from dotenv import load_dotenv
+load_dotenv()  # take environment variables
+
 
 """get plant
 format file paths in a list"""
 def get_plantnet_data(file_paths):
-    API_KEY = "2b10M5jqnwJnY2rs6uC5JhaeNu"   # Your API key here
+    plantnet_key = os.getenv("PLANTNET_API_KEY")   # Your API key here
     PROJECT = "all"; # You can choose a more specific flora, see: /docs/newfloras
-    api_endpoint = f"https://my-api.plantnet.org/v2/identify/{PROJECT}?api-key={API_KEY}"
+    api_endpoint = f"https://my-api.plantnet.org/v2/identify/{PROJECT}?api-key={plantnet_key}"
 
     data = { 'organs': ['leaf'] }
 
@@ -27,8 +30,8 @@ def get_plantnet_data(file_paths):
 
 """get weather data"""
 def get_weather_data(lat, lon):
-    API_KEY = "e46fc6f4eef3b372a2f29fbfc7d44513"
-    api_endpoint = f"https://api.openweathermap.org/data/2.5/weather?lat={lat}&lon={lon}&appid={API_KEY}"
+    weather_key = os.getenv("WEATHER_API_KEY")  # Your OpenWeatherMap API key here
+    api_endpoint = f"https://api.openweathermap.org/data/2.5/weather?lat={lat}&lon={lon}&appid={weather_key}"
     return requests.get(api_endpoint).json()
 
 if __name__ == "__main__":
