@@ -57,7 +57,7 @@ const Overlay = () => {
           top: 0,
           left: 0,
           zIndex: 30,
-          // pointerEvents: "none",
+          pointerEvents: "none",
           width: "100vw",
           height: "100vh",
         }}
@@ -69,6 +69,7 @@ const Overlay = () => {
               top: 70,
               left: 24,
               width: 420,
+              pointerEvents: "auto",
               background: "rgba(255,255,255,0.15)",
               border: "2px solid rgba(255,255,255,0.4)",
               borderRadius: 32,
