@@ -29,13 +29,13 @@ const Overlay = () => {
           onChange={e => setSearch(e.target.value)}
           style={{
             width: 420,
-            padding: '18px 32px 18px 48px',
+            padding: '12px 32px 12px 48px',
             borderRadius: 32,
             border: '2px solid #fff',
-            fontSize: 22,
+            fontSize: 16,
             fontWeight: 600,
             outline: 'none',
-            background: 'rgba(255,255,255,0.35)',
+            background: 'rgba(138, 182, 143, 0.35)',
             color: '#fff',
             boxShadow: '0 2px 16px rgba(0,0,0,0.10)',
             backdropFilter: 'blur(8px)',
