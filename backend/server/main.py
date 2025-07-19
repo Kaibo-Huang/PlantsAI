@@ -29,7 +29,7 @@ prompt = (
     ") and the species of the plant: " + plant +
     ", provide a 50 word blurb of tips in taking care of the plant with technical gardening details. "
     "Also, output a JSON object with the following fields: "
-    "soil_pH (number), time_between_waterings (in days, number), optimal_light_level (string: e.g. 'full sun', 'partial shade', etc.). "
+    "soil_pH (number), time_between_waterings (in days, number), optimal_light_level (string: e.g. 'full sun', 'partial shade', etc.), endangered (boolean true or false, according to canadian sources), invasive (boolean true or false, according to canadian sources). "
     "Format the JSON as the last part of your response."
 )
 response = model.generate_content(prompt)
@@ -54,6 +54,8 @@ if match:
         print(f"Soil pH: {data.get('soil_pH', 'N/A')}")
         print(f"Watering Frequency: {data.get('time_between_waterings', 'N/A')} Days")
         print(f"Optimal Light Levels: {data.get('optimal_light_level', 'N/A')}")
+        print(f"Endangered: {data.get('endangered', 'N/A')}")
+        print(f"Invasive: {data.get('invasive', 'N/A')}")
         print("\n" + blurb)
     except json.JSONDecodeError:
         print("Could not decode JSON from Gemini response.")
