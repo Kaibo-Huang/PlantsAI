@@ -1,4 +1,4 @@
-import { useRef, useEffect, useState } from 'react';
+import React, { useRef, useEffect, useState, forwardRef, useImperativeHandle } from 'react';
 import mapboxgl from 'mapbox-gl';
 import Overlay from './Overlay';
 import 'mapbox-gl/dist/mapbox-gl.css';
@@ -22,7 +22,7 @@ const plantSVG = `<svg width="56" height="56" viewBox="0 0 40 40" fill="none" xm
 
 mapboxgl.accessToken = 'pk.eyJ1Ijoia2FpYm9odWFuZyIsImEiOiJjbWQ5ZjBsY3IwNzQ1MnBxMTcwbTU5djNqIn0.EAoOvgDb4m_eShy5rxM72g';
 
-function MapboxMap() {
+const MapboxMap = forwardRef((props, ref) => {
   const mapRef = useRef(null);
   const markersRef = useRef([]);
   const [pendingPin, setPendingPin] = useState(null);
@@ -371,6 +371,14 @@ function MapboxMap() {
       </span>
     );
   }
+
+  useImperativeHandle(ref, () => ({
+    flyToLocation: (lat, lng) => {
+      if (mapRef.current) {
+        mapRef.current.flyTo({ center: [lng, lat], zoom: 16, essential: true });
+      }
+    }
+  }));
 
   return (
     <div style={{ position: 'relative', height: '100vh', width: '100vw' }}>
@@ -886,6 +894,6 @@ function MapboxMap() {
       `}</style>
     </div>
   );
-}
+});
 
 export default MapboxMap;
