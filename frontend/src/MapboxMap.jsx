@@ -153,7 +153,7 @@ function MapboxMap() {
           width: 340,
           background: '#fff',
           borderRadius: 16,
-          boxShadow: '0 2px 16px rgba(0,0,0,0.18)',
+          boxShadow: '0 2px 16px rgba(0, 0, 0, 0.18)',
           zIndex: 11,
           display: 'flex',
           flexDirection: 'column',
