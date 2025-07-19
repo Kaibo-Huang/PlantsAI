@@ -351,8 +351,8 @@ const Overlay = ({ onSearchResultClick }) => {
                 aria-label="Input text"
               />
             </div>
-            {/* Submit and Gemini buttons */}
-            <div style={{ display: 'flex', flexDirection: 'row', width: '100%', gap: 10 }}>
+            {/* Submit button */}
+            <div style={{ display: 'flex', flexDirection: 'row', width: '100%' }}>
               <button
                 type="button"
                 style={{
@@ -377,32 +377,6 @@ const Overlay = ({ onSearchResultClick }) => {
                 onClick={() => {/* TODO: handle submit */ }}
               >
                 Submit
-              </button>
-              <button
-                type="button"
-                style={{
-                  width: '100%',
-                  padding: '14px 0',
-                  marginTop: 8,
-                  borderRadius: 32,
-                  border: '2px solid rgba(255,255,255,0.4)',
-                  background: 'rgba(255,255,255,0.15)',
-                  color: '#fff',
-                  fontWeight: 700,
-                  fontSize: 18,
-                  letterSpacing: 0.2,
-                  fontFamily: 'system-ui, Avenir, Helvetica, Arial, sans-serif',
-                  boxShadow: '0 2px 16px rgba(0,0,0,0.10)',
-                  cursor: 'pointer',
-                  transition: 'background 0.2s',
-                  outline: 'none',
-                  backdropFilter: 'blur(6px)',
-                  WebkitBackdropFilter: 'blur(6px)',
-                  marginLeft: 10,
-                }}
-                onClick={handleGeminiLocation}
-              >
-                Gemini
               </button>
             </div>
           </div>
