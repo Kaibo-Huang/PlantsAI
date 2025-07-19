@@ -49,8 +49,18 @@ const Overlay = () => {
 
   return (
     <>
-      <div style={{ position: 'absolute', top: 0, left: 0, zIndex: 30, pointerEvents: 'none', width: '100vw', height: '100vh' }}>
-         {/* Large Add Plant Overlay */}
+      <div
+        style={{
+          position: "absolute",
+          top: 0,
+          left: 0,
+          zIndex: 30,
+          pointerEvents: "none",
+          width: "100vw",
+          height: "100vh",
+        }}
+      >
+        {/* Large Add Plant Overlay */}
         {showAddPlantOverlay && (
           <div
             style={{
