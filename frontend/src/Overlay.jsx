@@ -254,7 +254,6 @@ const Overlay = () => {
                   fontWeight: 600,
                   cursor: 'pointer',
                   userSelect: 'none',
-                  overflow: 'hidden',
                   boxSizing: 'border-box',
                   flexShrink: 0,
                 }}
@@ -274,6 +273,13 @@ const Overlay = () => {
           input[placeholder="Search..."]::placeholder {
             color: #fff !important;
             opacity: 1;
+          }
+          html, body {
+            overflow: hidden !important;
+            width: 100vw !important;
+            height: 100vh !important;
+            margin: 0 !important;
+            padding: 0 !important;
           }
         `}</style>
       </div>
