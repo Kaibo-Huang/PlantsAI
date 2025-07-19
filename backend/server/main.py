@@ -170,6 +170,30 @@ def add_pin():
     detections.insert_one(data)
     return jsonify({"message": "Detection added successfully"}), 201
 
+@app.route('/admin/search', methods=['GET', 'POST'])
+def search_plants():
+    query = request.args.get('q') if request.method == 'GET' else request.json.get('query')
+    if not query:
+        print("No query provided")
+        return jsonify([])
+
+    # Search for plants whose 'properties' fields match the query (case-insensitive)
+    results = list(db.detections.find(
+        {"properties.plant.bestMatch": {"$regex": query, "$options": "i"}},
+        {"_id": 0, "geometry.coordinates": 1}
+    ))
+    print(f"Search results for '{query}': {len(results)} found")
+    # Return just the first result's lat/lon as [x, y]
+    if results and "geometry" in results[0] and "coordinates" in results[0]["geometry"]:
+        coords = results[0]["geometry"]["coordinates"]
+        if len(coords) == 2:
+            x, y = coords
+            print(f"Search results: {x, y}")
+            return jsonify([x, y])
+    print("No results found or missing coordinates.")
+    return jsonify([])
+
+
 @app.route("/admin/view")
 def view_all():
     return jsonify(list(db.detections.find({}, {"_id": 0})))

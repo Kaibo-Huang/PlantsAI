@@ -9,6 +9,7 @@ import { getUserLocation } from './getUserLocation';
 
 const Overlay = () => {
   const [search, setSearch] = useState('');
+  const [searchResults, setSearchResults] = useState([]);
   const [showAddPlantOverlay, setShowAddPlantOverlay] = useState(false);
   const [uploadedFile, setUploadedFile] = useState(null);
   const [alertForCare, setAlertForCare] = useState(false);
@@ -16,6 +17,13 @@ const Overlay = () => {
   const [userLocation, setUserLocation] = useState(null);
   const [locationError, setLocationError] = useState(null);
   const [inputMode, setInputMode] = useState('file'); // 'file' or 'text'
+
+  const handleSearch = async (e) => {
+    e.preventDefault();
+    const res = await fetch(`http://localhost:8000/admin/search?q=${encodeURIComponent(search)}`);
+    const data = await res.json();
+    setSearchResults(data);
+  };
 
   useEffect(() => {
     if (showAddPlantOverlay) {
@@ -41,6 +49,62 @@ const Overlay = () => {
   return (
     <>
       <div style={{ position: 'absolute', top: 0, left: 0, zIndex: 30, pointerEvents: 'none', width: '100vw', height: '100vh' }}>
+         {searchResults.length > 0 && (
+          <div style={{ position: 'absolute', top: 70, left: 24, width: 420, background: '#fff', color: '#222', borderRadius: 16, zIndex: 100, padding: 16 }}>
+            <h4>Search Results:</h4>
+            <ul style={{ listStyle: 'none', padding: 0 }}>
+              {searchResults.length === 2 ? (
+                <li>
+                  <button
+                    style={{
+                      width: '100%',
+                      padding: '12px',
+                      margin: '6px 0',
+                      borderRadius: 12,
+                      border: '2px solid #4caf50',
+                      background: '#e8f5e9',
+                      color: '#222',
+                      fontWeight: 600,
+                      fontSize: 16,
+                      cursor: 'pointer',
+                      transition: 'background 0.2s'
+                    }}
+                    onClick={() => flyToLocation(searchResults[0], searchResults[1])}
+                  >
+                    Go to Lat: {searchResults[0]}, Lon: {searchResults[1]}
+                  </button>
+                </li>
+              ) : (
+                searchResults.map((result, idx) => (
+                  <li key={idx}>
+                    <button
+                      style={{
+                        width: '100%',
+                        padding: '12px',
+                        margin: '6px 0',
+                        borderRadius: 12,
+                        border: '2px solid #4caf50',
+                        background: '#e8f5e9',
+                        color: '#222',
+                        fontWeight: 600,
+                        fontSize: 16,
+                        cursor: 'pointer',
+                        transition: 'background 0.2s'
+                      }}
+                      onClick={() => flyToLocation(result.lat, result.lon)}
+                    >
+                      {result.properties?.plant?.results?.[0]?.species?.scientificName || result.properties?.plant?.bestMatch || 'No plant info'}
+                      <br />
+                      <span style={{ fontSize: 14, color: '#388e3c' }}>
+                        Lat: {result.lat}, Lon: {result.lon}
+                      </span>
+                    </button>
+                  </li>
+                ))
+              )}
+            </ul>
+          </div>
+        )}
         {/* Large Add Plant Overlay */}
         {showAddPlantOverlay && (
           <div
@@ -94,12 +158,12 @@ const Overlay = () => {
               }}
               title="Close"
             >×</button>
-            <h2 style={{ 
-              color: '#222', 
-              fontWeight: 700, 
-              fontSize: 37, 
-              margin: 0, 
-              marginBottom: 0, 
+            <h2 style={{
+              color: '#222',
+              fontWeight: 700,
+              fontSize: 37,
+              margin: 0,
+              marginBottom: 0,
               letterSpacing: 0.5,
               fontFamily: 'system-ui, Avenir, Helvetica, Arial, sans-serif',
             }}>Log a New Plant 🌱 </h2>
@@ -281,7 +345,7 @@ const Overlay = () => {
                 backdropFilter: 'blur(6px)',
                 WebkitBackdropFilter: 'blur(6px)',
               }}
-              onClick={() => {/* TODO: handle submit */}}
+              onClick={() => {/* TODO: handle submit */ }}
             >
               Submit
             </button>
