@@ -53,8 +53,12 @@ const MapboxMap = forwardRef((props, ref) => {
       setUploadedFile(imageFile);
     }
   };
-  // Only accept image files in dropzone
-  const { getRootProps, getInputProps, isDragActive } = useDropzone({ onDrop, accept: { 'image/*': [] } });
+  // Only accept image files in dropzone, only one file
+  const { getRootProps, getInputProps, isDragActive } = useDropzone({
+    onDrop,
+    accept: { 'image/*': [] },
+    multiple: false
+  });
 
   const handleMapClick = (e) => {
     if (showPopup) return;
@@ -515,7 +519,7 @@ const MapboxMap = forwardRef((props, ref) => {
             color: '#fff',
           }}>
           <div style={{ display: 'flex', width: '100%', justifyContent: 'space-between', alignItems: 'center' }}>
-            <h3 style={{ margin: 0, fontSize: 32, color: '#fff', fontWeight: 800, letterSpacing: 0.5, fontFamily: 'system-ui, Avenir, Helvetica, Arial, sans-serif' }}>Log Plant 🌱</h3>
+            <h3 style={{ margin: 0, fontSize: 32, color: '#fff', fontWeight: 800, letterSpacing: 0.5, fontFamily: 'system-ui, Avenir, Helvetica, Arial, sans-serif' }}>Add Plant</h3>
             <button onClick={handleCancel} style={{
               background: 'rgba(255,255,255,0.15)',
               border: '2px solid rgba(255,255,255,0.4)',
@@ -533,8 +537,10 @@ const MapboxMap = forwardRef((props, ref) => {
               boxShadow: '0 2px 16px rgba(0,0,0,0.10)',
               backdropFilter: 'blur(6px)',
               WebkitBackdropFilter: 'blur(6px)',
-              transition: 'background 0.2s',
-            }} title="Close">×</button>
+              transition: 'background 0.2s, transform 0.18s cubic-bezier(.4,1.3,.6,1), box-shadow 0.18s cubic-bezier(.4,1.3,.6,1)'
+            }}
+            className="exit-hover"
+            title="Close">×</button>
           </div>
           <div style={{ marginBottom: 8, fontSize: 19, color: '#fff', fontWeight: 600, letterSpacing: 0.2, fontFamily: 'system-ui, Avenir, Helvetica, Arial, sans-serif' }}>
             <span>Location: {pendingPin ? `${pendingPin.lat.toFixed(4)}, ${pendingPin.lng.toFixed(4)}` : ''}</span>
@@ -542,7 +548,8 @@ const MapboxMap = forwardRef((props, ref) => {
           {/* Drag-and-drop file upload area or text field */}
           <div style={{ position: 'relative', width: '100%', height: 'auto', minHeight: 0 }}>
             {inputMode === 'file' ? (
-              <div {...getRootProps()}
+              <div
+                {...getRootProps()}
                 style={{
                   width: '100%',
                   aspectRatio: '1 / 1',
@@ -550,6 +557,7 @@ const MapboxMap = forwardRef((props, ref) => {
                   border: '2px solid rgba(120,120,120,0.35)',
                   background: isDragActive ? 'rgba(80,80,80,0.32)' : 'rgba(80,80,80,0.22)',
                   display: 'flex',
+                  flexDirection: 'column',
                   alignItems: 'center',
                   justifyContent: 'center',
                   color: '#fff',
@@ -557,7 +565,7 @@ const MapboxMap = forwardRef((props, ref) => {
                   fontWeight: 600,
                   cursor: 'pointer',
                   margin: '12px 0',
-                  transition: 'background 0.2s, border 0.2s',
+                  transition: 'background 0.2s, border 0.2s, transform 0.18s cubic-bezier(.4,1.3,.6,1), box-shadow 0.18s cubic-bezier(.4,1.3,.6,1)',
                   outline: isDragActive ? '2.5px solid #4caf50' : 'none',
                   boxShadow: '0 2px 16px rgba(0,0,0,0.10)',
                   textAlign: 'center',
@@ -566,6 +574,7 @@ const MapboxMap = forwardRef((props, ref) => {
                   WebkitBackdropFilter: 'blur(8px)',
                   letterSpacing: 0.2,
                 }}
+                className="upload-hover"
               >
                 <input {...getInputProps()} />
                 {uploadedFile ? (
@@ -593,8 +602,10 @@ const MapboxMap = forwardRef((props, ref) => {
                         cursor: 'pointer',
                         display: 'flex',
                         alignItems: 'center',
-                        padding: 0
+                        padding: 0,
+                        transition: 'transform 0.18s cubic-bezier(.4,1.3,.6,1), box-shadow 0.18s cubic-bezier(.4,1.3,.6,1)'
                       }}
+                      className="exit-hover"
                       title="Remove file"
                     >
                       <MdClose size={22} color="#fff" />
@@ -603,9 +614,24 @@ const MapboxMap = forwardRef((props, ref) => {
                 ) : isDragActive ? (
                   <span style={{ color: '#4caf50', fontWeight: 700, fontSize: 16, letterSpacing: 0.2, fontFamily: 'system-ui, Avenir, Helvetica, Arial, sans-serif' }}>Drop the file here ...</span>
                 ) : (
-                  <span style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-                    <MdOutlineFileUpload size={28} color="#4caf50" />
-                    <span style={{ color: '#fff', fontWeight: 600, fontSize: 16, fontFamily: 'system-ui, Avenir, Helvetica, Arial, sans-serif', letterSpacing: 0.2 }}>
+                  // Even larger icon, small text below
+                  <span style={{
+                    display: 'flex',
+                    flexDirection: 'column',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    width: '100%',
+                  }}>
+                    <MdOutlineFileUpload size={130} color="#4caf50" style={{ marginBottom: 18 }} />
+                    <span style={{
+                      color: '#fff',
+                      fontWeight: 600,
+                      fontSize: 15,
+                      fontFamily: 'system-ui, Avenir, Helvetica, Arial, sans-serif',
+                      letterSpacing: 0.2,
+                      marginTop: 0,
+                      opacity: 0.92
+                    }}>
                       Upload plant image
                     </span>
                   </span>
@@ -687,22 +713,27 @@ const MapboxMap = forwardRef((props, ref) => {
               aria-label="Input text"
             />
           </div>
-          <button onClick={handleSubmit} style={{
-            padding: '14px 0',
-            width: '100%',
-            fontSize: 18,
-            background: 'rgba(255,255,255,0.15)',
-            color: '#fff',
-            border: '2px solid rgba(255,255,255,0.4)',
-            borderRadius: 32,
-            cursor: 'pointer',
-            marginTop: 8,
-            fontWeight: 700,
-            boxShadow: '0 2px 16px rgba(0,0,0,0.10)',
-            backdropFilter: 'blur(6px)',
-            WebkitBackdropFilter: 'blur(6px)',
-            letterSpacing: 0.2,
-          }}>Submit</button>
+          <button
+            onClick={handleSubmit}
+            style={{
+              padding: '14px 0',
+              width: '100%',
+              fontSize: 18,
+              background: 'rgba(255,255,255,0.15)',
+              color: '#fff',
+              border: '2px solid rgba(255,255,255,0.4)',
+              borderRadius: 32,
+              cursor: 'pointer',
+              marginTop: 8,
+              fontWeight: 700,
+              boxShadow: '0 2px 16px rgba(0,0,0,0.10)',
+              backdropFilter: 'blur(6px)',
+              WebkitBackdropFilter: 'blur(6px)',
+              letterSpacing: 0.2,
+              transition: 'background 0.2s, transform 0.18s cubic-bezier(.4,1.3,.6,1), box-shadow 0.18s cubic-bezier(.4,1.3,.6,1)'
+            }}
+            className="submit-hover"
+          >Submit</button>
         </div>
       )}
       {showDeletePopup && (
@@ -732,25 +763,29 @@ const MapboxMap = forwardRef((props, ref) => {
         }}>
           <div style={{ display: 'flex', width: '100%', justifyContent: 'space-between', alignItems: 'center' }}>
             <h3 style={{ margin: 0, fontSize: 22, color: '#fff', fontWeight: 700, letterSpacing: 0.5 }}>INSERT PLANT NAME</h3>
-            <button onClick={() => { setShowDeletePopup(false); setDeletePin(null); }} style={{
-              background: 'rgba(255,255,255,0.15)',
-              border: '2px solid rgba(255,255,255,0.4)',
-              borderRadius: '9999px',
-              width: 40,
-              height: 40,
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              fontSize: 22,
-              color: '#fff',
-              cursor: 'pointer',
-              lineHeight: 1,
-              fontWeight: 700,
-              boxShadow: '0 2px 16px rgba(0,0,0,0.10)',
-              backdropFilter: 'blur(6px)',
-              WebkitBackdropFilter: 'blur(6px)',
-              transition: 'background 0.2s',
-            }} title="Close">×</button>
+            <button
+              onClick={() => { setShowDeletePopup(false); setDeletePin(null); }}
+              style={{
+                background: 'rgba(255,255,255,0.15)',
+                border: '2px solid rgba(255,255,255,0.4)',
+                borderRadius: '9999px',
+                width: 40,
+                height: 40,
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                fontSize: 22,
+                color: '#fff',
+                cursor: 'pointer',
+                lineHeight: 1,
+                fontWeight: 700,
+                boxShadow: '0 2px 16px rgba(0,0,0,0.10)',
+                backdropFilter: 'blur(6px)',
+                WebkitBackdropFilter: 'blur(6px)',
+                transition: 'background 0.2s, transform 0.18s cubic-bezier(.4,1.3,.6,1), box-shadow 0.18s cubic-bezier(.4,1.3,.6,1)'
+              }}
+              className="exit-hover"
+              title="Close">×</button>
           </div>
           {/* --- Added Plant Status Indicators --- */}
           <div style={{
@@ -991,6 +1026,21 @@ const MapboxMap = forwardRef((props, ref) => {
         .indicator-hover:hover {
           transform: scale(1.045);
           box-shadow: 0 4px 18px 0 rgba(76,175,80,0.13), 0 2px 8px 0 rgba(255,255,255,0.13);
+        }
+        /* Upload hover effect */
+        .upload-hover:hover {
+          transform: scale(1.06);
+          box-shadow: 0 6px 24px 0 rgba(76,175,80,0.18), 0 2px 12px 0 rgba(255,255,255,0.16);
+        }
+        /* Submit button hover effect */
+        .submit-hover:hover {
+          transform: scale(1.07);
+          box-shadow: 0 6px 24px 0 rgba(76,175,80,0.18), 0 2px 12px 0 rgba(255,255,255,0.16);
+        }
+        /* Exit button hover effect */
+        .exit-hover:hover {
+          transform: scale(1.18);
+          box-shadow: 0 6px 24px 0 rgba(229,57,53,0.13), 0 2px 12px 0 rgba(255,255,255,0.16);
         }
         /* Removed searchbar hover/focus animation */
         /*
