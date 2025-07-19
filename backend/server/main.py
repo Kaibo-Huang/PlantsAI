@@ -1,4 +1,3 @@
-from flask import Flask, request, jsonify
 from flask import Flask, jsonify, Response, request
 from flask import Flask, jsonify, Response, request, session, redirect, url_for
 from flask_cors import CORS
@@ -39,9 +38,9 @@ def get_pins_near():
         }
     }
     res = list(db.detections.find(query, {"_id": 0}))
+
     print(res)
     return res
-
 @app.route('/pins/cluster', methods=['GET'])
 def cluster_pins_grid(cell_size_meters=500):
     pipeline = [
@@ -67,6 +66,7 @@ def get_pins_in_bbox(min_lat, min_lon, max_lat, max_lon):
     return list(db.detections.find(query, {"_id": 0}))
 
 @app.route('/admin/add', methods=['POST'])
+from flask import Flask, request, jsonify
 def add_pin():
     lat = request.form.get('lat')
     lon = request.form.get('lng')
