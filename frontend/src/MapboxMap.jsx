@@ -224,8 +224,18 @@ function MapboxMap() {
             <input {...getInputProps()} />
             {uploadedFile ? (
               <span style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                <span style={{ color: '#fff', fontWeight: 700, fontSize: 16, letterSpacing: 0.2, fontFamily: 'system-ui, Avenir, Helvetica, Arial, sans-serif' }}>
-                  Selected file: <b style={{ color: '#fff', fontWeight: 700 }}>{uploadedFile.name}</b>
+                <span style={{
+                  color: '#fff', // changed from #4caf50 to white
+                  fontWeight: 700,
+                  fontSize: 16,
+                  letterSpacing: 0.2,
+                  fontFamily: 'system-ui, Avenir, Helvetica, Arial, sans-serif',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 8
+                }}>
+                  <MdOutlineFileUpload size={22} color="#4caf50" />
+                  Photo uploaded
                 </span>
                 <button
                   type="button"
