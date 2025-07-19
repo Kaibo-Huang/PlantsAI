@@ -15,7 +15,7 @@ function App() {
 
   return (
     <>
-      <div style={{ minHeight: '100vh', width: '100vw', position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden' }}>
+      <div style={{ minHeight: '100vh', width: '100vw', position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
         {/* Background image */}
         <div style={{
           position: 'absolute',
