@@ -93,7 +93,6 @@ function App() {
                 borderBottom: '2.5px solid rgba(255,255,255,0.25)',
                 transition: 'border 0.2s',
                 boxSizing: 'border-box',
-                animation: 'pulse 0.6s infinite',
               }}
             />
             <input
@@ -118,7 +117,6 @@ function App() {
                 borderBottom: '2.5px solid rgba(255,255,255,0.25)',
                 transition: 'border 0.2s',
                 boxSizing: 'border-box',
-                animation: 'pulse 0.6s infinite',
               }}
             />
             <button type="submit" style={{
