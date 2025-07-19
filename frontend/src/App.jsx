@@ -15,17 +15,7 @@ function App() {
 
   return (
     <>
-      <div
-        style={{
-          minHeight: '100vh',
-          width: '100vw',
-          position: 'relative',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          overflow: 'hidden', // Prevent scrollbars
-        }}
-      >
+      <div style={{ minHeight: '100vh', width: '100vw', position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
         {/* Background image */}
         <div style={{
           position: 'absolute',
@@ -210,16 +200,6 @@ function App() {
         </div>
       </div>
       <style>{`
-        html, body, #root {
-          height: 100%;
-          width: 100%;
-          margin: 0;
-          padding: 0;
-          overflow: hidden !important;
-        }
-        body {
-          overscroll-behavior: none;
-        }
         @keyframes scroll-left-right {
           0% { transform: translateX(-100%); }
           100% { transform: translateX(100%); }

@@ -11,16 +11,7 @@ function Login({ onLogin, error }) {
   };
 
   return (
-    <div style={{
-      display: 'flex',
-      flexDirection: 'column',
-      alignItems: 'center',
-      justifyContent: 'center',
-      height: '100vh',
-      width: '100vw',
-      background: '#eaf6f0',
-      overflow: 'hidden' // Prevent scrolling
-    }}>
+    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '100vh', background: '#eaf6f0' }}>
       <form onSubmit={handleSubmit} style={{ background: '#fff', padding: 32, borderRadius: 16, boxShadow: '0 2px 16px rgba(0,0,0,0.10)', minWidth: 320 }}>
         <h2 style={{ marginBottom: 24, textAlign: 'center' }}>Login</h2>
         <div style={{ marginBottom: 16 }}>
@@ -48,4 +39,4 @@ function Login({ onLogin, error }) {
   );
 }
 
-export default Login;
+export default Login; 

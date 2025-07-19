@@ -97,7 +97,6 @@ function MapboxMap() {
       .setLngLat([lng, lat])
       .addTo(mapRef.current);
     setPendingPin({ lng, lat, marker: tempMarker });
-    setUploadedFile(null); // Reset uploaded file when starting a new pin
     setShowPopup(true);
   };
 
