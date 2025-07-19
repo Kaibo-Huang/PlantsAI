@@ -43,6 +43,8 @@ const Overlay = ({ onSearchResultClick }) => {
     }
   }, [showAddPlantOverlay]);
 
+
+
   const onDrop = (acceptedFiles) => {
     if (acceptedFiles && acceptedFiles.length > 0) {
       setUploadedFile(acceptedFiles[0]);

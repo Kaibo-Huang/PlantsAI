@@ -39,6 +39,7 @@ const MapboxMap = forwardRef((props, ref) => {
   const [textValue, setTextValue] = useState('');
   const [isEndangered, setIsEndangered] = useState(true); // Example: set dynamically
   const [isInvasive, setIsInvasive] = useState(true);     // Example: set dynamically
+  const [showQueryPanel, setShowQueryPanel] = useState(false);
 
   // No animation or swipe state
   // No swipe or animation handlers
@@ -173,6 +174,19 @@ const MapboxMap = forwardRef((props, ref) => {
       if (map) map.off('click', handleMapClick);
     };
   }, [showPopup]);
+
+  // Add keyboard event listener for Ctrl+K hotkey to toggle query panel
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      if ((e.ctrlKey || e.metaKey) && e.key === 'k') {
+        e.preventDefault();
+        setShowQueryPanel(prev => !prev);
+      }
+    };
+
+    document.addEventListener('keydown', handleKeyDown);
+    return () => document.removeEventListener('keydown', handleKeyDown);
+  }, []);
 
   useEffect(() => {
     if (!mapRef.current || !pins || !Array.isArray(pins)) return;
@@ -469,29 +483,57 @@ const MapboxMap = forwardRef((props, ref) => {
   return (
     <div style={{ position: 'relative', height: '100vh', width: '100vw' }}>
       <div id="map" className="map" style={{ height: '100vh', width: '100vw' }} />
-      <div style={{
-        position: 'fixed',
-        left: '50%',
-        bottom: 32,
-        transform: 'translateX(-50%)',
-        zIndex: 1000,
-        background: 'rgba(76,175,80,0.10)',
-        borderRadius: 32,
-        border: '2px solid #fff',
-        boxShadow: '0 2px 16px rgba(0,0,0,0.10)',
-        backdropFilter: 'blur(12px)',
-        WebkitBackdropFilter: 'blur(12px)',
-        color: '#fff',
-        padding: '24px 28px 20px 28px',
-        display: 'flex',
-        flexDirection: 'column',
-        alignItems: 'center',
-        gap: 12,
-        minWidth: 320,
-        maxWidth: 400,
-      }}>
-        <PinQueryCard />
-      </div>
+      {showQueryPanel && (
+        <div style={{
+          position: 'fixed',
+          left: '50%',
+          bottom: 32,
+          transform: 'translateX(-50%)',
+          zIndex: 1000,
+          background: 'rgba(76,175,80,0.10)',
+          borderRadius: 32,
+          border: '2px solid #fff',
+          boxShadow: '0 2px 16px rgba(0,0,0,0.10)',
+          backdropFilter: 'blur(12px)',
+          WebkitBackdropFilter: 'blur(12px)',
+          color: '#fff',
+          padding: '24px 28px 20px 28px',
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          gap: 12,
+          minWidth: 320,
+          maxWidth: 400,
+        }}>
+          <PinQueryCard />
+        </div>
+      )}
+      {/* Hotkey hint overlay - only show when query panel is hidden */}
+      {!showQueryPanel && (
+        <div style={{
+          position: 'fixed',
+          bottom: 16,
+          left: '50%',
+          transform: 'translateX(-50%)',
+          zIndex: 999,
+          background: 'rgba(76,175,80,0.10)',
+          borderRadius: 16,
+          padding: '10px 16px',
+          color: '#fff',
+          fontSize: 13,
+          fontWeight: 600,
+          fontFamily: 'system-ui, Avenir, Helvetica, Arial, sans-serif',
+          backdropFilter: 'blur(12px)',
+          WebkitBackdropFilter: 'blur(12px)',
+          border: '2px solid rgba(255,255,255,0.4)',
+          boxShadow: '0 2px 16px rgba(0,0,0,0.10)',
+          userSelect: 'none',
+          pointerEvents: 'none',
+          letterSpacing: 0.2,
+        }}>
+          Ctrl+K to toggle query panel
+        </div>
+      )}
       <Overlay />
       {showPopup && (
         <div
