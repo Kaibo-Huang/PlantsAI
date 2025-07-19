@@ -8,11 +8,16 @@ import requests
 import json
 import re
 from utils import get_weather_data, get_plantnet_data
+from pymongo import MongoClient
 
 app = Flask(__name__)
 cors = CORS(app, resources={r"/*": {"origins": "*"}})
 api_key = 'AIzaSyB3Ik2aYCuAIRRHFWIgrY6fBCxDG-RX054'
 genai.configure(api_key=api_key)
+
+client = MongoClient("mongodb+srv://stringbot:u2ZG9kM5q8L0WaNW@plantmap.ipx3g1d.mongodb.net/")
+db = client["plantmap"]
+detections = db["detections"]
 
 # pulls weather temperature, geographic location in coordinates, and species of plant
 latitude = 43.772915
@@ -96,6 +101,10 @@ def plantnet():
     plant_data = get_plantnet_data(file_paths)
 
     return jsonify(plant_data)
+
+@app.route("/admin/view")
+def view_all():
+    return jsonify(list(db.detections.find({}, {"_id": 0})))
 
 if __name__ == "__main__":
     app.run(debug=True, port=8000)
