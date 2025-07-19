@@ -30,10 +30,21 @@ def get_plantnet_data(file_paths):
     return json_result
 
 """get weather data"""
+
 def get_weather_data(lat, lon):
-    weather_key = os.getenv("WEATHER_API_KEY")  # Your OpenWeatherMap API key here
-    api_endpoint = f"https://api.openweathermap.org/data/2.5/weather?lat={lat}&lon={lon}&appid={weather_key}"
-    return requests.get(api_endpoint).json()
+    api_key = os.getenv("WEATHER_API_KEY")  # or hardcode for now
+    url = f"https://api.openweathermap.org/data/2.5/weather?lat={lat}&lon={lon}&appid={api_key}"
+    try:
+        response = requests.get(url, timeout=5)  # Set timeout!
+        response.raise_for_status()
+        return response.json()
+    except requests.exceptions.Timeout:
+        print("OpenWeatherMap request timed out.")
+        return {"error": "weather API timeout"}
+    except requests.exceptions.RequestException as e:
+        print("Weather API error:", e)
+        return {"error": str(e)}
+
 
 def add_plant_data(plant_data):
     client = MongoClient("mongodb+srv://stringbot:u2ZG9kM5q8L0WaNW@plantmap.ipx3g1d.mongodb.net/")
@@ -65,7 +76,11 @@ def add_plant_data(plant_data):
     # )
 
 def view_data():
-    return jsonify(list(db.detections.find({}, {"_id": 0})))
+    client = MongoClient("mongodb+srv://stringbot:u2ZG9kM5q8L0WaNW@plantmap.ipx3g1d.mongodb.net/")
+    db = client["plantmap"]
+    detections = db["detections"]
+    return list(detections.find({}, {"_id": 0}))
+
 
 if __name__ == "__main__":
     # file_paths = [r"C:\Users\yroeh\Documents\Github\plant-map\server\test_img.jpg"]
