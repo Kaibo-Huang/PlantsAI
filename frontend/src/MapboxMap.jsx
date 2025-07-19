@@ -125,24 +125,62 @@ function MapboxMap() {
           top: 32,
           right: 32,
           width: 340,
-          background: '#fff',
-          borderRadius: 16,
-          boxShadow: '0 2px 16px rgba(0,0,0,0.18)',
+          background: 'rgba(255,255,255,0.25)',
+          borderRadius: 32,
+          border: '2px solid #fff',
+          boxShadow: '0 2px 16px rgba(0,0,0,0.10)',
           zIndex: 10,
           display: 'flex',
           flexDirection: 'column',
           alignItems: 'flex-start',
           padding: '24px 28px 20px 28px',
           gap: 12,
+          backdropFilter: 'blur(12px)',
+          WebkitBackdropFilter: 'blur(12px)',
+          color: '#fff',
         }}>
           <div style={{display: 'flex', width: '100%', justifyContent: 'space-between', alignItems: 'center'}}>
-            <h3 style={{margin: 0, fontSize: 20}}>Add Pin</h3>
-            <button onClick={handleCancel} style={{ background: 'none', border: 'none', fontSize: 22, color: '#888', cursor: 'pointer', lineHeight: 1 }} title="Close">×</button>
+            <h3 style={{margin: 0, fontSize: 22, color: '#fff', fontWeight: 700, letterSpacing: 0.5}}>Add Pin</h3>
+            <button onClick={handleCancel} style={{ 
+              background: 'rgba(255,255,255,0.15)',
+              border: '2px solid rgba(255,255,255,0.4)',
+              borderRadius: '9999px',
+              width: 40,
+              height: 40,
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              fontSize: 22,
+              color: '#fff',
+              cursor: 'pointer',
+              lineHeight: 1,
+              fontWeight: 700,
+              boxShadow: '0 2px 16px rgba(0,0,0,0.10)',
+              backdropFilter: 'blur(6px)',
+              WebkitBackdropFilter: 'blur(6px)',
+              transition: 'background 0.2s',
+            }} title="Close">×</button>
           </div>
-          <div style={{ marginBottom: 8, fontSize: 15, color: '#444' }}>
+          <div style={{ marginBottom: 8, fontSize: 16, color: '#fff', fontWeight: 500, letterSpacing: 0.2 }}>
             <span>Lat: {pendingPin?.lat.toFixed(4)}, Lng: {pendingPin?.lng.toFixed(4)}</span>
           </div>
-          <button onClick={handleSubmit} style={{ padding: '10px 0', width: '100%', fontSize: 16, background: '#222', color: '#fff', border: 'none', borderRadius: 8, cursor: 'pointer', marginTop: 8 }}>Submit</button>
+          <button onClick={handleSubmit} style={{ 
+            padding: '14px 0',
+            width: '100%',
+            fontSize: 18,
+            background: 'rgba(255,255,255,0.15)',
+            color: '#fff',
+            border: '2px solid rgba(255,255,255,0.4)',
+            borderRadius: 32,
+            cursor: 'pointer',
+            marginTop: 8,
+            fontWeight: 700,
+            boxShadow: '0 2px 16px rgba(0,0,0,0.10)',
+            backdropFilter: 'blur(6px)',
+            WebkitBackdropFilter: 'blur(6px)',
+            letterSpacing: 0.2,
+            transition: 'background 0.2s',
+          }}>Submit</button>
         </div>
       )}
       {showDeletePopup && (
@@ -151,24 +189,62 @@ function MapboxMap() {
           top: 32,
           right: 32,
           width: 340,
-          background: '#fff',
-          borderRadius: 16,
-          boxShadow: '0 2px 16px rgba(0,0,0,0.18)',
+          background: 'rgba(255,255,255,0.25)',
+          borderRadius: 32,
+          border: '2px solid #fff',
+          boxShadow: '0 2px 16px rgba(0,0,0,0.10)',
           zIndex: 11,
           display: 'flex',
           flexDirection: 'column',
           alignItems: 'flex-start',
           padding: '24px 28px 20px 28px',
           gap: 12,
+          backdropFilter: 'blur(12px)',
+          WebkitBackdropFilter: 'blur(12px)',
+          color: '#fff',
         }}>
           <div style={{display: 'flex', width: '100%', justifyContent: 'space-between', alignItems: 'center'}}>
-            <h3 style={{margin: 0, fontSize: 20}}>Delete Pin</h3>
-            <button onClick={() => { setShowDeletePopup(false); setDeletePin(null); }} style={{ background: 'none', border: 'none', fontSize: 22, color: '#888', cursor: 'pointer', lineHeight: 1 }} title="Close">×</button>
+            <h3 style={{margin: 0, fontSize: 22, color: '#fff', fontWeight: 700, letterSpacing: 0.5}}>Delete Pin</h3>
+            <button onClick={() => { setShowDeletePopup(false); setDeletePin(null); }} style={{ 
+              background: 'rgba(255,255,255,0.15)',
+              border: '2px solid rgba(255,255,255,0.4)',
+              borderRadius: '9999px',
+              width: 40,
+              height: 40,
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              fontSize: 22,
+              color: '#fff',
+              cursor: 'pointer',
+              lineHeight: 1,
+              fontWeight: 700,
+              boxShadow: '0 2px 16px rgba(0,0,0,0.10)',
+              backdropFilter: 'blur(6px)',
+              WebkitBackdropFilter: 'blur(6px)',
+              transition: 'background 0.2s',
+            }} title="Close">×</button>
           </div>
-          <div style={{ marginBottom: 8, fontSize: 15, color: '#444' }}>
+          <div style={{ marginBottom: 8, fontSize: 16, color: '#fff', fontWeight: 500, letterSpacing: 0.2 }}>
             <span>Lat: {deletePin?.lat?.toFixed(4)}, Lng: {deletePin?.lng?.toFixed(4)}</span>
           </div>
-          <button onClick={handleDelete} style={{ padding: '10px 0', width: '100%', fontSize: 16, background: '#c00', color: '#fff', border: 'none', borderRadius: 8, cursor: 'pointer', marginTop: 8 }}>Delete</button>
+          <button onClick={handleDelete} style={{ 
+            padding: '14px 0',
+            width: '100%',
+            fontSize: 18,
+            background: 'rgba(255,0,0,0.25)',
+            color: '#fff',
+            border: '2px solid rgba(255,255,255,0.4)',
+            borderRadius: 32,
+            cursor: 'pointer',
+            marginTop: 8,
+            fontWeight: 700,
+            boxShadow: '0 2px 16px rgba(0,0,0,0.10)',
+            backdropFilter: 'blur(6px)',
+            WebkitBackdropFilter: 'blur(6px)',
+            letterSpacing: 0.2,
+            transition: 'background 0.2s',
+          }}>Delete</button>
         </div>
       )}
     </div>
