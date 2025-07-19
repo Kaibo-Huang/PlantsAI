@@ -5,6 +5,8 @@ import 'mapbox-gl/dist/mapbox-gl.css';
 import { useDropzone } from 'react-dropzone';
 import Switch from '@mui/material/Switch';
 import FormControlLabel from '@mui/material/FormControlLabel';
+import { MdOutlineFileUpload } from "react-icons/md";
+import { MdClose } from "react-icons/md";
 
 // Realistic potted plant SVG icon for marker
 const plantSVG = `<svg width="56" height="56" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -29,11 +31,14 @@ function MapboxMap() {
   const [alertForCare, setAlertForCare] = useState(false);
   const [favoriteOnMap, setFavoriteOnMap] = useState(false);
   const onDrop = (acceptedFiles) => {
-    if (acceptedFiles && acceptedFiles.length > 0) {
-      setUploadedFile(acceptedFiles[0]);
+    // Only accept image files
+    const imageFile = acceptedFiles.find(file => file.type.startsWith('image/'));
+    if (imageFile) {
+      setUploadedFile(imageFile);
     }
   };
-  const { getRootProps, getInputProps, isDragActive } = useDropzone({ onDrop });
+  // Only accept image files in dropzone
+  const { getRootProps, getInputProps, isDragActive } = useDropzone({ onDrop, accept: { 'image/*': [] } });
 
   const handleMapClick = (e) => {
     if (showPopup) return;
@@ -218,11 +223,36 @@ function MapboxMap() {
           >
             <input {...getInputProps()} />
             {uploadedFile ? (
-              <span style={{ color: '#fff', fontWeight: 700, fontSize: 16, letterSpacing: 0.2, fontFamily: 'system-ui, Avenir, Helvetica, Arial, sans-serif' }}>Selected file: <b style={{ color: '#fff', fontWeight: 700 }}>{uploadedFile.name}</b></span>
+              <span style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                <span style={{ color: '#fff', fontWeight: 700, fontSize: 16, letterSpacing: 0.2, fontFamily: 'system-ui, Avenir, Helvetica, Arial, sans-serif' }}>
+                  Selected file: <b style={{ color: '#fff', fontWeight: 700 }}>{uploadedFile.name}</b>
+                </span>
+                <button
+                  type="button"
+                  onClick={e => { e.stopPropagation(); setUploadedFile(null); }}
+                  style={{
+                    background: 'transparent',
+                    border: 'none',
+                    marginLeft: 6,
+                    cursor: 'pointer',
+                    display: 'flex',
+                    alignItems: 'center',
+                    padding: 0
+                  }}
+                  title="Remove file"
+                >
+                  <MdClose size={22} color="#fff" />
+                </button>
+              </span>
             ) : isDragActive ? (
               <span style={{ color: '#4caf50', fontWeight: 700, fontSize: 16, letterSpacing: 0.2, fontFamily: 'system-ui, Avenir, Helvetica, Arial, sans-serif' }}>Drop the file here ...</span>
             ) : (
-              <span style={{ color: '#fff', fontWeight: 600, fontSize: 16, letterSpacing: 0.2, fontFamily: 'system-ui, Avenir, Helvetica, Arial, sans-serif' }}>Drag & drop a file here, or <span style={{ color: '#4caf50', textDecoration: 'underline', fontWeight: 700 }}>click to upload</span></span>
+              <span style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                <MdOutlineFileUpload size={28} color="#4caf50" />
+                <span style={{ color: '#fff', fontWeight: 600, fontSize: 16, fontFamily: 'system-ui, Avenir, Helvetica, Arial, sans-serif', letterSpacing: 0.2 }}>
+                  Upload plant image
+                </span>
+              </span>
             )}
           </div>
           {/* Toggle switches */}
