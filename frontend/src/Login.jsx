@@ -6,6 +6,7 @@ function Login({ onLogin, error }) {
 
   const handleSubmit = (e) => {
     e.preventDefault();
+    // Always allow login, even if fields are empty
     onLogin(username, password);
   };
 
@@ -20,7 +21,6 @@ function Login({ onLogin, error }) {
             value={username}
             onChange={e => setUsername(e.target.value)}
             style={{ width: '100%', padding: '10px 12px', borderRadius: 8, border: '1px solid #ccc', fontSize: 16 }}
-            required
           />
         </div>
         <div style={{ marginBottom: 16 }}>
@@ -30,7 +30,6 @@ function Login({ onLogin, error }) {
             value={password}
             onChange={e => setPassword(e.target.value)}
             style={{ width: '100%', padding: '10px 12px', borderRadius: 8, border: '1px solid #ccc', fontSize: 16 }}
-            required
           />
         </div>
         {error && <div style={{ color: 'red', marginBottom: 12 }}>{error}</div>}
