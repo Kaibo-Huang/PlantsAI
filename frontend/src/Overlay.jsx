@@ -24,6 +24,7 @@ const Overlay = () => {
       `http://localhost:8000/admin/search?q=${encodeURIComponent(search)}`
     );
     const data = await res.json();
+    console.log('Search results:', data); // Debug: log the results
     setSearchResults(data);
     console.log("Search results:", data);
   };
@@ -529,6 +530,56 @@ const Overlay = () => {
                   }}
                   className="searchbar-white-placeholder"
                 />
+                {/* Search Results Dropdown */}
+                {searchResults.length > 0 && (
+                  <div style={{
+                    position: 'absolute',
+                    top: '100%', // flush with search bar
+                    left: 0,
+                    width: 420,
+                    background: 'rgba(76,175,80,0.10)',
+                    color: '#222',
+                    borderRadius: '0 0 24px 24px',
+                    zIndex: 200,
+                    padding: 16,
+                    border: '1.5px solid rgba(255,255,255,0.35)',
+                    borderTop: 'none', // connect to search bar
+                    boxShadow: '0 8px 32px 0 rgba(31, 38, 135, 0.18)',
+                    backdropFilter: 'blur(16px)',
+                    WebkitBackdropFilter: 'blur(16px)',
+                    transition: 'box-shadow 0.2s, background 0.2s',
+                    boxSizing: 'border-box',
+                  }}>
+                    <ul style={{ listStyle: 'none', padding: 0, margin: 0 }}>
+                      {searchResults.map((coords, idx) => (
+                        <li key={idx}>
+                          <button
+                            className="search-dropdown-btn"
+                            style={{
+                              width: '100%',
+                              padding: '14px',
+                              margin: '8px 0',
+                              borderRadius: 18,
+                              border: '1.5px solid rgba(255,255,255,0.35)',
+                              background: 'rgba(255,255,255,0.28)',
+                              color: '#1b3a2b',
+                              fontWeight: 700,
+                              fontSize: 17,
+                              cursor: 'pointer',
+                              boxShadow: '0 2px 16px rgba(31,38,135,0.10)',
+                              backdropFilter: 'blur(12px)',
+                              WebkitBackdropFilter: 'blur(12px)',
+                              transition: 'background 0.2s, box-shadow 0.2s',
+                            }}
+                            onClick={() => flyToLocation(coords[0], coords[1])}
+                          >
+                            Location: {coords[0]?.toFixed(4)},{coords[1]?.toFixed(4)}
+                          </button>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
               </div>
             </div>
             {/* Bottom left add plant button */}
@@ -604,6 +655,16 @@ const Overlay = () => {
             color: #1b3a2b;
             backdrop-filter: blur(16px) saturate(1.2);
             -webkit-backdrop-filter: blur(16px) saturate(1.2);
+          }
+          /* Search dropdown button hover effect for liquid glass aesthetic */
+          .search-dropdown-btn {
+            transition: border 0.22s cubic-bezier(.4,1.3,.6,1), box-shadow 0.22s cubic-bezier(.4,1.3,.6,1);
+          }
+          .search-dropdown-btn:hover, .search-dropdown-btn:focus-visible {
+            border: 2.5px solid #bfc9d1 !important;
+            box-shadow: 0 4px 24px 0 rgba(76,175,80,0.13), 0 2px 12px 0 rgba(255,255,255,0.18);
+            background: rgba(255,255,255,0.32) !important;
+            outline: none;
           }
         `}</style>
       </div>

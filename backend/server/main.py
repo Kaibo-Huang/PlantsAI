@@ -183,15 +183,17 @@ def search_plants():
         {"_id": 0, "geometry.coordinates": 1}
     ))
     print(f"Search results for '{query}': {len(results)} found")
-    # Return just the first result's lat/lon as [x, y]
-    if results and "geometry" in results[0] and "coordinates" in results[0]["geometry"]:
-        coords = results[0]["geometry"]["coordinates"]
-        if len(coords) == 2:
-            x, y = coords
-            print(f"Search results: {x, y}")
-            return jsonify([x, y])
-    print("No results found or missing coordinates.")
-    return jsonify([])
+    # Return all results' lat/lon as [[lat, lon], ...]
+    coords_list = []
+    for result in results:
+        if "geometry" in result and "coordinates" in result["geometry"]:
+            coords = result["geometry"]["coordinates"]
+            if len(coords) == 2:
+                coords_list.append(coords)
+    print(f"Returning coordinates: {coords_list}")
+    for coords in coords_list:
+        print(f"Search result: lat={coords[0]}, lon={coords[1]}")
+    return jsonify(coords_list)
 
 
 @app.route("/admin/view")
