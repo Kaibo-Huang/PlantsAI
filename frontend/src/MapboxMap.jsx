@@ -26,6 +26,7 @@ mapboxgl.accessToken = 'pk.eyJ1Ijoia2FpYm9odWFuZyIsImEiOiJjbWQ5ZjBsY3IwNzQ1MnBxM
 const MapboxMap = forwardRef((props, ref) => {
   const mapRef = useRef(null);
   const markersRef = useRef([]);
+  const [pins, setPins] = useState([]);
   const [pendingPin, setPendingPin] = useState(null);
   const [showPopup, setShowPopup] = useState(false);
   const showPopupRef = useRef(false);
@@ -106,6 +107,12 @@ const MapboxMap = forwardRef((props, ref) => {
   };
 
   useEffect(() => {
+    fetch('http://localhost:8000/admin/view')
+      .then(res => res.json())
+      .then(data => setPins(data));
+  }, []);
+
+  useEffect(() => {
     const map = new mapboxgl.Map({
       container: 'map',
       style: 'mapbox://styles/mapbox/satellite-streets-v11',
@@ -162,6 +169,38 @@ const MapboxMap = forwardRef((props, ref) => {
       if (map) map.off('click', handleMapClick);
     };
   }, [showPopup]);
+
+  useEffect(() => {
+    if (!mapRef.current || !pins || !Array.isArray(pins)) return;
+
+    // Remove old markers
+    markersRef.current.forEach(marker => marker.remove());
+    markersRef.current = [];
+
+    // Add markers for each pin
+    pins.forEach(pin => {
+      if (
+        pin.geometry &&
+        pin.geometry.coordinates &&
+        pin.geometry.coordinates.length === 2
+      ) {
+        const [lat, lon] = pin.geometry.coordinates;
+        const el = document.createElement('div');
+        el.innerHTML = plantSVG;
+        el.style.width = '56px';
+        el.style.height = '56px';
+        el.style.display = 'flex';
+        el.style.alignItems = 'center';
+        el.style.justifyContent = 'center';
+
+        const marker = new mapboxgl.Marker({ element: el })
+          .setLngLat([lon, lat])
+          .addTo(mapRef.current);
+
+        markersRef.current.push(marker);
+      }
+    });
+  }, [pins]);
 
   const setShowPopupAndRef = (val) => {
     showPopupRef.current = val;
@@ -241,9 +280,9 @@ const MapboxMap = forwardRef((props, ref) => {
       method: 'POST',
       body: formData
     })
-    .then(res => res.json())
-    .then(data => console.log(data))
-    .catch(err => console.error(err));
+      .then(res => res.json())
+      .then(data => console.log(data))
+      .catch(err => console.error(err));
 
     setShowPopupAndRef(false);
     setPendingPin(null);
@@ -413,32 +452,32 @@ const MapboxMap = forwardRef((props, ref) => {
       <Overlay />
       {showPopup && (
         <div
-          onTouchStart={() => {}}
-          onTouchEnd={() => {}}
-          onMouseDown={() => {}}
-          onMouseUp={() => {}}
+          onTouchStart={() => { }}
+          onTouchEnd={() => { }}
+          onMouseDown={() => { }}
+          onMouseUp={() => { }}
           style={{
-          position: 'absolute',
-          top: 32,
-          right: 32,
-          width: 340,
-          background: 'rgba(76,175,80,0.10)',
-          borderRadius: 32,
-          border: '2px solid #fff',
-          boxShadow: '0 2px 16px rgba(0,0,0,0.10)',
-          zIndex: 10,
-          display: 'flex',
-          flexDirection: 'column',
-          alignItems: 'flex-start',
-          padding: '24px 28px 20px 28px',
-          gap: 12,
-          backdropFilter: 'blur(12px)',
-          WebkitBackdropFilter: 'blur(12px)',
-          color: '#fff',
-        }}>
-          <div style={{display: 'flex', width: '100%', justifyContent: 'space-between', alignItems: 'center'}}>
-            <h3 style={{margin: 0, fontSize: 32, color: '#fff', fontWeight: 800, letterSpacing: 0.5, fontFamily: 'system-ui, Avenir, Helvetica, Arial, sans-serif'}}>Log Plant 🌱</h3>
-            <button onClick={handleCancel} style={{ 
+            position: 'absolute',
+            top: 32,
+            right: 32,
+            width: 340,
+            background: 'rgba(76,175,80,0.10)',
+            borderRadius: 32,
+            border: '2px solid #fff',
+            boxShadow: '0 2px 16px rgba(0,0,0,0.10)',
+            zIndex: 10,
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'flex-start',
+            padding: '24px 28px 20px 28px',
+            gap: 12,
+            backdropFilter: 'blur(12px)',
+            WebkitBackdropFilter: 'blur(12px)',
+            color: '#fff',
+          }}>
+          <div style={{ display: 'flex', width: '100%', justifyContent: 'space-between', alignItems: 'center' }}>
+            <h3 style={{ margin: 0, fontSize: 32, color: '#fff', fontWeight: 800, letterSpacing: 0.5, fontFamily: 'system-ui, Avenir, Helvetica, Arial, sans-serif' }}>Log Plant 🌱</h3>
+            <button onClick={handleCancel} style={{
               background: 'rgba(255,255,255,0.15)',
               border: '2px solid rgba(255,255,255,0.4)',
               borderRadius: '9999px',
@@ -609,7 +648,7 @@ const MapboxMap = forwardRef((props, ref) => {
               aria-label="Input text"
             />
           </div>
-          <button onClick={handleSubmit} style={{ 
+          <button onClick={handleSubmit} style={{
             padding: '14px 0',
             width: '100%',
             fontSize: 18,
@@ -652,9 +691,9 @@ const MapboxMap = forwardRef((props, ref) => {
           WebkitBackdropFilter: 'blur(12px)',
           color: '#fff',
         }}>
-          <div style={{display: 'flex', width: '100%', justifyContent: 'space-between', alignItems: 'center'}}>
-            <h3 style={{margin: 0, fontSize: 22, color: '#fff', fontWeight: 700, letterSpacing: 0.5}}>INSERT PLANT NAME</h3>
-            <button onClick={() => { setShowDeletePopup(false); setDeletePin(null); }} style={{ 
+          <div style={{ display: 'flex', width: '100%', justifyContent: 'space-between', alignItems: 'center' }}>
+            <h3 style={{ margin: 0, fontSize: 22, color: '#fff', fontWeight: 700, letterSpacing: 0.5 }}>INSERT PLANT NAME</h3>
+            <button onClick={() => { setShowDeletePopup(false); setDeletePin(null); }} style={{
               background: 'rgba(255,255,255,0.15)',
               border: '2px solid rgba(255,255,255,0.4)',
               borderRadius: '9999px',
@@ -703,7 +742,7 @@ const MapboxMap = forwardRef((props, ref) => {
               <MdLocationOn size={20} color="#2196f3" style={{ flexShrink: 0 }} />
               {/* Removed blue dot */}
               <span>
-                Lat: <span style={{fontWeight: 700}}>{deletePin?.lat?.toFixed(4)}</span>, Lng: <span style={{fontWeight: 700}}>{deletePin?.lng?.toFixed(4)}</span>
+                Lat: <span style={{ fontWeight: 700 }}>{deletePin?.lat?.toFixed(4)}</span>, Lng: <span style={{ fontWeight: 700 }}>{deletePin?.lng?.toFixed(4)}</span>
               </span>
             </div>
             {/* Next Water Timer */}
@@ -728,7 +767,7 @@ const MapboxMap = forwardRef((props, ref) => {
                 icon={<MdOpacity size={18} color={getStatusColor(0.7)} />}
               />
               <span>
-                <span style={{ color: "#fff" }}>Next watering in</span> <span style={{fontWeight: 700, color: getStatusColor(0.7)}}>DATE</span>
+                <span style={{ color: "#fff" }}>Next watering in</span> <span style={{ fontWeight: 700, color: getStatusColor(0.7) }}>DATE</span>
               </span>
             </div>
             {/* pH Indicator */}
@@ -753,8 +792,8 @@ const MapboxMap = forwardRef((props, ref) => {
                 icon={<MdScience size={18} color={getStatusColor(0.5)} />}
               />
               <span>
-                <span style={{ color: "#fff" }}>Soil pH:</span> <span style={{fontWeight: 700, color: getStatusColor(0.5)}}>INSERT SOIL PH</span>
-                <span style={{color: getStatusColor(0.5), fontWeight: 700, marginLeft: 4}}>{0.5 > 0.3 ? 'Good' : 'Bad'}</span>
+                <span style={{ color: "#fff" }}>Soil pH:</span> <span style={{ fontWeight: 700, color: getStatusColor(0.5) }}>INSERT SOIL PH</span>
+                <span style={{ color: getStatusColor(0.5), fontWeight: 700, marginLeft: 4 }}>{0.5 > 0.3 ? 'Good' : 'Bad'}</span>
               </span>
             </div>
             {/* Temperature Indicator */}
@@ -779,8 +818,8 @@ const MapboxMap = forwardRef((props, ref) => {
                 icon={<MdDeviceThermostat size={18} color={getStatusColor(0.2)} />}
               />
               <span>
-                <span style={{ color: "#fff" }}>Temperature:</span> <span style={{fontWeight: 700, color: getStatusColor(0.2)}}>TEMPERATURE°C</span>
-                <span style={{color: getStatusColor(0.2), fontWeight: 700, marginLeft: 4}}>{0.2 > 0.3 ? 'Good' : 'Too Low'}</span>
+                <span style={{ color: "#fff" }}>Temperature:</span> <span style={{ fontWeight: 700, color: getStatusColor(0.2) }}>TEMPERATURE°C</span>
+                <span style={{ color: getStatusColor(0.2), fontWeight: 700, marginLeft: 4 }}>{0.2 > 0.3 ? 'Good' : 'Too Low'}</span>
               </span>
             </div>
             {/* Endangered Indicator */}
@@ -803,7 +842,7 @@ const MapboxMap = forwardRef((props, ref) => {
               >
                 <MdWarning size={20} color="#e53935" style={{ flexShrink: 0 }} />
                 <span>
-                  <span style={{fontWeight: 700, color: '#e53935'}}>Endangered</span>
+                  <span style={{ fontWeight: 700, color: '#e53935' }}>Endangered</span>
                 </span>
               </div>
             )}
@@ -827,7 +866,7 @@ const MapboxMap = forwardRef((props, ref) => {
               >
                 <MdWarning size={20} color="#ffb300" style={{ flexShrink: 0 }} />
                 <span>
-                  <span style={{fontWeight: 700, color: '#ffb300'}}>Invasive</span>
+                  <span style={{ fontWeight: 700, color: '#ffb300' }}>Invasive</span>
                 </span>
               </div>
             )}
