@@ -22,8 +22,8 @@ const Overlay = () => {
     if (e) e.preventDefault();
     const res = await fetch(`http://localhost:8000/admin/search?q=${encodeURIComponent(search)}`);
     const data = await res.json();
+    console.log('Search results:', data); // Debug: log the results
     setSearchResults(data);
-    console.log('Search results:', data);
   };
 
   useEffect(() => {
@@ -50,63 +50,7 @@ const Overlay = () => {
   return (
     <>
       <div style={{ position: 'absolute', top: 0, left: 0, zIndex: 30, pointerEvents: 'none', width: '100vw', height: '100vh' }}>
-         {searchResults.length > 0 && (
-          <div style={{ position: 'absolute', top: 70, left: 24, width: 420, background: '#fff', color: '#222', borderRadius: 16, zIndex: 100, padding: 16 }}>
-            <h4>Search Results:</h4>
-            <ul style={{ listStyle: 'none', padding: 0 }}>
-              {searchResults.length === 2 ? (
-                <li>
-                  <button
-                    style={{
-                      width: '100%',
-                      padding: '12px',
-                      margin: '6px 0',
-                      borderRadius: 12,
-                      border: '2px solid #4caf50',
-                      background: '#e8f5e9',
-                      color: '#222',
-                      fontWeight: 600,
-                      fontSize: 16,
-                      cursor: 'pointer',
-                      transition: 'background 0.2s'
-                    }}
-                    onClick={() => flyToLocation(searchResults[0], searchResults[1])}
-                  >
-                    Go to Lat: {searchResults[0]}, Lon: {searchResults[1]}
-                  </button>
-                </li>
-              ) : (
-                searchResults.map((result, idx) => (
-                  <li key={idx}>
-                    <button
-                      style={{
-                        width: '100%',
-                        padding: '12px',
-                        margin: '6px 0',
-                        borderRadius: 12,
-                        border: '2px solid #4caf50',
-                        background: '#e8f5e9',
-                        color: '#222',
-                        fontWeight: 600,
-                        fontSize: 16,
-                        cursor: 'pointer',
-                        transition: 'background 0.2s'
-                      }}
-                      onClick={() => flyToLocation(result.lat, result.lon)}
-                    >
-                      {result.properties?.plant?.results?.[0]?.species?.scientificName || result.properties?.plant?.bestMatch || 'No plant info'}
-                      <br />
-                      <span style={{ fontSize: 14, color: '#388e3c' }}>
-                        Lat: {result.lat}, Lon: {result.lon}
-                      </span>
-                    </button>
-                  </li>
-                ))
-              )}
-            </ul>
-          </div>
-        )}
-        {/* Large Add Plant Overlay */}
+         {/* Large Add Plant Overlay */}
         {showAddPlantOverlay && (
           <div
             style={{
@@ -361,7 +305,7 @@ const Overlay = () => {
                 style={{
                   display: 'flex',
                   alignItems: 'center',
-                  width: 520,
+                  width: 420,
                   position: 'relative',
                   pointerEvents: 'auto',
                 }}
@@ -379,11 +323,11 @@ const Overlay = () => {
                   style={{
                     width: 420,
                     padding: '15px 32px 15px 48px',
-                    borderRadius: 32,
-                    border: '2px solid #fff',
+                    borderRadius: searchResults.length > 0 ? '32px 32px 0 0' : '32px',
+                    border: '1px solid #fff',
                     fontSize: 18,
                     fontWeight: 600,
-                    outline: 'none',
+                    outline: 'none', // Remove outline
                     background: 'rgba(76,175,80,0.10)',
                     color: '#fff',
                     boxShadow: '0 2px 16px rgba(0,0,0,0.10)',
@@ -391,9 +335,60 @@ const Overlay = () => {
                     WebkitBackdropFilter: 'blur(8px)',
                     letterSpacing: 0.2,
                     transition: 'box-shadow 0.2s',
+                    boxSizing: 'border-box',
                   }}
                   className="searchbar-white-placeholder"
                 />
+                {/* Search Results Dropdown */}
+                {searchResults.length > 0 && (
+                  <div style={{
+                    position: 'absolute',
+                    top: '100%', // flush with search bar
+                    left: 0,
+                    width: 420,
+                    background: 'rgba(76,175,80,0.10)',
+                    color: '#222',
+                    borderRadius: '0 0 24px 24px',
+                    zIndex: 200,
+                    padding: 16,
+                    border: '1.5px solid rgba(255,255,255,0.35)',
+                    borderTop: 'none', // connect to search bar
+                    boxShadow: '0 8px 32px 0 rgba(31, 38, 135, 0.18)',
+                    backdropFilter: 'blur(16px)',
+                    WebkitBackdropFilter: 'blur(16px)',
+                    transition: 'box-shadow 0.2s, background 0.2s',
+                    boxSizing: 'border-box',
+                  }}>
+                    <ul style={{ listStyle: 'none', padding: 0, margin: 0 }}>
+                      {searchResults.map((coords, idx) => (
+                        <li key={idx}>
+                          <button
+                            className="search-dropdown-btn"
+                            style={{
+                              width: '100%',
+                              padding: '14px',
+                              margin: '8px 0',
+                              borderRadius: 18,
+                              border: '1.5px solid rgba(255,255,255,0.35)',
+                              background: 'rgba(255,255,255,0.28)',
+                              color: '#1b3a2b',
+                              fontWeight: 700,
+                              fontSize: 17,
+                              cursor: 'pointer',
+                              boxShadow: '0 2px 16px rgba(31,38,135,0.10)',
+                              backdropFilter: 'blur(12px)',
+                              WebkitBackdropFilter: 'blur(12px)',
+                              transition: 'background 0.2s, box-shadow 0.2s',
+                            }}
+                            onClick={() => flyToLocation(coords[0], coords[1])}
+                          >
+                            Location: {coords[0]?.toFixed(4)},{coords[1]?.toFixed(4)}
+                          </button>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
               </div>
             </div>
             {/* Bottom left add plant button */}
@@ -469,6 +464,16 @@ const Overlay = () => {
             backdrop-filter: blur(16px) saturate(1.2);
             -webkit-backdrop-filter: blur(16px) saturate(1.2);
           }
+          /* Search dropdown button hover effect for liquid glass aesthetic */
+          .search-dropdown-btn {
+            transition: border 0.22s cubic-bezier(.4,1.3,.6,1), box-shadow 0.22s cubic-bezier(.4,1.3,.6,1);
+          }
+          .search-dropdown-btn:hover, .search-dropdown-btn:focus-visible {
+            border: 2.5px solid #bfc9d1 !important;
+            box-shadow: 0 4px 24px 0 rgba(76,175,80,0.13), 0 2px 12px 0 rgba(255,255,255,0.18);
+            background: rgba(255,255,255,0.32) !important;
+            outline: none;
+          }
         `}</style>
       </div>
     </>
@@ -476,6 +481,3 @@ const Overlay = () => {
 };
 
 export default Overlay;
-
-
-

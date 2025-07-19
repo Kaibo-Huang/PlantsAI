@@ -607,6 +607,8 @@ function MapboxMap() {
           backdrop-filter: blur(8px);
           -webkit-backdrop-filter: blur(8px);
         }
+        /* Removed searchbar hover/focus animation */
+        /*
         button:not(.add-plant-btn-glass):hover, button:not(.add-plant-btn-glass):focus-visible,
         .searchbar-white-placeholder:hover, .searchbar-white-placeholder:focus,
         input[placeholder="Search..."]:hover, input[placeholder="Search..."]:focus {
@@ -618,6 +620,7 @@ function MapboxMap() {
           backdrop-filter: blur(16px) saturate(1.2);
           -webkit-backdrop-filter: blur(16px) saturate(1.2);
         }
+        */
       `}</style>
       {/* Pending marker and dirt animation style */}
       <style>{`
