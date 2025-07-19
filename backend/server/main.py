@@ -1,7 +1,10 @@
 from flask import Flask, request, jsonify
+from flask import Flask, jsonify, Response, request
+from flask import Flask, jsonify, Response, request, session, redirect, url_for
 from flask_cors import CORS
 import os
 import google.generativeai as genai
+import requests
 import json
 import re
 from utils import get_weather_data, get_plantnet_data
@@ -67,6 +70,32 @@ def home():
 
     data = {"message": "Welcome to the Flask API!"}
     return jsonify(data)
+
+@app.route('/weather', methods=['GET'])
+def weather():
+    lat = request.args.get('lat')
+    lon = request.args.get('lon')
+    weather_data = get_weather_data(lat, lon)
+
+    return jsonify(weather_data)
+
+@app.route('/plantnet', methods=['POST'])
+def plantnet():
+    if 'files' not in request.files:
+        return jsonify({"error": "No files provided"}), 400
+
+    file_paths = []
+    UPLOAD_FOLDER = 'uploads'
+    if not os.path.exists(UPLOAD_FOLDER):
+        os.makedirs(UPLOAD_FOLDER)
+    for file in request.files.getlist('files'):
+        file_path = os.path.join('uploads', file.filename)
+        file.save(file_path)
+        file_paths.append(file_path)
+
+    plant_data = get_plantnet_data(file_paths)
+
+    return jsonify(plant_data)
 
 if __name__ == "__main__":
     app.run(debug=True, port=8000)
