@@ -13,7 +13,6 @@ function MapboxMap() {
   const showPopupRef = useRef(false);
   const [deletePin, setDeletePin] = useState(null);
   const [showDeletePopup, setShowDeletePopup] = useState(false);
-  const geolocateControlRef = useRef(null);
 
   const handleMapClick = (e) => {
     if (showPopup) return;
@@ -48,15 +47,15 @@ function MapboxMap() {
       });
     });
 
-    const geolocateControl = new mapboxgl.GeolocateControl({
-      positionOptions: {
-        enableHighAccuracy: true
-      },
-      trackUserLocation: true,
-      showUserHeading: true
-    });
-    map.addControl(geolocateControl);
-    geolocateControlRef.current = geolocateControl;
+    map.addControl(
+      new mapboxgl.GeolocateControl({
+        positionOptions: {
+          enableHighAccuracy: true
+        },
+        trackUserLocation: true,
+        showUserHeading: true
+      })
+    );
 
     map.on('click', handleMapClick);
     mapRef.current = map;
@@ -116,17 +115,10 @@ function MapboxMap() {
     setDeletePin(null);
   };
 
-  // Center map on user function
-  const centerMapOnUser = () => {
-    if (geolocateControlRef.current) {
-      geolocateControlRef.current.trigger();
-    }
-  };
-
   return (
     <div style={{ position: 'relative', height: '100%' }}>
       <div id="map" className="map" style={{ height: '100%' }} />
-      <Overlay centerMapOnUser={centerMapOnUser} />
+      <Overlay />
       {showPopup && (
         <div style={{
           position: 'absolute',
