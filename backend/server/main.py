@@ -72,7 +72,6 @@ else:
 
 @app.route('/home', methods=['GET'])
 def home():
-
     data = {"message": "Welcome to the Flask API!"}
     return jsonify(data)
 
@@ -101,6 +100,68 @@ def plantnet():
     plant_data = get_plantnet_data(file_paths)
 
     return jsonify(plant_data)
+
+# @app.route('/admin/add', methods=['POST'])
+# def add_pin():
+#     data = request.json
+#     if not data:
+#         print("No data provided for insertion.")
+#         return jsonify({"error": "No data provided"}), 400
+#     try:
+#         lat = data['lat']
+#         lon = data['lng']
+#         data = {
+#             "type": "Feature",
+#             "geometry": {
+#                 "type": "Point",
+#                 "coordinates": [lat, lon]
+#             },
+#             "properties": {
+#                 "alert": data['alertForCare'],
+#                 "favorite": data['favoriteOnMap'],
+#                 # 'fileName': data['fileName'],
+#                 "weather": jsonify(get_weather_data(lat, lon)),
+#                 "plant": jsonify(get_plantnet_data([data['fileName']])),
+#             }
+#         }
+#         detections.insert_one(data)
+#         print("Data inserted successfully:", data)
+#         return jsonify({"message": "Detection added successfully"}), 201
+#     except Exception as e:
+#         print("Error inserting data:", e)
+#         return jsonify({"error": str(e)}), 500
+@app.route('/admin/add', methods=['POST'])
+def add_pin():
+    lat = request.form.get('lat')
+    lon = request.form.get('lng')
+    alert = request.form.get('alertForCare')
+    favorite = request.form.get('favoriteOnMap')
+    file = request.files.get('file')
+    file_name = None
+    if file:
+        UPLOAD_FOLDER = 'uploads'
+        if not os.path.exists(UPLOAD_FOLDER):
+            os.makedirs(UPLOAD_FOLDER)
+        file_path = os.path.join(UPLOAD_FOLDER, file.filename)
+        file.save(file_path)
+        file_name = file.filename
+
+    data = {
+        "type": "Feature",
+        "geometry": {
+            "type": "Point",
+            "coordinates": [float(lat), float(lon)]
+        },
+        "properties": {
+        "alert": alert,
+        "favorite": favorite,
+        "fileName": file_name,
+        "weather": get_weather_data(lat, lon),
+        "plant": get_plantnet_data([file_path]) if file_name else None
+        }
+    }
+    detections.insert_one(data)
+    return jsonify({"message": "Detection added successfully"}), 201
 
 @app.route("/admin/view")
 def view_all():

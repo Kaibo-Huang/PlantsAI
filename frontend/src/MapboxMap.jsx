@@ -118,12 +118,30 @@ function MapboxMap() {
     if (!pendingPin || !mapRef.current) return;
     const marker = pendingPin.marker;
     // Make the marker permanent and add click-to-delete logic
+    
     marker.getElement().addEventListener('click', (event) => {
       event.stopPropagation();
       setDeletePin({ marker, lng: pendingPin.lng, lat: pendingPin.lat });
       setShowDeletePopup(true);
     });
     markersRef.current.push(marker);
+    // Send pin location to backend
+    const formData = new FormData();
+    formData.append('lat', pendingPin.lat);
+    formData.append('lng', pendingPin.lng);
+    formData.append('alertForCare', alertForCare);
+    formData.append('favoriteOnMap', favoriteOnMap);
+    if (uploadedFile) {
+      formData.append('file', uploadedFile);
+    }
+    fetch('http://localhost:8000/admin/add', {
+      method: 'POST',
+      body: formData
+    })
+    .then(res => res.json())
+    .then(data => console.log(data))
+    .catch(err => console.error(err));
+
     setShowPopupAndRef(false);
     setPendingPin(null);
   };
