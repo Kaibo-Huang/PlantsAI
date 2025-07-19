@@ -133,6 +133,9 @@ function MapboxMap() {
       });
       // Automatically trigger geolocation on load
       geolocateControl.trigger();
+      // Hide the geolocate button after triggering
+      const geoBtn = document.querySelector('.mapboxgl-ctrl-geolocate');
+      if (geoBtn) geoBtn.style.display = 'none';
     });
 
     map.on('click', handleMapClick);
@@ -773,6 +776,11 @@ function MapboxMap() {
           border: 2px solid rgba(255,255,255,0.25);
           backdrop-filter: blur(8px);
           -webkit-backdrop-filter: blur(8px);
+        }
+        /* Hide Mapbox logo and attribution (development only) */
+        .mapboxgl-ctrl-logo,
+        .mapboxgl-ctrl-attrib {
+          display: none !important;
         }
         /* Removed searchbar hover/focus animation */
         /*
