@@ -4,6 +4,7 @@ import os
 import google.generativeai as genai
 import json
 import re
+from utils import get_weather_data, get_plantnet_data
 
 app = Flask(__name__)
 cors = CORS(app, resources={r"/*": {"origins": "*"}})
@@ -11,18 +12,24 @@ api_key = 'AIzaSyB3Ik2aYCuAIRRHFWIgrY6fBCxDG-RX054'
 genai.configure(api_key=api_key)
 
 # pulls weather temperature, geographic location in coordinates, and species of plant
-weather = "sunny"
-latitude = "43.772915 / N 43° 46' 22.496''"
-longitude = "-79.499285 / W 79° 29' 57.424''"
-plant = "moneytree"
-model = genai.GenerativeModel('gemini-1.5-flash')
+latitude = 43.772915
+longitude = -79.499285
+
+# Get weather data
+weather_data = get_weather_data(latitude, longitude)
+weather = weather_data.get('weather', [{}])[0].get('main', 'unknown')
+
+# Get plant data (you'll need to provide image path)
+# For now, using a default plant name - you can modify this based on your needs
+plant = "moneytree"  # This could be extracted from plant identification results
+model = genai.GenerativeModel('gemini-1.5-flash-8b')
 prompt = (
-    "Given the values of " + weather +
-    ", location (latitude: " + latitude + ", longitude: " + longitude + 
+    "Given the weather condition: " + weather +
+    ", location (latitude: " + str(latitude) + ", longitude: " + str(longitude) + 
     ") and the species of the plant: " + plant +
     ", provide a 50 word blurb of tips in taking care of the plant with technical gardening details. "
     "Also, output a JSON object with the following fields: "
-    "soil_pH (number), time_between_waterings (in days, number), optimal_light_level (string: e.g. 'full sun', 'partial shade', etc.). "
+    "soil_pH (number), time_between_waterings (in days, number), optimal_light_level (string: e.g. 'full sun', 'partial shade', etc.), endangered (boolean true or false, according to canadian sources), invasive (boolean true or false, according to canadian sources). "
     "Format the JSON as the last part of your response."
 )
 response = model.generate_content(prompt)
@@ -47,6 +54,8 @@ if match:
         print(f"Soil pH: {data.get('soil_pH', 'N/A')}")
         print(f"Watering Frequency: {data.get('time_between_waterings', 'N/A')} Days")
         print(f"Optimal Light Levels: {data.get('optimal_light_level', 'N/A')}")
+        print(f"Endangered: {data.get('endangered', 'N/A')}")
+        print(f"Invasive: {data.get('invasive', 'N/A')}")
         print("\n" + blurb)
     except json.JSONDecodeError:
         print("Could not decode JSON from Gemini response.")
