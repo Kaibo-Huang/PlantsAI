@@ -38,7 +38,7 @@ const DeletePinOverlay: React.FC<DeletePinOverlayProps> = ({
         alignItems: "center",
       }}
     >
-      <h3 style={{ margin: 0, fontSize: 20 }}>Delete Pin</h3>
+      <h3 style={{ margin: 0, fontSize: 20 }}>INSERT PLANT NAME</h3>
       <button
         onClick={onCancel}
         style={{
