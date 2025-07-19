@@ -6,6 +6,7 @@ mapboxgl.accessToken = 'pk.eyJ1Ijoia2FpYm9odWFuZyIsImEiOiJjbWQ5ZjBsY3IwNzQ1MnBxM
 
 function MapboxMap() {
   const mapRef = useRef(null);
+  const markersRef = useRef([]); // Store marker instances
 
   useEffect(() => {
     const map = new mapboxgl.Map({
@@ -40,9 +41,22 @@ function MapboxMap() {
       })
     );
 
+    // Add marker on map click
+    map.on('click', (e) => {
+      const { lng, lat } = e.lngLat;
+      const marker = new mapboxgl.Marker()
+        .setLngLat([lng, lat])
+        .addTo(map);
+      markersRef.current.push(marker);
+    });
+
     mapRef.current = map;
 
-    return () => map.remove();
+    return () => {
+      markersRef.current.forEach(marker => marker.remove());
+      markersRef.current = [];
+      map.remove();
+    };
   }, []);
 
   return <div id="map" className="map" />;
