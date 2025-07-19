@@ -41,28 +41,28 @@ def add_plant_data(plant_data):
     detections = db["detections"]
     detections.insert_one(plant_data)
     # example
-    detections.insert_one({
-      "type": "Feature",
-      "geometry": {
-        "type": "Point",
-        "coordinates": [125.6, 10.1]
-      },
-      "properties": {
-        "name": "Japanese Knotweed",
-        "confidence": 0.94,
-        "timestamp": "2025-07-18T22:00:00Z",
-        "imageUrl": "/detections/123.jpg",
-        "weather": {
-          "temperature": 26.1,
-          "humidity": 78
-        },
-        "soil": {
-          "moisture": 0.54,
-          "nitrogen": 13.2
-        }
-      }
-    }
-    )
+    # detections.insert_one({
+    #   "type": "Feature",
+    #   "geometry": {
+    #     "type": "Point",
+    #     "coordinates": [125.6, 10.1]
+    #   },
+    #   "properties": {
+    #     "name": "Japanese Knotweed",
+    #     "confidence": 0.94,
+    #     "timestamp": "2025-07-18T22:00:00Z",
+    #     "imageUrl": "/detections/123.jpg",
+    #     "weather": {
+    #       "temperature": 26.1,
+    #       "humidity": 78
+    #     },
+    #     "soil": {
+    #       "moisture": 0.54,
+    #       "nitrogen": 13.2
+    #     }
+    #   }
+    # }
+    # )
 
 def view_data():
     return jsonify(list(db.detections.find({}, {"_id": 0})))
