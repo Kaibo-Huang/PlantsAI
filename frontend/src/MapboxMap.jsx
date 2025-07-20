@@ -129,6 +129,7 @@ const MapboxMap = forwardRef((props, ref) => {
       .addTo(mapRef.current);
     setPendingPin({ lng, lat, marker: tempMarker });
     setShowPopup(true);
+    setUploadedFile(null); // Reset upload file button when adding a new pin
   };
 
   useEffect(() => {
@@ -774,86 +775,62 @@ const MapboxMap = forwardRef((props, ref) => {
                 >
                   <input {...getInputProps()} />
                   {popupClosing && showLoading ? (
-                    <Mosaic
-                      color="#32cd32"
-                      size="medium"
-                      text=""
-                      textColor=""
-                    />
-                  ) : uploadedFile ? (
-                    <span
-                      style={{ display: "flex", alignItems: "center", gap: 10 }}
-                    >
-                      <span
-                        style={{
-                          color: "#fff",
+                    <Mosaic color="#32cd32" size="medium" text="" textColor="" />
+                  ) : (
+                    uploadedFile ? (
+                      <span style={{
+                        display: 'flex',
+                        flexDirection: 'column',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        width: '100%',
+                        gap: 18
+                      }}>
+                        <MdOutlineFileUpload size={130} color="#4caf50" style={{ marginBottom: 0 }} />
+                        <span style={{
+                          color: '#fff',
                           fontWeight: 700,
                           fontSize: 16,
                           letterSpacing: 0.2,
-                          fontFamily:
-                            "system-ui, Avenir, Helvetica, Arial, sans-serif",
-                          display: "flex",
-                          alignItems: "center",
-                          gap: 8,
-                        }}
-                      >
-                        <MdOutlineFileUpload size={22} color="#4caf50" />
-                        Photo uploaded
+                          fontFamily: 'system-ui, Avenir, Helvetica, Arial, sans-serif',
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: 8
+                        }}>
+                          Photo uploaded
+                          <button
+                            type="button"
+                            onClick={e => { e.stopPropagation(); setUploadedFile(null); }}
+                            style={{
+                              background: 'transparent',
+                              border: 'none',
+                              marginLeft: 6,
+                              cursor: 'pointer',
+                              display: 'flex',
+                              alignItems: 'center',
+                              padding: 0,
+                              transition: 'transform 0.18s cubic-bezier(.4,1.3,.6,1), box-shadow 0.18s cubic-bezier(.4,1.3,.6,1)'
+                            }}
+                            className="exit-hover"
+                            title="Remove file"
+                          >
+                            <MdClose size={22} color="#fff" />
+                          </button>
+                        </span>
                       </span>
-                      <button
-                        type="button"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          setUploadedFile(null);
-                        }}
-                        style={{
-                          background: "transparent",
-                          border: "none",
-                          marginLeft: 6,
-                          cursor: "pointer",
-                          display: "flex",
-                          alignItems: "center",
-                          padding: 0,
-                          transition:
-                            "transform 0.18s cubic-bezier(.4,1.3,.6,1), box-shadow 0.18s cubic-bezier(.4,1.3,.6,1)",
-                        }}
-                        className="exit-hover"
-                        title="Remove file"
-                      >
-                        <MdClose size={22} color="#fff" />
-                      </button>
-                    </span>
-                  ) : isDragActive ? (
-                    <span
-                      style={{
-                        color: "#4caf50",
-                        fontWeight: 700,
-                        fontSize: 16,
-                        letterSpacing: 0.2,
-                        fontFamily:
-                          "system-ui, Avenir, Helvetica, Arial, sans-serif",
-                      }}
-                    >
-                      Drop the file here ...
-                    </span>
-                  ) : (
-                    <span
-                      style={{
-                        display: "flex",
-                        flexDirection: "column",
-                        alignItems: "center",
-                        justifyContent: "center",
-                        width: "100%",
-                      }}
-                    >
-                      <MdOutlineFileUpload
-                        size={130}
-                        color="#4caf50"
-                        style={{ marginBottom: 18 }}
-                      />
-                      <span
-                        style={{
-                          color: "#fff",
+                    ) : isDragActive ? (
+                      <span style={{ color: '#4caf50', fontWeight: 700, fontSize: 16, letterSpacing: 0.2, fontFamily: 'system-ui, Avenir, Helvetica, Arial, sans-serif' }}>Drop the file here ...</span>
+                    ) : (
+                      <span style={{
+                        display: 'flex',
+                        flexDirection: 'column',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        width: '100%',
+                      }}>
+                        <MdOutlineFileUpload size={130} color="#4caf50" style={{ marginBottom: 18 }} />
+                        <span style={{
+                          color: '#fff',
                           fontWeight: 600,
                           fontSize: 15,
                           fontFamily:
@@ -902,17 +879,8 @@ const MapboxMap = forwardRef((props, ref) => {
               )}
             </div>
             {/* Input mode switch circles */}
-            <div
-              style={{
-                display: "flex",
-                justifyContent: "center",
-                alignItems: "center",
-                gap: 7,
-                marginTop: 4,
-                marginBottom: 2,
-                width: "100%",
-              }}
-            >
+            {/* Removed the two dots below the Add Plant popup */}
+            {/* <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: 7, marginTop: 4, marginBottom: 2, width: '100%' }}>
               <button
                 type="button"
                 onClick={() => setInputMode("file")}
@@ -957,7 +925,7 @@ const MapboxMap = forwardRef((props, ref) => {
                 aria-label="Input text"
                 disabled={popupClosing}
               />
-            </div>
+            </div> */}
             <button
               onClick={handleSubmit}
               style={{
