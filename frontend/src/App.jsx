@@ -40,63 +40,6 @@ function App() {
         <MapboxMap ref={mapRef} />
         <Overlay onSearchResultClick={handleSearchResultClick} />
       </div>
-      {/* Sliding bar at the bottom with scrolling text */}
-      <div style={{
-        position: 'fixed',
-        bottom: 0,
-        left: 0,
-        width: '100vw',
-        height: 32,
-        background: 'rgba(255,255,255,0.35)',
-        boxShadow: '0 -2px 12px 0 rgba(31,38,135,0.07)',
-        display: 'flex',
-        alignItems: 'center',
-        overflow: 'hidden',
-        zIndex: 10,
-      }}>
-        <div style={{
-          whiteSpace: 'nowrap',
-          display: 'inline-block',
-          animation: 'scroll-left-right 16s linear infinite',
-          fontSize: 15,
-          fontWeight: 600,
-          color: '#388e3c',
-          paddingLeft: '100vw',
-          fontFamily: 'system-ui, Avenir, Helvetica, Arial, sans-serif',
-        }}>
-          Built on React.JS ⚛️ &nbsp; &nbsp; | &nbsp; &nbsp; MongoDB 🌱 &nbsp; &nbsp; | &nbsp; &nbsp; Google Gemini 🧠 &nbsp; &nbsp; | &nbsp; &nbsp; Flask 🧪 &nbsp; &nbsp; | &nbsp; &nbsp; MapBox 🗺️ &nbsp; &nbsp; | &nbsp; &nbsp; PlantNet 🪴 &nbsp; &nbsp; | &nbsp; &nbsp; WeatherAPI ☁️
-        </div>
-      </div>
-      <style>{`
-        @keyframes scroll-left-right {
-          0% { transform: translateX(-100%); }
-          100% { transform: translateX(100%); }
-        }
-        @keyframes pulse {
-          0% {
-            box-shadow:
-              0 0 0 0 rgba(76,175,80,0.95),
-              0 0 0 0 rgba(56,142,60,0.75),
-              0 0 0 0 rgba(139,195,74,0.55);
-          }
-          70% {
-            box-shadow:
-              0 0 0 60px rgba(76,175,80,0.55),
-              0 0 0 90px rgba(56,142,60,0.35),
-              0 0 0 120px rgba(139,195,74,0.18);
-          }
-          100% {
-            box-shadow:
-              0 0 0 0 rgba(76,175,80,0.95),
-              0 0 0 0 rgba(56,142,60,0.75),
-              0 0 0 0 rgba(139,195,74,0.55);
-          }
-        }
-        input::placeholder {
-          color: #fff !important;
-          opacity: 1;
-        }
-      `}</style>
     </>
   );
 

@@ -1,5 +1,3 @@
-from flask import Flask, request, jsonify
-from flask import Flask, jsonify, Response, request
 from flask import Flask, jsonify, Response, request, session, redirect, url_for
 from flask_cors import CORS
 import os
@@ -39,9 +37,9 @@ def get_pins_near():
         }
     }
     res = list(db.detections.find(query, {"_id": 0}))
+
     print(res)
     return res
-
 @app.route('/pins/cluster', methods=['GET'])
 def cluster_pins_grid(cell_size_meters=500):
     pipeline = [
