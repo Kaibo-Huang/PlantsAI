@@ -24,24 +24,26 @@ def get_pins_near():
     lat = request.args.get('lat')
     lon = request.args.get('lon')
     max_distance_meters = float(request.args.get('max_distance', 1000))
-    # print(lat, lon, max_distance_meters)
+    print(lat, lon, max_distance_meters)
     query = {
         "geometry": {
             "$near": {
                 "$geometry": {
                     "type": "Point",
-                    "coordinates": [float(lat), float(lon)]
+                    "coordinates": [float(lon), float(lat)]
                 },
-                "$maxDistance": max_distance_meters
+                "$maxDistance": max_distance_meters,
+                "$minDistance": 0
             }
         }
     }
     res = list(db.detections.find(query, {"_id": 0}))
 
-    # print(res)
+    print(res)
     return res
 @app.route('/pins/cluster', methods=['GET'])
 def cluster_pins_grid(cell_size_meters=500):
+    cell_size_meters = request.args.get('cell_size', 500)
     pipeline = [
         {
             "$group": {
@@ -129,7 +131,7 @@ def add_pin():
         "type": "Feature",
         "geometry": {
             "type": "Point",
-            "coordinates": [float(lat), float(lon)]
+            "coordinates": [float(lon), float(lat)]
         },
         "properties": {
             "alert": alert,

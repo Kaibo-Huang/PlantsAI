@@ -28,12 +28,12 @@ for r in results:
     except (TypeError, ValueError):
         print(f"Invalid coordinates for result: {r}")
         continue
-    if -179 <= lon <= 179 and -90 <= lat <= 90:
+    if -180 <= lon <= 180 and -90 <= lat <= 90:
         feature = {
             "type": "Feature",
             "geometry": {
                 "type": "Point",
-                "coordinates": [lat, lon]
+                "coordinates": [lon, lat]
             },
             "properties": {
                 "alert": None,
