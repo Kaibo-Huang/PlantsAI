@@ -11,7 +11,7 @@ from pymongo import MongoClient
 
 app = Flask(__name__)
 cors = CORS(app, resources={r"/*": {"origins": "*"}})
-api_key = 'AIzaSyB6fEHUqwOnsEibGm6P6rz42h4ZzizufhQ'
+api_key = os.getenv("GEMINI_API_KEY")
 genai.configure(api_key=api_key)
 
 client = MongoClient("mongodb+srv://stringbot:u2ZG9kM5q8L0WaNW@plantmap.ipx3g1d.mongodb.net/")
@@ -95,6 +95,7 @@ def add_pin():
             f"Output a JSON object with \"main\" (string), \"precipitation\" (number), and \"temperature\" (number)."
         )
         try:
+            model = genai.GenerativeModel("models/gemini-1.5-flash")
             response = model.generate_content(weather_prompt)
             if response:
                 text = response.text
@@ -154,6 +155,7 @@ def add_pin():
     gemini_data = {}
 
     try:
+        model = genai.GenerativeModel("models/gemini-1.5-flash")
         response = model.generate_content(prompt)
         if response:
             text = response.text
