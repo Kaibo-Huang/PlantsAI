@@ -481,6 +481,45 @@ const MapboxMap = forwardRef((props, ref) => {
     }
   }));
 
+  // Add hardcoded plant info sets
+  const PLANT_INFOS = [
+    {
+      name: 'Daisy',
+      watering: 'Every 4 days',
+      soilPH: '6.2',
+      light: 'Full Sun to Partial Shade',
+      endangered: 'No',
+      invasive: 'No',
+      temperature: '21°C',
+      wateringNext: '2 days',
+      blurb: 'Daisies are cheerful, easy-to-grow perennials that thrive in a variety of soils. Water every 4 days, provide full sun to partial shade, and maintain a slightly acidic soil pH. Not endangered or invasive.'
+    },
+    {
+      name: 'White Romunculus',
+      watering: 'Every 3 days',
+      soilPH: '6.5',
+      light: 'Full Sun to Partial Shade',
+      endangered: 'No',
+      invasive: 'No',
+      temperature: '18°C',
+      wateringNext: '1 day',
+      blurb: 'White Romunculus produces lush, layered blooms and thrives in cool weather. Water every 3 days, keep soil moist but not soggy, and provide full sun to partial shade. Not endangered or invasive.'
+    }
+  ];
+
+  const [plantInfoIndex, setPlantInfoIndex] = useState(0);
+  const plantInfo = PLANT_INFOS[plantInfoIndex];
+
+  useEffect(() => {
+    const handleHotkey = (e) => {
+      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'p') {
+        setPlantInfoIndex((prev) => (prev === 0 ? 1 : 0));
+      }
+    };
+    window.addEventListener('keydown', handleHotkey);
+    return () => window.removeEventListener('keydown', handleHotkey);
+  }, []);
+
   return (
     <div style={{ position: 'relative', height: '100vh', width: '100vw' }}>
       <div id="map" className="map" style={{ height: '100vh', width: '100vw' }} />
@@ -785,12 +824,7 @@ const MapboxMap = forwardRef((props, ref) => {
           top: 32,
           right: 32,
           width: 340,
-          // Overlay tint logic: red if endangered, yellow if invasive, else green
-          background: isEndangered
-            ? 'rgba(229,57,53,0.13)'
-            : isInvasive
-              ? 'rgba(255,179,0,0.13)'
-              : 'rgba(76,175,80,0.08)',
+          background: 'rgba(76,175,80,0.10)',
           borderRadius: 32,
           border: '2px solid #fff',
           boxShadow: '0 2px 16px rgba(0,0,0,0.10)',
@@ -802,253 +836,69 @@ const MapboxMap = forwardRef((props, ref) => {
           gap: 12,
           backdropFilter: 'blur(12px)',
           WebkitBackdropFilter: 'blur(12px)',
-          color: '#fff',
         }}>
           <div style={{ display: 'flex', width: '100%', justifyContent: 'space-between', alignItems: 'center' }}>
-            <h3 style={{ margin: 0, fontSize: 22, color: '#fff', fontWeight: 700, letterSpacing: 0.5 }}>INSERT PLANT NAME</h3>
-            <button
-              onClick={() => { setShowDeletePopup(false); setDeletePin(null); }}
-              style={{
-                background: 'rgba(255,255,255,0.15)',
-                border: '2px solid rgba(255,255,255,0.4)',
-                borderRadius: '9999px',
-                width: 40,
-                height: 40,
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                fontSize: 22,
-                color: '#fff',
-                cursor: 'pointer',
-                lineHeight: 1,
-                fontWeight: 700,
-                boxShadow: '0 2px 16px rgba(0,0,0,0.10)',
-                backdropFilter: 'blur(6px)',
-                WebkitBackdropFilter: 'blur(6px)',
-                transition: 'background 0.2s, transform 0.18s cubic-bezier(.4,1.3,.6,1), box-shadow 0.18s cubic-bezier(.4,1.3,.6,1)'
-              }}
-              className="exit-hover"
-              title="Close">×</button>
-          </div>
-          {/* --- Added Plant Status Indicators --- */}
-          <div style={{
-            width: '100%',
-            display: 'flex',
-            flexDirection: 'column',
-            gap: 10,
-            margin: '8px 0 0 0'
-          }}>
-            {/* Location Indicator */}
-            <div
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: 10,
-                background: 'rgba(255,255,255,0.10)',
-                borderRadius: 12,
-                padding: '8px 12px',
-                fontWeight: 600,
-                fontSize: 15,
-                color: '#fff',
-                transition: 'transform 0.18s cubic-bezier(.4,1.3,.6,1), box-shadow 0.18s cubic-bezier(.4,1.3,.6,1)',
-                cursor: 'pointer'
-              }}
-              className="indicator-hover"
-            >
-              {/* Icon */}
-              <MdLocationOn size={20} color="#2196f3" style={{ flexShrink: 0 }} />
-              {/* Removed blue dot */}
-              <span>
-                Lat: <span style={{ fontWeight: 700 }}>{deletePin?.lat?.toFixed(4)}</span>, Lng: <span style={{ fontWeight: 700 }}>{deletePin?.lng?.toFixed(4)}</span>
-              </span>
-            </div>
-            {/* Next Water Timer */}
-            <div
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: 10,
-                background: 'rgba(255,255,255,0.10)',
-                borderRadius: 12,
-                padding: '8px 12px',
-                fontWeight: 600,
-                fontSize: 15,
-                color: '#fff',
-                transition: 'transform 0.18s cubic-bezier(.4,1.3,.6,1), box-shadow 0.18s cubic-bezier(.4,1.3,.6,1)',
-                cursor: 'pointer'
-              }}
-              className="indicator-hover"
-            >
-              <CircularIndicator
-                percent={0.7}
-                icon={<MdOpacity size={18} color={getStatusColor(0.7)} />}
-              />
-              <span>
-                <span style={{ color: "#fff" }}>Next watering in</span> <span style={{ fontWeight: 700, color: getStatusColor(0.7) }}>DATE</span>
-              </span>
-            </div>
-            {/* pH Indicator */}
-            <div
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: 10,
-                background: 'rgba(255,255,255,0.10)',
-                borderRadius: 12,
-                padding: '8px 12px',
-                fontWeight: 600,
-                fontSize: 15,
-                color: '#fff',
-                transition: 'transform 0.18s cubic-bezier(.4,1.3,.6,1), box-shadow 0.18s cubic-bezier(.4,1.3,.6,1)',
-                cursor: 'pointer'
-              }}
-              className="indicator-hover"
-            >
-              <CircularIndicator
-                percent={0.5}
-                icon={<MdScience size={18} color={getStatusColor(0.5)} />}
-              />
-              <span>
-                <span style={{ color: "#fff" }}>Soil pH:</span> <span style={{ fontWeight: 700, color: getStatusColor(0.5) }}>INSERT SOIL PH</span>
-                <span style={{ color: getStatusColor(0.5), fontWeight: 700, marginLeft: 4 }}>{0.5 > 0.3 ? 'Good' : 'Bad'}</span>
-              </span>
-            </div>
-            {/* Temperature Indicator */}
-            <div
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: 10,
-                background: 'rgba(255,255,255,0.10)',
-                borderRadius: 12,
-                padding: '8px 12px',
-                fontWeight: 600,
-                fontSize: 15,
-                color: '#fff',
-                transition: 'transform 0.18s cubic-bezier(.4,1.3,.6,1), box-shadow 0.18s cubic-bezier(.4,1.3,.6,1)',
-                cursor: 'pointer'
-              }}
-              className="indicator-hover"
-            >
-              <CircularIndicator
-                percent={0.2}
-                icon={<MdDeviceThermostat size={18} color={getStatusColor(0.2)} />}
-              />
-              <span>
-                <span style={{ color: "#fff" }}>Temperature:</span> <span style={{ fontWeight: 700, color: getStatusColor(0.2) }}>TEMPERATURE°C</span>
-                <span style={{ color: getStatusColor(0.2), fontWeight: 700, marginLeft: 4 }}>{0.2 > 0.3 ? 'Good' : 'Too Low'}</span>
-              </span>
-            </div>
-            {/* Endangered Indicator */}
-            {isEndangered && (
-              <div
-                style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: 10,
-                  background: 'rgba(255,255,255,0.10)',
-                  borderRadius: 12,
-                  padding: '8px 12px',
-                  fontWeight: 600,
-                  fontSize: 15,
-                  color: '#fff',
-                  transition: 'transform 0.18s cubic-bezier(.4,1.3,.6,1), box-shadow 0.18s cubic-bezier(.4,1.3,.6,1)',
-                  cursor: 'pointer'
-                }}
-                className="indicator-hover"
-              >
-                <MdWarning size={20} color="#e53935" style={{ flexShrink: 0 }} />
-                <span>
-                  <span style={{ fontWeight: 700, color: '#e53935' }}>Endangered</span>
-                </span>
-              </div>
-            )}
-            {/* Invasive Indicator */}
-            {isInvasive && (
-              <div
-                style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: 10,
-                  background: 'rgba(255,255,255,0.10)',
-                  borderRadius: 12,
-                  padding: '8px 12px',
-                  fontWeight: 600,
-                  fontSize: 15,
-                  color: '#fff',
-                  transition: 'transform 0.18s cubic-bezier(.4,1.3,.6,1), box-shadow 0.18s cubic-bezier(.4,1.3,.6,1)',
-                  cursor: 'pointer'
-                }}
-                className="indicator-hover"
-              >
-                <MdWarning size={20} color="#ffb300" style={{ flexShrink: 0 }} />
-                <span>
-                  <span style={{ fontWeight: 700, color: '#ffb300' }}>Invasive</span>
-                </span>
-              </div>
-            )}
-            {/* Summary Header */}
-            <div
-              style={{
-                fontWeight: 700,
-                fontSize: 17,
-                color: '#fff',
-                marginTop: 8,
-                marginBottom: 2,
-                letterSpacing: 0.2,
-                fontFamily: 'system-ui, Avenir, Helvetica, Arial, sans-serif'
-                // No hover/transition/cursor here
-              }}
-            >
-              Summary
-            </div>
-            {/* Plant Description */}
-            <div
-              style={{
-                background: 'rgba(255,255,255,0.10)',
-                borderRadius: 12,
-                padding: '12px 14px',
-                fontWeight: 500,
-                fontSize: 15,
-                color: '#fff',
-                marginTop: 2,
-                minHeight: 60,
-                lineHeight: 1.5,
-                letterSpacing: 0.1,
-                fontFamily: 'system-ui, Avenir, Helvetica, Arial, sans-serif',
-                transition: 'transform 0.18s cubic-bezier(.4,1.3,.6,1), box-shadow 0.18s cubic-bezier(.4,1.3,.6,1)',
-                cursor: 'pointer'
-              }}
-              className="indicator-hover"
-            >
-              {/* Replace with actual plant description */}
-              <span>
-                This is a placeholder for a plant description. It should be up to 50 words and provide information about the plant, its habitat, care requirements, and any interesting facts or notes relevant to its identification or conservation.
-              </span>
-            </div>
-          </div>
-          {/* --- End Plant Status Indicators --- */}
-          <button
-            onClick={handleDelete}
-            style={{
-              padding: '14px 0',
-              width: '100%',
-              fontSize: 18,
-              background: 'rgba(76,175,80,0.08)',
-              color: '#fff',
+            <h3 style={{ margin: 0, fontSize: 32, color: '#fff', fontWeight: 800, letterSpacing: 0.5, fontFamily: 'system-ui, Avenir, Helvetica, Arial, sans-serif' }}>{plantInfo.name}</h3>
+            <button onClick={() => { setShowDeletePopup(false); setDeletePin(null); }} style={{
+              background: 'rgba(255,255,255,0.15)',
               border: '2px solid rgba(255,255,255,0.4)',
-              borderRadius: 32,
+              borderRadius: '9999px',
+              width: 40,
+              height: 40,
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              fontSize: 22,
+              color: '#fff',
               cursor: 'pointer',
-              marginTop: 8,
+              lineHeight: 1,
               fontWeight: 700,
               boxShadow: '0 2px 16px rgba(0,0,0,0.10)',
               backdropFilter: 'blur(6px)',
               WebkitBackdropFilter: 'blur(6px)',
-              letterSpacing: 0.2,
-              transition: 'background 0.2s, transform 0.18s cubic-bezier(.4,1.3,.6,1), box-shadow 0.18s cubic-bezier(.4,1.3,.6,1)'
-            }}
-            className="indicator-hover"
-          >Delete</button>
+              transition: 'background 0.2s',
+              pointerEvents: 'auto',
+            }} title="Close">×</button>
+          </div>
+          {/* Plant Status Indicators - all hardcoded for Daisy */}
+          <div style={{ width: '100%', display: 'flex', flexDirection: 'column', gap: 10, margin: '8px 0 0 0' }}>
+            {/* Location Indicator (fake values) */}
+            <div style={{ display: 'flex', alignItems: 'center', gap: 10, background: 'rgba(255,255,255,0.10)', borderRadius: 12, padding: '8px 12px', fontWeight: 600, fontSize: 15, color: '#fff' }}>
+              <MdLocationOn size={20} color="#2196f3" style={{ flexShrink: 0 }} />
+              <span>Lat: <span style={{ fontWeight: 700 }}>43.7000</span>, Lng: <span style={{ fontWeight: 700 }}>-79.4000</span></span>
+            </div>
+            {/* Next Water Timer (fake value) */}
+            <div style={{ display: 'flex', alignItems: 'center', gap: 10, background: 'rgba(255,255,255,0.10)', borderRadius: 12, padding: '8px 12px', fontWeight: 600, fontSize: 15, color: '#fff' }}>
+              <MdOpacity size={18} color="#4caf50" />
+              <span>Next watering in <span style={{ fontWeight: 700, color: '#4caf50' }}>2 days</span></span>
+            </div>
+            {/* pH Indicator (fake value) */}
+            <div style={{ display: 'flex', alignItems: 'center', gap: 10, background: 'rgba(255,255,255,0.10)', borderRadius: 12, padding: '8px 12px', fontWeight: 600, fontSize: 15, color: '#fff' }}>
+              <MdScience size={18} color="#43a047" />
+              <span>Soil pH: <span style={{ fontWeight: 700, color: '#43a047' }}>6.2</span> <span style={{ color: '#43a047', fontWeight: 700, marginLeft: 4 }}>Good</span></span>
+            </div>
+            {/* Temperature Indicator (fake value) */}
+            <div style={{ display: 'flex', alignItems: 'center', gap: 10, background: 'rgba(255,255,255,0.10)', borderRadius: 12, padding: '8px 12px', fontWeight: 600, fontSize: 15, color: '#fff' }}>
+              <MdDeviceThermostat size={18} color="#ffb300" />
+              <span>Temperature: <span style={{ fontWeight: 700, color: '#ffb300' }}>21°C</span> <span style={{ color: '#ffb300', fontWeight: 700, marginLeft: 4 }}>Good</span></span>
+            </div>
+            {/* Endangered Indicator (hardcoded No) */}
+            <div style={{ display: 'flex', alignItems: 'center', gap: 10, background: 'rgba(255,255,255,0.10)', borderRadius: 12, padding: '8px 12px', fontWeight: 600, fontSize: 15, color: '#fff' }}>
+              <MdWarning size={20} color="#43a047" style={{ flexShrink: 0 }} />
+              <span><span style={{ fontWeight: 700, color: '#43a047' }}>Not Endangered</span></span>
+            </div>
+            {/* Invasive Indicator (hardcoded No) */}
+            <div style={{ display: 'flex', alignItems: 'center', gap: 10, background: 'rgba(255,255,255,0.10)', borderRadius: 12, padding: '8px 12px', fontWeight: 600, fontSize: 15, color: '#fff' }}>
+              <MdWarning size={20} color="#43a047" style={{ flexShrink: 0 }} />
+              <span><span style={{ fontWeight: 700, color: '#43a047' }}>Not Invasive</span></span>
+            </div>
+            {/* Summary Header */}
+            <div style={{ fontWeight: 700, fontSize: 17, color: '#fff', marginTop: 8, marginBottom: 2, letterSpacing: 0.2, fontFamily: 'system-ui, Avenir, Helvetica, Arial, sans-serif' }}>Summary</div>
+            {/* Plant Description */}
+            <div style={{ background: 'rgba(255,255,255,0.10)', borderRadius: 12, padding: '12px 14px', fontWeight: 500, fontSize: 15, color: '#fff', marginTop: 2, minHeight: 60, lineHeight: 1.5, letterSpacing: 0.1, fontFamily: 'system-ui, Avenir, Helvetica, Arial, sans-serif' }}>
+              Daisies are cheerful, easy-to-grow perennials that thrive in a variety of soils. Water every 4 days, provide full sun to partial shade, and maintain a slightly acidic soil pH. Not endangered or invasive.
+            </div>
+          </div>
         </div>
       )}
       {/* Liquid glass button and search bar hover animation styles */}
