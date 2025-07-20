@@ -17,10 +17,12 @@ genai.configure(api_key=api_key)
 client = MongoClient("mongodb+srv://stringbot:u2ZG9kM5q8L0WaNW@plantmap.ipx3g1d.mongodb.net/")
 db = client["plantmap"]
 detections = db["detections"]
-db.detections.create_index([("geometry", "2dsphere")])
+# db.detections.create_index([("geometry", "2dsphere")])
 
 @app.route('/pins/near', methods=['GET'])
 def get_pins_near():
+
+
     lat = request.args.get('lat')
     lon = request.args.get('lon')
     max_distance_meters = float(request.args.get('max_distance', 1000))
@@ -36,10 +38,26 @@ def get_pins_near():
             }
         }
     }
-    res = list(db.detections.find(query, {"_id": 0}))
+    try:
+        res = list(db.detections.find(query, {"_id": 0}))
+    except Exception as e:
+        query = {
+            "geometry.coordinates": {
+                "$near": {
+                    "$geometry": {
+                        "type": "Point",
+                        "coordinates": [float(lon), float(lat)]
+                    },
+                    "$maxDistance": max_distance_meters
+                }
+            }
+        }
+        res = list(db.detections.find(query, {"_id": 0}))
 
     # print(res)
     return res
+
+
 @app.route('/pins/cluster', methods=['GET'])
 def cluster_pins_grid(cell_size_meters=500):
     pipeline = [
