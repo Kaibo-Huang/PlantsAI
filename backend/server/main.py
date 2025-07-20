@@ -11,16 +11,18 @@ from pymongo import MongoClient
 
 app = Flask(__name__)
 cors = CORS(app, resources={r"/*": {"origins": "*"}})
-api_key = 'AIzaSyB6fEHUqwOnsEibGm6P6rz42h4ZzizufhQ'
+api_key = os.getenv("GEMINI_API_KEY")
 genai.configure(api_key=api_key)
 
 client = MongoClient("mongodb+srv://stringbot:u2ZG9kM5q8L0WaNW@plantmap.ipx3g1d.mongodb.net/")
 db = client["plantmap"]
 detections = db["detections"]
-db.detections.create_index([("geometry", "2dsphere")])
+# db.detections.create_index([("geometry", "2dsphere")])
 
 @app.route('/pins/near', methods=['GET'])
 def get_pins_near():
+
+
     lat = request.args.get('lat')
     lon = request.args.get('lon')
     max_distance_meters = float(request.args.get('max_distance', 1000))
@@ -36,10 +38,26 @@ def get_pins_near():
             }
         }
     }
-    res = list(db.detections.find(query, {"_id": 0}))
+    try:
+        res = list(db.detections.find(query, {"_id": 0}))
+    except Exception as e:
+        query = {
+            "geometry.coordinates": {
+                "$near": {
+                    "$geometry": {
+                        "type": "Point",
+                        "coordinates": [float(lon), float(lat)]
+                    },
+                    "$maxDistance": max_distance_meters
+                }
+            }
+        }
+        res = list(db.detections.find(query, {"_id": 0}))
 
     # print(res)
     return res
+
+
 @app.route('/pins/cluster', methods=['GET'])
 def cluster_pins_grid(cell_size_meters=500):
     pipeline = [
@@ -71,33 +89,78 @@ def add_pin():
     alert = request.form.get('alertForCare')
     favorite = request.form.get('favoriteOnMap')
     file = request.files.get('file')
-    
-    file_name = None
-    file_path = None
 
-    if file:
-        UPLOAD_FOLDER = 'uploads'
-        if not os.path.exists(UPLOAD_FOLDER):
-            os.makedirs(UPLOAD_FOLDER)
-        file_path = os.path.join(UPLOAD_FOLDER, file.filename)
-        file.save(file_path)
-        file_name = file.filename
+    if not file:
+        return jsonify({"error": "File upload is required"}), 400
 
-    # Get weather and plant data
+    # Save uploaded file
+    UPLOAD_FOLDER = 'uploads'
+    if not os.path.exists(UPLOAD_FOLDER):
+        os.makedirs(UPLOAD_FOLDER)
+    file_path = os.path.join(UPLOAD_FOLDER, file.filename)
+    file.save(file_path)
+    file_name = file.filename
+
+    # === Weather Data ===
     weather_data = get_weather_data(lat, lon)
-    plant_data = get_plantnet_data([file_path]) if file_name else None
+    weather_condition = weather_data.get("weather", [{}])[0].get("main")
+    if not weather_condition or "error" in weather_data:
+        print("Fallback: Asking Gemini to infer weather from lat/lon")
+        model = genai.GenerativeModel("models/gemini-1.5-flash")
+        weather_prompt = (
+            f"What is the most likely weather condition at latitude {lat} and longitude {lon} right now? "
+            f"Please estimate the typical precipitation level (in mm/month) and average temperature (°C). "
+            f"Output a JSON object with \"main\" (string), \"precipitation\" (number), and \"temperature\" (number)."
+        )
+        try:
+            model = genai.GenerativeModel("models/gemini-1.5-flash")
+            response = model.generate_content(weather_prompt)
+            if response:
+                text = response.text
+                match = re.search(r'\{.*\}', text, re.DOTALL)
+                if match:
+                    json_str = match.group(0)
+                    weather_json = json.loads(json_str)
+                    weather_data = {
+                        "fallback_from_gemini": True,
+                        "weather": [{"main": weather_json.get("main", "unknown")}],
+                        "precipitation": weather_json.get("precipitation", "unknown"),
+                        "temperature": weather_json.get("temperature", "unknown"),
+                    }
+                    print("Weather fallback from Gemini succeeded.")
+                else:
+                    print("Gemini weather fallback failed to return JSON.")
+                    return jsonify({"error": "Gemini weather fallback returned invalid data."}), 500
+        except Exception as e:
+            print("Gemini weather fallback failed:", e)
+            return jsonify({"error": "Failed to fetch weather from both OpenWeather and Gemini."}), 500
 
-    # Get best plant name for Gemini prompt
-    plant_name = "unknown"
-    try:
-        plant_name = plant_data.get("bestMatch", "unknown") if plant_data else "unknown"
-    except Exception as e:
-        print("Error extracting plant name:", e)
+    # === Plant Data ===
+    plant_data = get_plantnet_data([file_path])
+    plant_name = None
 
-    # Build prompt
-    model = genai.GenerativeModel("models/gemini-1.5-flash")  # ✅ this works
+    if plant_data:
+        plant_name = plant_data.get("bestMatch")
+    if not plant_name:
+        print("Fallback: Asking Gemini to identify plant from image.")
+        model = genai.GenerativeModel("models/gemini-1.5-flash")
+        try:
+            with open(file_path, "rb") as img_file:
+                image_data = img_file.read()
+            response = model.generate_content([
+                "Identify the species of plant in this photo.",
+                genai.content_types.ImageContent(image_data)
+            ])
+            if response:
+                plant_name = response.text.strip()
+                plant_data = {"fallback_from_gemini": True, "bestMatch": plant_name}
+        except Exception as e:
+            print("Gemini plant fallback failed:", e)
+            return jsonify({"error": "Failed to identify plant from both PlantNet and Gemini."}), 500
+
+    # === Final Gemini Tips Prompt ===
     prompt = (
-        f"Given the weather condition: {weather_data.get('weather', [{}])[0].get('main', 'unknown')}, "
+        f"Given the weather condition: {weather_condition}, "
         f"location (latitude: {lat}, longitude: {lon}) and the species of the plant: {plant_name}, "
         f"provide a 50 word blurb of tips in taking care of the plant with technical gardening details. "
         f"Also, output a JSON object with the following fields: "
@@ -106,11 +169,11 @@ def add_pin():
         f"Format the JSON as the last part of your response."
     )
 
-    # Call Gemini and extract output
     blurb = ""
     gemini_data = {}
 
     try:
+        model = genai.GenerativeModel("models/gemini-1.5-flash")
         response = model.generate_content(prompt)
         if response:
             text = response.text
@@ -119,12 +182,10 @@ def add_pin():
                 json_str = match.group(0)
                 gemini_data = json.loads(json_str)
                 blurb = text[:text.find('{')].strip()
-    except google.api_core.exceptions.ResourceExhausted:
-        print("Gemini quota exceeded.")
     except Exception as e:
-        print("Error with Gemini generation:", e)
+        print("Error with Gemini tips:", e)
 
-    # Construct MongoDB document
+    # === MongoDB Insert ===
     detection = {
         "type": "Feature",
         "geometry": {
@@ -143,9 +204,13 @@ def add_pin():
             }
         }
     }
-
     detections.insert_one(detection)
-    return jsonify({"message": "Detection added with Gemini tips"}), 201
+    detection.pop('_id', None)
+    return jsonify({
+        "message": "Detection added with Gemini tips",
+        "data": detection
+    }), 201
+
 
 @app.route('/admin/search', methods=['GET', 'POST'])
 def search_plants():
