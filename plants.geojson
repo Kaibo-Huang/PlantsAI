@@ -1,0 +1,175 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          151.22,
+          -33.88
+        ]
+      },
+      "properties": {
+        "scientificName": "Colepia rufiventris (Macquart, 1838)",
+        "family": "Asilidae",
+        "genus": "Colepia",
+        "country": "Australia",
+        "datasetKey": "fa375330-6c8a-11de-8226-b8a03c50a862"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -1.4044,
+          50.9097
+        ]
+      },
+      "properties": {
+        "scientificName": "Erannis defoliaria (Clerck, 1759)",
+        "family": "Geometridae",
+        "genus": "Erannis",
+        "country": "United Kingdom of Great Britain and Northern Ireland",
+        "datasetKey": "7e380070-f762-11e1-a439-00145eb45e9a"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -0.2335,
+          51.4366
+        ]
+      },
+      "properties": {
+        "scientificName": "Operophtera brumata (Linnaeus, 1758)",
+        "family": "Geometridae",
+        "genus": "Operophtera",
+        "country": "United Kingdom of Great Britain and Northern Ireland",
+        "datasetKey": "7e380070-f762-11e1-a439-00145eb45e9a"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -1.4044,
+          50.9097
+        ]
+      },
+      "properties": {
+        "scientificName": "Erannis defoliaria (Clerck, 1759)",
+        "family": "Geometridae",
+        "genus": "Erannis",
+        "country": "United Kingdom of Great Britain and Northern Ireland",
+        "datasetKey": "7e380070-f762-11e1-a439-00145eb45e9a"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -1.4044,
+          50.9097
+        ]
+      },
+      "properties": {
+        "scientificName": "Erannis defoliaria (Clerck, 1759)",
+        "family": "Geometridae",
+        "genus": "Erannis",
+        "country": "United Kingdom of Great Britain and Northern Ireland",
+        "datasetKey": "7e380070-f762-11e1-a439-00145eb45e9a"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -1.4044,
+          50.9097
+        ]
+      },
+      "properties": {
+        "scientificName": "Operophtera brumata (Linnaeus, 1758)",
+        "family": "Geometridae",
+        "genus": "Operophtera",
+        "country": "United Kingdom of Great Britain and Northern Ireland",
+        "datasetKey": "7e380070-f762-11e1-a439-00145eb45e9a"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -1.4044,
+          50.9097
+        ]
+      },
+      "properties": {
+        "scientificName": "Phigalia pilosaria (Denis & Schifferm\u00fcller) , 1775",
+        "family": "Geometridae",
+        "genus": "Phigalia",
+        "country": "United Kingdom of Great Britain and Northern Ireland",
+        "datasetKey": "7e380070-f762-11e1-a439-00145eb45e9a"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          120.322015,
+          22.741214
+        ]
+      },
+      "properties": {
+        "scientificName": "Cosmophila Boisduval, 1833",
+        "family": "Erebidae",
+        "genus": "Cosmophila",
+        "country": "Chinese Taipei",
+        "datasetKey": "e0b8cb67-6667-423d-ab71-08021b6485f3"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          120.983861,
+          24.572417
+        ]
+      },
+      "properties": {
+        "scientificName": "Gesonia Walker, 1859",
+        "family": "Erebidae",
+        "genus": "Gesonia",
+        "country": "Chinese Taipei",
+        "datasetKey": "e0b8cb67-6667-423d-ab71-08021b6485f3"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          120.983861,
+          24.572417
+        ]
+      },
+      "properties": {
+        "scientificName": "Pterophoridae",
+        "family": "Pterophoridae",
+        "genus": null,
+        "country": "Chinese Taipei",
+        "datasetKey": "e0b8cb67-6667-423d-ab71-08021b6485f3"
+      }
+    }
+  ]
+}

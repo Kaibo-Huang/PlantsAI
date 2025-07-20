@@ -24,7 +24,7 @@ def get_pins_near():
     lat = request.args.get('lat')
     lon = request.args.get('lon')
     max_distance_meters = float(request.args.get('max_distance', 1000))
-    print(lat, lon, max_distance_meters)
+    # print(lat, lon, max_distance_meters)
     query = {
         "geometry": {
             "$near": {
@@ -38,7 +38,7 @@ def get_pins_near():
     }
     res = list(db.detections.find(query, {"_id": 0}))
 
-    print(res)
+    # print(res)
     return res
 @app.route('/pins/cluster', methods=['GET'])
 def cluster_pins_grid(cell_size_meters=500):
@@ -206,7 +206,7 @@ def search_plants():
         {"properties.plant.bestMatch": {"$regex": query, "$options": "i"}},
         {"_id": 0, "geometry.coordinates": 1}
     ))
-    print(f"Search results for '{query}': {len(results)} found")
+    # print(f"Search results for '{query}': {len(results)} found")
     # Return all results' lat/lon as [[lat, lon], ...]
     coords_list = []
     for result in results:
@@ -214,7 +214,7 @@ def search_plants():
             coords = result["geometry"]["coordinates"]
             if len(coords) == 2:
                 coords_list.append(coords)
-    print(f"Returning coordinates: {coords_list}")
+    # print(f"Returning coordinates: {coords_list}")
     for coords in coords_list:
         print(f"Search result: lat={coords[0]}, lon={coords[1]}")
     return jsonify(coords_list)
@@ -222,7 +222,11 @@ def search_plants():
 
 @app.route("/admin/view")
 def view_all():
-    return jsonify(list(db.detections.find({}, {"_id": 0})))
+    try:
+        return jsonify(list(db.detections.find({}, {"_id": 0})))
+    except Exception as e:
+        print("Error viewing all detections:", e)
+        return jsonify({"error": "Failed to retrieve data"}), 500
 
 if __name__ == "__main__":
     app.run(debug=True, port=8000)
