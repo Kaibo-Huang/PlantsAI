@@ -7,7 +7,7 @@ response = requests.get(
     params={
         "kingdom": "Plantae",
         "hasCoordinate": "true",
-        "limit": 500
+        "limit": 1500
     }
 )
 results = response.json()["results"]
@@ -28,12 +28,12 @@ for r in results:
     except (TypeError, ValueError):
         print(f"Invalid coordinates for result: {r}")
         continue
-    if -90 <= lon <= 90 and -90 <= lat <= 90:
+    if -179 <= lon <= 179 and -90 <= lat <= 90:
         feature = {
             "type": "Feature",
             "geometry": {
                 "type": "Point",
-                "coordinates": [lon, lat]
+                "coordinates": [lat, lon]
             },
             "properties": {
                 "alert": None,
