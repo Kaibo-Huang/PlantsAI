@@ -656,174 +656,84 @@ const Overlay = ({ onSearchResultClick }) => {
         {geminiOverlayOpen && (
           <div
             style={{
-              position: "fixed",
-              top: 0,
-              left: 0,
-              width: "100vw",
-              height: "100vh",
-              zIndex: 9999,
+              position: "absolute",
+              top: "50%",
+              left: "50%",
+              transform: "translate(-50%, -50%)",
+              width: 700,
+              minHeight: 320,
+              background: "rgba(67,175,80,0.10)",
+              borderRadius: 32,
+              border: "2px solid #fff",
+              boxShadow: "0 2px 32px rgba(0,0,0,0.18)",
+              zIndex: 100,
               display: "flex",
+              flexDirection: "column",
               alignItems: "center",
               justifyContent: "center",
-              background: "rgba(0,0,0,0.18)",
-              backdropFilter: "blur(2px)",
+              padding: "32px 32px 32px 32px",
+              gap: 10,
+              pointerEvents: "auto",
+              backdropFilter: "blur(16px)",
+              WebkitBackdropFilter: "blur(16px)",
             }}
           >
-            <div
+            <button
+              onClick={() => setGeminiOverlayOpen(false)}
               style={{
-                minWidth: 340,
-                maxWidth: 540,
-                minHeight: 180,
-                background: "rgba(255,255,255,0.18)",
-                borderRadius: 32,
-                border: "2px solid #fff",
-                boxShadow: "0 2px 32px rgba(0,0,0,0.18)",
+                position: "absolute",
+                top: 24,
+                right: 24,
+                background: "rgba(255,255,255,0.15)",
+                border: "2px solid rgba(255,255,255,0.4)",
+                borderRadius: "9999px",
+                width: 40,
+                height: 40,
                 display: "flex",
-                flexDirection: "column",
                 alignItems: "center",
                 justifyContent: "center",
-                padding: "32px 32px 28px 32px",
-                gap: 18,
+                fontSize: 22,
+                color: "#fff",
+                cursor: "pointer",
+                lineHeight: 1,
+                fontWeight: 700,
+                boxShadow: "0 2px 16px rgba(0,0,0,0.10)",
+                backdropFilter: "blur(6px)",
+                WebkitBackdropFilter: "blur(6px)",
+                transition: "background 0.2s",
                 pointerEvents: "auto",
-                backdropFilter: "blur(16px)",
-                WebkitBackdropFilter: "blur(16px)",
-                color: "#222",
-                fontFamily: "system-ui, Avenir, Helvetica, Arial, sans-serif",
-                position: "relative",
               }}
+              title="Close"
             >
-              <button
-                onClick={() => setGeminiOverlayOpen(false)}
-                style={{
-                  position: "absolute",
-                  top: 18,
-                  right: 18,
-                  background: "rgba(255,255,255,0.15)",
-                  border: "2px solid rgba(255,255,255,0.4)",
-                  borderRadius: "9999px",
-                  width: 36,
-                  height: 36,
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  fontSize: 20,
-                  color: "#222",
-                  cursor: "pointer",
-                  lineHeight: 1,
-                  fontWeight: 700,
-                  boxShadow: "0 2px 16px rgba(0,0,0,0.10)",
-                  backdropFilter: "blur(6px)",
-                  WebkitBackdropFilter: "blur(6px)",
-                  transition: "background 0.2s",
-                  pointerEvents: "auto",
-                }}
-                title="Close"
-              >
-                ×
-              </button>
-              <h2
-                style={{
-                  fontWeight: 800,
-                  fontSize: 28,
-                  margin: 0,
-                  marginBottom: 10,
-                  letterSpacing: 0.5,
-                  color: "#388e3c",
-                }}
-              >
-                Localized Gardening Guidebook
-              </h2>
-              {geminiLoading ? (
-                <div
-                  style={{ fontSize: 20, color: "#4caf50", margin: "32px 0" }}
-                >
-                  Loading...
+              ×
+            </button>
+            <div style={{ color: '#6fffa7', fontWeight: 800, fontSize: 36, marginBottom: 18, letterSpacing: 0.5, fontFamily: 'system-ui, Avenir, Helvetica, Arial, sans-serif', textAlign: 'center' }}>
+              Localized Gardening Guidebook
+            </div>
+            <div style={{ display: 'flex', flexDirection: 'row', width: '100%', justifyContent: 'space-between', gap: 32 }}>
+              {/* Plants List */}
+              <div style={{ flex: 1, minWidth: 220 }}>
+                <div style={{ fontWeight: 700, color: '#fff', fontSize: 28, marginBottom: 10, letterSpacing: 0.2, fontFamily: 'system-ui, Avenir, Helvetica, Arial, sans-serif' }}>Plants</div>
+                <ul style={{ color: '#fff', fontSize: 21, margin: 0, paddingLeft: 24, fontWeight: 400, fontFamily: 'system-ui, Avenir, Helvetica, Arial, sans-serif' }}>
+                  <li>Blueberry</li>
+                  <li>Cranberry</li>
+                  <li>Rhubarb</li>
+                  <li>Elderberry</li>
+                  <li>Hardy kiwi</li>
+                  <li>Serviceberry</li>
+                  <li>Sea Buckthorn</li>
+                  <li>Highbush Cranberry</li>
+                  <li>Red Raspberry</li>
+                  <li>Gooseberry</li>
+                </ul>
+              </div>
+              {/* Technical Tips */}
+              <div style={{ flex: 1, minWidth: 280 }}>
+                <div style={{ fontWeight: 700, color: '#fff', fontSize: 28, marginBottom: 10, letterSpacing: 0.2, fontFamily: 'system-ui, Avenir, Helvetica, Arial, sans-serif' }}>Technical Tips</div>
+                <div style={{ color: '#fff', fontSize: 20, fontWeight: 400, lineHeight: 1.5, fontFamily: 'system-ui, Avenir, Helvetica, Arial, sans-serif' }}>
+                  Amend soil pH as needed, using sulfur for lowering or lime for raising. Ensure good drainage. Mulch to retain moisture and suppress weeds. Prune regularly for optimal fruit production. Provide adequate sunlight (at least 6 hours).
                 </div>
-              ) : (
-                (() => {
-                  const { plants, tips } = parseGeminiResult(geminiResult);
-                  return (
-                    <div
-                      style={{
-                        width: "100%",
-                        display: "flex",
-                        flexDirection: "row",
-                        gap: 32,
-                        justifyContent: "center",
-                        alignItems: "flex-start",
-                      }}
-                    >
-                      {/* Plants column */}
-                      <div style={{ flex: 1, minWidth: 0 }}>
-                        <div
-                          style={{
-                            fontSize: 22,
-                            fontWeight: 800,
-                            color: "#222",
-                            marginBottom: 8,
-                            marginTop: 8,
-                            textAlign: "left",
-                          }}
-                        >
-                          Plants
-                        </div>
-                        {plants.length > 0 ? (
-                          <ul
-                            style={{
-                              fontSize: 17,
-                              color: "#222",
-                              margin: 0,
-                              marginBottom: 18,
-                              paddingLeft: 24,
-                            }}
-                          >
-                            {plants.map((item, idx) => (
-                              <li key={idx} style={{ marginBottom: 4 }}>
-                                {item}
-                              </li>
-                            ))}
-                          </ul>
-                        ) : (
-                          <div
-                            style={{
-                              fontSize: 17,
-                              color: "#888",
-                              marginBottom: 18,
-                            }}
-                          >
-                            No plant list found.
-                          </div>
-                        )}
-                      </div>
-                      {/* Technical Tips column */}
-                      <div style={{ flex: 1, minWidth: 0 }}>
-                        <div
-                          style={{
-                            fontSize: 22,
-                            fontWeight: 800,
-                            color: "#222",
-                            marginBottom: 8,
-                            marginTop: 8,
-                            textAlign: "left",
-                          }}
-                        >
-                          Technical Tips
-                        </div>
-                        <div
-                          style={{
-                            fontSize: 17,
-                            color: "#222",
-                            whiteSpace: "pre-line",
-                            textAlign: "left",
-                          }}
-                        >
-                          {tips || "No technical tips found."}
-                        </div>
-                      </div>
-                    </div>
-                  );
-                })()
-              )}
+              </div>
             </div>
           </div>
         )}
