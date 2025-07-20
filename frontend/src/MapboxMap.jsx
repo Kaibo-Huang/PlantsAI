@@ -223,7 +223,8 @@ const MapboxMap = forwardRef((props, ref) => {
         pin.geometry.coordinates &&
         pin.geometry.coordinates.length === 2
       ) {
-        const [lat, lon] = pin.geometry.coordinates;
+        // const [lat, lon] = pin.geometry.coordinates;
+        const [lon, lat] = pin.geometry.coordinates;
         const el = document.createElement("div");
         el.innerHTML = plantSVG;
         el.style.width = "56px";
@@ -234,7 +235,7 @@ const MapboxMap = forwardRef((props, ref) => {
 
         el.addEventListener("click", (event) => {
           event.stopPropagation();
-          setDeletePin({ marker, lng: lon, lat: lat });
+          setDeletePin({ marker, lng: lon, lat: lat, pin });
           setShowDeletePopup(true);
           setTimeout(() => {
             let inner = el.querySelector(".pending-marker");
@@ -556,24 +557,36 @@ const MapboxMap = forwardRef((props, ref) => {
     },
   }));
 
-  // === Gemini Tips extraction ===
-  const pH = geminiTips?.soil_pH;
-  const temperature = geminiTips?.temperature;
-  const isEndangered = geminiTips?.endangered;
-  const isInvasive = geminiTips?.invasive;
-  const blurb = geminiTips?.blurb;
+  // === Gemini Tips extraction for selected pin (delete popup) ===
+  let selectedGeminiTips = null;
+  let selectedWeather = null;
+  if (deletePin?.pin?.properties) {
+    selectedGeminiTips = deletePin.pin.properties.gemini_tips || {};
+    selectedWeather = deletePin.pin.properties.weather || {};
+  }
+  const selectedPH = selectedGeminiTips?.details?.soil_pH;
+  const selectedTemperature = selectedWeather?.temperature;
+  const selectedIsEndangered = selectedGeminiTips?.details?.endangered;
+  const selectedIsInvasive = selectedGeminiTips?.details?.invasive;
+  const selectedBlurb = selectedGeminiTips?.blurb;
 
-  // === Normalized for visual indicators ===
-  const pHPercent = pH ? Math.min(Math.max((pH - 3) / 5, 0), 1) : 0; // Normalize from pH ~3–8
-  const tempPercent = temperature
-    ? Math.min(Math.max((temperature - 5) / 30, 0), 1)
-    : 0; // Normalize 5–35°C
+  // Normalized for visual indicators
+  const selectedPHPercent = selectedPH
+    ? Math.min(Math.max((selectedPH - 3) / 5, 0), 1)
+    : 0;
+  const selectedTempPercent = selectedTemperature
+    ? Math.min(Math.max((selectedTemperature - 5) / 30, 0), 1)
+    : 0;
 
-  // === Label helpers ===
-  const pHLabel = pH > 5.5 && pH < 7.5 ? "Good" : "Out of Range";
-  const tempLabel =
-    temperature >= 15 && temperature <= 30 ? "Good" : "Too Low/High";
+  // Label helpers
+  const selectedPHLabel =
+    selectedPH > 5.5 && selectedPH < 7.5 ? "Good" : "Out of Range";
+  const selectedTempLabel =
+    selectedTemperature >= 15 && selectedTemperature <= 30
+      ? "Good"
+      : "Too Low/High";
 
+  // ...existing code...
   return (
     <div style={{ position: "relative", height: "100vh", width: "100vw" }}>
       <div
@@ -997,9 +1010,9 @@ const MapboxMap = forwardRef((props, ref) => {
             right: 32,
             width: 340,
             // Overlay tint logic: red if endangered, yellow if invasive, else green
-            background: isEndangered
+            background: selectedIsEndangered
               ? "rgba(229,57,53,0.13)"
-              : isInvasive
+              : selectedIsInvasive
               ? "rgba(255,179,0,0.13)"
               : "rgba(76,175,80,0.08)",
             borderRadius: 32,
@@ -1160,24 +1173,32 @@ const MapboxMap = forwardRef((props, ref) => {
               }}
             >
               <CircularIndicator
-                percent={pHPercent}
-                icon={<MdScience size={18} color={getStatusColor(pHPercent)} />}
+                percent={selectedPHPercent}
+                icon={
+                  <MdScience
+                    size={18}
+                    color={getStatusColor(selectedPHPercent)}
+                  />
+                }
               />
               <span>
                 <span style={{ color: "#fff" }}>Soil pH:</span>{" "}
                 <span
-                  style={{ fontWeight: 700, color: getStatusColor(pHPercent) }}
+                  style={{
+                    fontWeight: 700,
+                    color: getStatusColor(selectedPHPercent),
+                  }}
                 >
-                  {pH ?? "N/A"}
+                  {selectedPH ?? "N/A"}
                 </span>
                 <span
                   style={{
-                    color: getStatusColor(pHPercent),
+                    color: getStatusColor(selectedPHPercent),
                     fontWeight: 700,
                     marginLeft: 4,
                   }}
                 >
-                  {pHLabel}
+                  {selectedPHLabel}
                 </span>
               </span>
             </div>
@@ -1238,11 +1259,11 @@ const MapboxMap = forwardRef((props, ref) => {
               }}
             >
               <CircularIndicator
-                percent={tempPercent}
+                percent={selectedTempPercent}
                 icon={
                   <MdDeviceThermostat
                     size={18}
-                    color={getStatusColor(tempPercent)}
+                    color={getStatusColor(selectedTempPercent)}
                   />
                 }
               />
@@ -1251,19 +1272,19 @@ const MapboxMap = forwardRef((props, ref) => {
                 <span
                   style={{
                     fontWeight: 700,
-                    color: getStatusColor(tempPercent),
+                    color: getStatusColor(selectedTempPercent),
                   }}
                 >
-                  {temperature ?? "N/A"}°C
+                  {selectedTemperature ?? "N/A"}°C
                 </span>
                 <span
                   style={{
-                    color: getStatusColor(tempPercent),
+                    color: getStatusColor(selectedTempPercent),
                     fontWeight: 700,
                     marginLeft: 4,
                   }}
                 >
-                  {tempLabel}
+                  {selectedTempLabel}
                 </span>
               </span>
             </div>
@@ -1308,7 +1329,7 @@ const MapboxMap = forwardRef((props, ref) => {
               </span>
             </div> */}
             {/* Endangered Indicator */}
-            {isEndangered && (
+            {selectedIsEndangered && (
               <div
                 className="indicator-hover"
                 style={{
@@ -1370,7 +1391,7 @@ const MapboxMap = forwardRef((props, ref) => {
               </div>
             )} */}
             {/* Invasive Indicator */}
-            {isInvasive && (
+            {selectedIsInvasive && (
               <div
                 className="indicator-hover"
                 style={{
@@ -1467,7 +1488,7 @@ const MapboxMap = forwardRef((props, ref) => {
               className="indicator-hover"
             >
               {/* Replace with actual plant description */}
-              <span>{blurb ?? "No summary provided by Gemini."}</span>
+              <span>{selectedBlurb ?? "No summary provided by Gemini."}</span>
 
               {/* <span>
                 This is a placeholder for a plant description. It should be up
