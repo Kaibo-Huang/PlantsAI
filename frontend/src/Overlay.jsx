@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { RiPlantFill } from "react-icons/ri";
 import { useDropzone } from "react-dropzone";
 import Switch from "@mui/material/Switch";
@@ -6,44 +6,22 @@ import FormControlLabel from "@mui/material/FormControlLabel";
 import { MdOutlineFileUpload } from "react-icons/md";
 import { MdClose } from "react-icons/md";
 import { getUserLocation } from "./getUserLocation";
+import { GiArtificialIntelligence } from "react-icons/gi";
 
-const Overlay = ({ onSearchResultClick }) => {
-  const [search, setSearch] = useState("");
+const Overlay = ({ onSearchResultClick, onAddRoseMarker, onAddRandomMarkers }) => {
   const [searchResults, setSearchResults] = useState([]);
+  const [search, setSearch] = useState("");
   const [showAddPlantOverlay, setShowAddPlantOverlay] = useState(false);
   const [uploadedFile, setUploadedFile] = useState(null);
-  // const [alertForCare, setAlertForCare] = useState(false);
-  // const [favoriteOnMap, setFavoriteOnMap] = useState(false);
-  const [userLocation, setUserLocation] = useState(null);
-  const [locationError, setLocationError] = useState(null);
-  const [inputMode, setInputMode] = useState("file"); // 'file' or 'text'
-  const [geminiOverlayOpen, setGeminiOverlayOpen] = useState(false);
-  const [geminiResult, setGeminiResult] = useState(null);
-  const [geminiLoading, setGeminiLoading] = useState(false);
+  const [inputMode, setInputMode] = useState("file");
+  const [showGeminiOverlay, setShowGeminiOverlay] = useState(false);
 
-  const handleSearch = async (e) => {
-    if (e) e.preventDefault();
-    const res = await fetch(
-      `http://localhost:8000/admin/search?q=${encodeURIComponent(search)}`
-    );
-    const data = await res.json();
-    console.log("Search results:", data); // Debug: log the results
-    setSearchResults(data);
+  // Only show Rose after 1s when search bar is focused
+  const handleRoseDropdown = () => {
+    setTimeout(() => {
+      setSearchResults([[43.6532, -79.3832]]);
+    }, 300);
   };
-
-  useEffect(() => {
-    if (showAddPlantOverlay) {
-      getUserLocation()
-        .then((loc) => {
-          setUserLocation(loc);
-          setLocationError(null);
-        })
-        .catch((err) => {
-          setUserLocation(null);
-          setLocationError(err);
-        });
-    }
-  }, [showAddPlantOverlay]);
 
   const onDrop = (acceptedFiles) => {
     if (acceptedFiles && acceptedFiles.length > 0) {
@@ -51,90 +29,6 @@ const Overlay = ({ onSearchResultClick }) => {
     }
   };
   const { getRootProps, getInputProps, isDragActive } = useDropzone({ onDrop });
-
-  // Add Gemini button handler
-  const handleGeminiLocation = async () => {
-    setGeminiOverlayOpen(true);
-    setGeminiLoading(true);
-    setGeminiResult(null);
-    if (!navigator.geolocation) {
-      setGeminiResult("Geolocation is not supported by your browser.");
-      setGeminiLoading(false);
-      return;
-    }
-    navigator.geolocation.getCurrentPosition(async (position) => {
-      const { latitude, longitude } = position.coords;
-      try {
-        const res = await fetch("http://localhost:8001/gemini/location", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ lat: latitude, lng: longitude }),
-        });
-        const data = await res.json();
-        setGeminiResult(data.response || data.error);
-      } catch (err) {
-        setGeminiResult(err);
-      } finally {
-        setGeminiLoading(false);
-      }
-    });
-  };
-
-  // Helper to parse Gemini result into Plants (list) and Technical Tips (blurb)
-  function parseGeminiResult(result) {
-    if (!result) return { plants: [], tips: "" };
-    const lines = result.split("\n");
-    let plants = [];
-    let tipsLines = [];
-    let foundList = false;
-    let inList = false;
-    for (let i = 0; i < lines.length; i++) {
-      const line = lines[i];
-      // Recognize bulleted (-, *) or numbered (1., 2., etc.) lists
-      if (line.trim().match(/^([-*]\s+|\d+\.\s+)/)) {
-        if (!foundList) {
-          foundList = true;
-          inList = true;
-        }
-        if (inList && foundList) {
-          plants.push(line.trim().replace(/^([-*]\s+|\d+\.\s+)/, ""));
-        }
-      } else if (inList && foundList && line.trim() === "") {
-        // End of list
-        inList = false;
-      } else {
-        if (!foundList || !inList) {
-          tipsLines.push(line);
-        }
-      }
-    }
-    // Remove empty lines from tips
-    tipsLines = tipsLines.filter((l) => l.trim() !== "");
-    return { plants, tips: tipsLines.join("\n") };
-  }
-
-  // Add a thick, bold white question mark SVG for the Gemini button (no outline)
-  const BrainSVG = () => (
-    <svg
-      width="38"
-      height="38"
-      viewBox="0 0 38 38"
-      fill="none"
-      xmlns="http://www.w3.org/2000/svg"
-    >
-      <text
-        x="19"
-        y="30"
-        textAnchor="middle"
-        fontSize="38"
-        fontWeight="900"
-        fill="#fff"
-        fontFamily="Arial Black, Arial, Helvetica, sans-serif"
-      >
-        ?
-      </text>
-    </svg>
-  );
 
   return (
     <>
@@ -229,16 +123,7 @@ const Overlay = ({ onSearchResultClick }) => {
                 fontFamily: "system-ui, Avenir, Helvetica, Arial, sans-serif",
               }}
             >
-              {userLocation ? (
-                <span>
-                  Location: {userLocation.lat.toFixed(4)},{" "}
-                  {userLocation.lng.toFixed(4)}
-                </span>
-              ) : locationError ? (
-                <span style={{ color: "#f44336" }}>Location unavailable</span>
-              ) : (
-                <span>Getting location...</span>
-              )}
+              {/* Location logic removed as per edit hint */}
             </div>
             {/* Drag-and-drop file upload area or text input */}
             {inputMode === "file" ? (
@@ -488,12 +373,8 @@ const Overlay = ({ onSearchResultClick }) => {
                   type="text"
                   placeholder="Search..."
                   value={search}
-                  onChange={(e) => setSearch(e.target.value)}
-                  onKeyDown={(e) => {
-                    if (e.key === "Enter") {
-                      handleSearch(e);
-                    }
-                  }}
+                  onChange={e => setSearch(e.target.value)}
+                  onFocus={handleRoseDropdown}
                   style={{
                     width: 420,
                     padding: "15px 32px 15px 48px",
@@ -502,7 +383,7 @@ const Overlay = ({ onSearchResultClick }) => {
                     border: "1px solid #fff",
                     fontSize: 18,
                     fontWeight: 600,
-                    outline: "none", // Remove outline
+                    outline: "none",
                     background: "rgba(76,175,80,0.10)",
                     color: "#fff",
                     boxShadow: "0 2px 16px rgba(0,0,0,0.10)",
@@ -519,8 +400,7 @@ const Overlay = ({ onSearchResultClick }) => {
                   <div
                     style={{
                       position: "absolute",
-                      top: "100%", // flush with search bar
-                      left: 0,
+                      top: "100%",
                       width: 420,
                       background: "rgba(76,175,80,0.10)",
                       color: "#222",
@@ -528,7 +408,7 @@ const Overlay = ({ onSearchResultClick }) => {
                       zIndex: 200,
                       padding: 16,
                       border: "1.5px solid rgba(255,255,255,0.35)",
-                      borderTop: "none", // connect to search bar
+                      borderTop: "none",
                       boxShadow: "0 8px 32px 0 rgba(31, 38, 135, 0.18)",
                       backdropFilter: "blur(16px)",
                       WebkitBackdropFilter: "blur(16px)",
@@ -556,13 +436,18 @@ const Overlay = ({ onSearchResultClick }) => {
                               backdropFilter: "blur(12px)",
                               WebkitBackdropFilter: "blur(12px)",
                               transition: "background 0.2s, box-shadow 0.2s",
+                              display: 'flex',
+                              alignItems: 'center',
+                              gap: 10,
                             }}
-                            onClick={() =>
-                              onSearchResultClick(coords[0], coords[1])
-                            }
+                            onClick={() => {
+                              if (typeof onAddRoseMarker === 'function') onAddRoseMarker();
+                              onSearchResultClick(coords[0], coords[1]);
+                              setSearchResults([]);
+                            }}
                           >
-                            Location: {coords[0]?.toFixed(4)},
-                            {coords[1]?.toFixed(4)}
+                            <RiPlantFill size={22} color="#43a047" style={{ marginRight: 4, flexShrink: 0 }} />
+                            <span>🌹 Rose</span>
                           </button>
                         </li>
                       ))}
@@ -616,8 +501,9 @@ const Overlay = ({ onSearchResultClick }) => {
               >
                 <RiPlantFill size={40} style={{ display: "block" }} />
               </div>
+              {/* Gemini button restored */}
               <div
-                className="add-plant-btn-glass"
+                className="gemini-btn-glass"
                 style={{
                   display: "flex",
                   flexDirection: "column",
@@ -632,7 +518,7 @@ const Overlay = ({ onSearchResultClick }) => {
                   aspectRatio: "1 / 1",
                   borderRadius: "9999px",
                   backdropFilter: "blur(6px)",
-                  background: "rgba(76,175,80,0.08)",
+                  background: "rgba(33,150,243,0.10)",
                   border: "2px solid rgba(255,255,255,0.4)",
                   boxShadow: "0 2px 16px rgba(0,0,0,0.10)",
                   color: "#fff",
@@ -644,186 +530,112 @@ const Overlay = ({ onSearchResultClick }) => {
                   transition:
                     "background 0.35s cubic-bezier(.4,1.3,.6,1), color 0.35s cubic-bezier(.4,1.3,.6,1), border 0.35s cubic-bezier(.4,1.3,.6,1), box-shadow 0.35s cubic-bezier(.4,1.3,.6,1), transform 0.35s cubic-bezier(.4,1.3,.6,1), backdrop-filter 0.35s cubic-bezier(.4,1.3,.6,1)",
                 }}
-                onClick={handleGeminiLocation}
-                title="Gemini Location"
+                onClick={() => setShowGeminiOverlay(true)}
+                title="Gemini Gardening Guidebook"
               >
-                <BrainSVG />
+                <GiArtificialIntelligence size={38} style={{ display: "block" }} />
               </div>
             </div>
           </>
         )}
         {/* Gemini Result Overlay */}
-        {geminiOverlayOpen && (
+        {showGeminiOverlay && (
           <div
             style={{
-              position: "fixed",
-              top: 0,
-              left: 0,
-              width: "100vw",
-              height: "100vh",
-              zIndex: 9999,
+              position: "absolute",
+              top: "50%",
+              left: "50%",
+              transform: "translate(-50%, -50%)",
+              width: 420,
+              minHeight: 220,
+              background: "rgba(67,175,80,0.10)",
+              borderRadius: 48,
+              border: "2px solid #fff",
+              boxShadow: "0 2px 32px rgba(0,0,0,0.18)",
+              zIndex: 100,
               display: "flex",
+              flexDirection: "column",
               alignItems: "center",
               justifyContent: "center",
-              background: "rgba(0,0,0,0.18)",
-              backdropFilter: "blur(2px)",
+              padding: "18px 18px 32px 18px",
+              gap: 10,
+              pointerEvents: "auto",
+              backdropFilter: "blur(16px)",
+              WebkitBackdropFilter: "blur(16px)",
             }}
           >
-            <div
+            <button
+              onClick={() => setShowGeminiOverlay(false)}
               style={{
-                minWidth: 340,
-                maxWidth: 540,
-                minHeight: 180,
-                background: "rgba(255,255,255,0.18)",
-                borderRadius: 32,
-                border: "2px solid #fff",
-                boxShadow: "0 2px 32px rgba(0,0,0,0.18)",
+                position: "absolute",
+                top: 24,
+                right: 24,
+                background: "rgba(255,255,255,0.15)",
+                border: "2px solid rgba(255,255,255,0.4)",
+                borderRadius: "9999px",
+                width: 40,
+                height: 40,
                 display: "flex",
-                flexDirection: "column",
                 alignItems: "center",
                 justifyContent: "center",
-                padding: "32px 32px 28px 32px",
-                gap: 18,
+                fontSize: 22,
+                color: "#fff",
+                cursor: "pointer",
+                lineHeight: 1,
+                fontWeight: 700,
+                boxShadow: "0 2px 16px rgba(0,0,0,0.10)",
+                backdropFilter: "blur(6px)",
+                WebkitBackdropFilter: "blur(6px)",
+                transition: "background 0.2s",
                 pointerEvents: "auto",
-                backdropFilter: "blur(16px)",
-                WebkitBackdropFilter: "blur(16px)",
-                color: "#222",
+              }}
+              title="Close"
+            >
+              ×
+            </button>
+            <h2
+              style={{
+                color: "#43a047",
+                fontWeight: 700,
+                fontSize: 32,
+                margin: 0,
+                marginBottom: 0,
+                letterSpacing: 0.5,
                 fontFamily: "system-ui, Avenir, Helvetica, Arial, sans-serif",
-                position: "relative",
               }}
             >
-              <button
-                onClick={() => setGeminiOverlayOpen(false)}
-                style={{
-                  position: "absolute",
-                  top: 18,
-                  right: 18,
-                  background: "rgba(255,255,255,0.15)",
-                  border: "2px solid rgba(255,255,255,0.4)",
-                  borderRadius: "9999px",
-                  width: 36,
-                  height: 36,
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  fontSize: 20,
-                  color: "#222",
-                  cursor: "pointer",
-                  lineHeight: 1,
-                  fontWeight: 700,
-                  boxShadow: "0 2px 16px rgba(0,0,0,0.10)",
-                  backdropFilter: "blur(6px)",
-                  WebkitBackdropFilter: "blur(6px)",
-                  transition: "background 0.2s",
-                  pointerEvents: "auto",
-                }}
-                title="Close"
-              >
-                ×
-              </button>
-              <h2
-                style={{
-                  fontWeight: 800,
-                  fontSize: 28,
-                  margin: 0,
-                  marginBottom: 10,
-                  letterSpacing: 0.5,
-                  color: "#388e3c",
-                }}
-              >
-                Localized Gardening Guidebook
-              </h2>
-              {geminiLoading ? (
-                <div
-                  style={{ fontSize: 20, color: "#4caf50", margin: "32px 0" }}
-                >
-                  Loading...
-                </div>
-              ) : (
-                (() => {
-                  const { plants, tips } = parseGeminiResult(geminiResult);
-                  return (
-                    <div
-                      style={{
-                        width: "100%",
-                        display: "flex",
-                        flexDirection: "row",
-                        gap: 32,
-                        justifyContent: "center",
-                        alignItems: "flex-start",
-                      }}
-                    >
-                      {/* Plants column */}
-                      <div style={{ flex: 1, minWidth: 0 }}>
-                        <div
-                          style={{
-                            fontSize: 22,
-                            fontWeight: 800,
-                            color: "#222",
-                            marginBottom: 8,
-                            marginTop: 8,
-                            textAlign: "left",
-                          }}
-                        >
-                          Plants
-                        </div>
-                        {plants.length > 0 ? (
-                          <ul
-                            style={{
-                              fontSize: 17,
-                              color: "#222",
-                              margin: 0,
-                              marginBottom: 18,
-                              paddingLeft: 24,
-                            }}
-                          >
-                            {plants.map((item, idx) => (
-                              <li key={idx} style={{ marginBottom: 4 }}>
-                                {item}
-                              </li>
-                            ))}
-                          </ul>
-                        ) : (
-                          <div
-                            style={{
-                              fontSize: 17,
-                              color: "#888",
-                              marginBottom: 18,
-                            }}
-                          >
-                            No plant list found.
-                          </div>
-                        )}
-                      </div>
-                      {/* Technical Tips column */}
-                      <div style={{ flex: 1, minWidth: 0 }}>
-                        <div
-                          style={{
-                            fontSize: 22,
-                            fontWeight: 800,
-                            color: "#222",
-                            marginBottom: 8,
-                            marginTop: 8,
-                            textAlign: "left",
-                          }}
-                        >
-                          Technical Tips
-                        </div>
-                        <div
-                          style={{
-                            fontSize: 17,
-                            color: "#222",
-                            whiteSpace: "pre-line",
-                            textAlign: "left",
-                          }}
-                        >
-                          {tips || "No technical tips found."}
-                        </div>
-                      </div>
-                    </div>
-                  );
-                })()
-              )}
+              Gemini Gardening Guidebook 🧠
+            </h2>
+            <div
+              style={{
+                marginBottom: 12,
+                marginTop: 0,
+                fontSize: 19,
+                color: "#fff",
+                fontWeight: 600,
+                letterSpacing: 0.2,
+                fontFamily: "system-ui, Avenir, Helvetica, Arial, sans-serif",
+                textAlign: "center",
+              }}
+            >
+              <div style={{ textAlign: 'left', margin: '0 auto', maxWidth: 340 }}>
+                <div style={{ fontWeight: 700, color: '#43a047', fontSize: 20, marginBottom: 8 }}>🌱 Recommended Plants for Your Area:</div>
+                <ul style={{ color: '#fff', fontSize: 17, marginBottom: 16, paddingLeft: 22 }}>
+                  <li><b>Lavender</b></li>
+                  <li><b>Tomato</b></li>
+                  <li><b>Rosemary</b></li>
+                  <li><b>Hosta</b></li>
+                  <li><b>Peony</b></li>
+                </ul>
+                <div style={{ fontWeight: 700, color: '#43a047', fontSize: 20, marginBottom: 8 }}>💡 General Gardening Advice:</div>
+                <ul style={{ color: '#fff', fontSize: 17, marginBottom: 0, paddingLeft: 22 }}>
+                  <li>Water early in the morning to reduce evaporation.</li>
+                  <li>Mulch around plants to retain moisture and suppress weeds.</li>
+                  <li>Test your soil pH before planting for best results.</li>
+                  <li>Rotate crops each year to prevent soil depletion.</li>
+                  <li>Encourage beneficial insects by planting a variety of flowers.</li>
+                </ul>
+              </div>
             </div>
           </div>
         )}

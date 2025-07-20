@@ -23,6 +23,28 @@ const plantSVG = `<svg width="56" height="56" viewBox="0 0 40 40" fill="none" xm
 
 mapboxgl.accessToken = 'pk.eyJ1Ijoia2FpYm9odWFuZyIsImEiOiJjbWQ5ZjBsY3IwNzQ1MnBxMTcwbTU5djNqIn0.EAoOvgDb4m_eShy5rxM72g';
 
+// Add two hardcoded plant info sets
+const PLANT_INFOS = [
+  {
+    name: 'Aloe Vera',
+    watering: '7 days',
+    soilPH: '6.0',
+    light: 'Full Sun',
+    endangered: 'No',
+    invasive: 'No',
+    blurb: 'Aloe Vera is a succulent plant species of the genus Aloe. It is cultivated for agricultural and medicinal uses. Water every 7 days, prefers full sun, and thrives in slightly acidic soil (pH 6.0). Not endangered or invasive.'
+  },
+  {
+    name: 'Ranunculus (White)',
+    watering: '3 days',
+    soilPH: '6.5',
+    light: 'Full Sun to Partial Shade',
+    endangered: 'No',
+    invasive: 'No',
+    blurb: 'White Ranunculus produces lush, layered blooms and thrives in cool weather. Water every 3 days, keep soil moist but not soggy, and provide full sun to partial shade. Prefers slightly acidic to neutral soil (pH 6.5). Not endangered or invasive.'
+  }
+];
+
 const MapboxMap = forwardRef((props, ref) => {
   const mapRef = useRef(null);
   const markersRef = useRef([]);
@@ -40,6 +62,8 @@ const MapboxMap = forwardRef((props, ref) => {
   const [isEndangered, setIsEndangered] = useState(true); // Example: set dynamically
   const [isInvasive, setIsInvasive] = useState(true);     // Example: set dynamically
   const [showQueryPanel, setShowQueryPanel] = useState(false);
+  const [plantInfoIndex, setPlantInfoIndex] = useState(0);
+  const plantInfo = PLANT_INFOS[plantInfoIndex];
 
   // No animation or swipe state
   // No swipe or animation handlers
@@ -188,6 +212,18 @@ const MapboxMap = forwardRef((props, ref) => {
     return () => document.removeEventListener('keydown', handleKeyDown);
   }, []);
 
+  // Add Ctrl+P hotkey to toggle plant info
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      if ((e.ctrlKey || e.metaKey) && (e.key === 'p' || e.key === 'P')) {
+        e.preventDefault();
+        setPlantInfoIndex(idx => (idx + 1) % PLANT_INFOS.length);
+      }
+    };
+    document.addEventListener('keydown', handleKeyDown);
+    return () => document.removeEventListener('keydown', handleKeyDown);
+  }, []);
+
   useEffect(() => {
     if (!mapRef.current || !pins || !Array.isArray(pins)) return;
 
@@ -259,6 +295,49 @@ const MapboxMap = forwardRef((props, ref) => {
       }
     });
   }, [pins]);
+
+  useEffect(() => {
+    // Add static plantSVG marker at Toronto
+    if (mapRef.current) {
+      const lng = -79.3832;
+      const lat = 43.6532;
+      const el = document.createElement('div');
+      el.style.width = '56px';
+      el.style.height = '56px';
+      el.style.display = 'flex';
+      el.style.alignItems = 'center';
+      el.style.justifyContent = 'center';
+      el.style.background = 'transparent';
+      el.innerHTML = plantSVG;
+      new mapboxgl.Marker(el).setLngLat([lng, lat]).addTo(mapRef.current);
+    }
+
+    // Add Ctrl+O (or Cmd+O) hotkey for 3 random plant markers
+    const handleHotkey = (e) => {
+      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'o') {
+        if (!mapRef.current) return;
+        const map = mapRef.current;
+        const bounds = map.getBounds();
+        for (let i = 0; i < 3; i++) {
+          const lng = bounds.getWest() + Math.random() * (bounds.getEast() - bounds.getWest());
+          const lat = bounds.getSouth() + Math.random() * (bounds.getNorth() - bounds.getSouth());
+          const el = document.createElement('div');
+          el.style.width = '56px';
+          el.style.height = '56px';
+          el.style.display = 'flex';
+          el.style.alignItems = 'center';
+          el.style.justifyContent = 'center';
+          el.style.background = 'transparent';
+          el.innerHTML = plantSVG;
+          new mapboxgl.Marker(el).setLngLat([lng, lat]).addTo(map);
+        }
+      }
+    };
+    window.addEventListener('keydown', handleHotkey);
+    return () => {
+      window.removeEventListener('keydown', handleHotkey);
+    };
+  }, [mapRef.current]);
 
   const setShowPopupAndRef = (val) => {
     showPopupRef.current = val;
@@ -477,6 +556,39 @@ const MapboxMap = forwardRef((props, ref) => {
     flyToLocation: (lat, lng) => {
       if (mapRef.current) {
         mapRef.current.flyTo({ center: [lng, lat], zoom: 16, essential: true });
+      }
+    },
+    addRoseMarker: () => {
+      if (!mapRef.current) return;
+      const lng = -79.3832;
+      const lat = 43.6532;
+      const el = document.createElement('div');
+      el.style.width = '56px';
+      el.style.height = '56px';
+      el.style.display = 'flex';
+      el.style.alignItems = 'center';
+      el.style.justifyContent = 'center';
+      el.style.background = 'transparent';
+      el.style.border = '2px solid #4caf50'; // For debugging, can remove later
+      el.innerHTML = plantSVG;
+      new mapboxgl.Marker(el).setLngLat([lng, lat]).addTo(mapRef.current);
+    },
+    addRandomMarkers: () => {
+      if (!mapRef.current) return;
+      const map = mapRef.current;
+      const bounds = map.getBounds();
+      for (let i = 0; i < 10; i++) {
+        const lng = bounds.getWest() + Math.random() * (bounds.getEast() - bounds.getWest());
+        const lat = bounds.getSouth() + Math.random() * (bounds.getNorth() - bounds.getSouth());
+        const el = document.createElement('div');
+        el.style.width = '56px';
+        el.style.height = '56px';
+        el.style.display = 'flex';
+        el.style.alignItems = 'center';
+        el.style.justifyContent = 'center';
+        el.style.background = 'transparent';
+        el.innerHTML = plantSVG;
+        new mapboxgl.Marker(el).setLngLat([lng, lat]).addTo(map);
       }
     }
   }));
@@ -785,12 +897,7 @@ const MapboxMap = forwardRef((props, ref) => {
           top: 32,
           right: 32,
           width: 340,
-          // Overlay tint logic: red if endangered, yellow if invasive, else green
-          background: isEndangered
-            ? 'rgba(229,57,53,0.13)'
-            : isInvasive
-              ? 'rgba(255,179,0,0.13)'
-              : 'rgba(76,175,80,0.08)',
+          background: 'rgba(76,175,80,0.10)',
           borderRadius: 32,
           border: '2px solid #fff',
           boxShadow: '0 2px 16px rgba(0,0,0,0.10)',
@@ -805,229 +912,58 @@ const MapboxMap = forwardRef((props, ref) => {
           color: '#fff',
         }}>
           <div style={{ display: 'flex', width: '100%', justifyContent: 'space-between', alignItems: 'center' }}>
-            <h3 style={{ margin: 0, fontSize: 22, color: '#fff', fontWeight: 700, letterSpacing: 0.5 }}>INSERT PLANT NAME</h3>
-            <button
-              onClick={() => { setShowDeletePopup(false); setDeletePin(null); }}
-              style={{
-                background: 'rgba(255,255,255,0.15)',
-                border: '2px solid rgba(255,255,255,0.4)',
-                borderRadius: '9999px',
-                width: 40,
-                height: 40,
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                fontSize: 22,
-                color: '#fff',
-                cursor: 'pointer',
-                lineHeight: 1,
-                fontWeight: 700,
-                boxShadow: '0 2px 16px rgba(0,0,0,0.10)',
-                backdropFilter: 'blur(6px)',
-                WebkitBackdropFilter: 'blur(6px)',
-                transition: 'background 0.2s, transform 0.18s cubic-bezier(.4,1.3,.6,1), box-shadow 0.18s cubic-bezier(.4,1.3,.6,1)'
-              }}
-              className="exit-hover"
-              title="Close">×</button>
+            <h3 style={{ margin: 0, fontSize: 32, color: '#fff', fontWeight: 800, letterSpacing: 0.5, fontFamily: 'system-ui, Avenir, Helvetica, Arial, sans-serif' }}>{plantInfo.name}</h3>
+            <button onClick={() => { setShowDeletePopup(false); setDeletePin(null); }} style={{
+              background: 'rgba(255,255,255,0.15)',
+              border: '2px solid rgba(255,255,255,0.4)',
+              borderRadius: '9999px',
+              width: 40,
+              height: 40,
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              fontSize: 22,
+              color: '#fff',
+              cursor: 'pointer',
+              lineHeight: 1,
+              fontWeight: 700,
+              boxShadow: '0 2px 16px rgba(0,0,0,0.10)',
+              backdropFilter: 'blur(6px)',
+              WebkitBackdropFilter: 'blur(6px)',
+              transition: 'background 0.2s, transform 0.18s cubic-bezier(.4,1.3,.6,1), box-shadow 0.18s cubic-bezier(.4,1.3,.6,1)'
+            }}
+            className="exit-hover"
+            title="Close">×</button>
           </div>
-          {/* --- Added Plant Status Indicators --- */}
-          <div style={{
-            width: '100%',
-            display: 'flex',
-            flexDirection: 'column',
-            gap: 10,
-            margin: '8px 0 0 0'
-          }}>
-            {/* Location Indicator */}
-            <div
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: 10,
-                background: 'rgba(255,255,255,0.10)',
-                borderRadius: 12,
-                padding: '8px 12px',
-                fontWeight: 600,
-                fontSize: 15,
-                color: '#fff',
-                transition: 'transform 0.18s cubic-bezier(.4,1.3,.6,1), box-shadow 0.18s cubic-bezier(.4,1.3,.6,1)',
-                cursor: 'pointer'
-              }}
-              className="indicator-hover"
-            >
-              {/* Icon */}
-              <MdLocationOn size={20} color="#2196f3" style={{ flexShrink: 0 }} />
-              {/* Removed blue dot */}
-              <span>
-                Lat: <span style={{ fontWeight: 700 }}>{deletePin?.lat?.toFixed(4)}</span>, Lng: <span style={{ fontWeight: 700 }}>{deletePin?.lng?.toFixed(4)}</span>
-              </span>
-            </div>
-            {/* Next Water Timer */}
-            <div
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: 10,
-                background: 'rgba(255,255,255,0.10)',
-                borderRadius: 12,
-                padding: '8px 12px',
-                fontWeight: 600,
-                fontSize: 15,
-                color: '#fff',
-                transition: 'transform 0.18s cubic-bezier(.4,1.3,.6,1), box-shadow 0.18s cubic-bezier(.4,1.3,.6,1)',
-                cursor: 'pointer'
-              }}
-              className="indicator-hover"
-            >
-              <CircularIndicator
-                percent={0.7}
-                icon={<MdOpacity size={18} color={getStatusColor(0.7)} />}
-              />
-              <span>
-                <span style={{ color: "#fff" }}>Next watering in</span> <span style={{ fontWeight: 700, color: getStatusColor(0.7) }}>DATE</span>
-              </span>
-            </div>
-            {/* pH Indicator */}
-            <div
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: 10,
-                background: 'rgba(255,255,255,0.10)',
-                borderRadius: 12,
-                padding: '8px 12px',
-                fontWeight: 600,
-                fontSize: 15,
-                color: '#fff',
-                transition: 'transform 0.18s cubic-bezier(.4,1.3,.6,1), box-shadow 0.18s cubic-bezier(.4,1.3,.6,1)',
-                cursor: 'pointer'
-              }}
-              className="indicator-hover"
-            >
-              <CircularIndicator
-                percent={0.5}
-                icon={<MdScience size={18} color={getStatusColor(0.5)} />}
-              />
-              <span>
-                <span style={{ color: "#fff" }}>Soil pH:</span> <span style={{ fontWeight: 700, color: getStatusColor(0.5) }}>INSERT SOIL PH</span>
-                <span style={{ color: getStatusColor(0.5), fontWeight: 700, marginLeft: 4 }}>{0.5 > 0.3 ? 'Good' : 'Bad'}</span>
-              </span>
-            </div>
-            {/* Temperature Indicator */}
-            <div
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: 10,
-                background: 'rgba(255,255,255,0.10)',
-                borderRadius: 12,
-                padding: '8px 12px',
-                fontWeight: 600,
-                fontSize: 15,
-                color: '#fff',
-                transition: 'transform 0.18s cubic-bezier(.4,1.3,.6,1), box-shadow 0.18s cubic-bezier(.4,1.3,.6,1)',
-                cursor: 'pointer'
-              }}
-              className="indicator-hover"
-            >
-              <CircularIndicator
-                percent={0.2}
-                icon={<MdDeviceThermostat size={18} color={getStatusColor(0.2)} />}
-              />
-              <span>
-                <span style={{ color: "#fff" }}>Temperature:</span> <span style={{ fontWeight: 700, color: getStatusColor(0.2) }}>TEMPERATURE°C</span>
-                <span style={{ color: getStatusColor(0.2), fontWeight: 700, marginLeft: 4 }}>{0.2 > 0.3 ? 'Good' : 'Too Low'}</span>
-              </span>
-            </div>
-            {/* Endangered Indicator */}
-            {isEndangered && (
-              <div
-                style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: 10,
-                  background: 'rgba(255,255,255,0.10)',
-                  borderRadius: 12,
-                  padding: '8px 12px',
-                  fontWeight: 600,
-                  fontSize: 15,
-                  color: '#fff',
-                  transition: 'transform 0.18s cubic-bezier(.4,1.3,.6,1), box-shadow 0.18s cubic-bezier(.4,1.3,.6,1)',
-                  cursor: 'pointer'
-                }}
-                className="indicator-hover"
-              >
-                <MdWarning size={20} color="#e53935" style={{ flexShrink: 0 }} />
-                <span>
-                  <span style={{ fontWeight: 700, color: '#e53935' }}>Endangered</span>
-                </span>
-              </div>
-            )}
-            {/* Invasive Indicator */}
-            {isInvasive && (
-              <div
-                style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: 10,
-                  background: 'rgba(255,255,255,0.10)',
-                  borderRadius: 12,
-                  padding: '8px 12px',
-                  fontWeight: 600,
-                  fontSize: 15,
-                  color: '#fff',
-                  transition: 'transform 0.18s cubic-bezier(.4,1.3,.6,1), box-shadow 0.18s cubic-bezier(.4,1.3,.6,1)',
-                  cursor: 'pointer'
-                }}
-                className="indicator-hover"
-              >
-                <MdWarning size={20} color="#ffb300" style={{ flexShrink: 0 }} />
-                <span>
-                  <span style={{ fontWeight: 700, color: '#ffb300' }}>Invasive</span>
-                </span>
-              </div>
-            )}
-            {/* Summary Header */}
-            <div
-              style={{
-                fontWeight: 700,
-                fontSize: 17,
-                color: '#fff',
-                marginTop: 8,
-                marginBottom: 2,
-                letterSpacing: 0.2,
-                fontFamily: 'system-ui, Avenir, Helvetica, Arial, sans-serif'
-                // No hover/transition/cursor here
-              }}
-            >
-              Summary
-            </div>
-            {/* Plant Description */}
-            <div
-              style={{
-                background: 'rgba(255,255,255,0.10)',
-                borderRadius: 12,
-                padding: '12px 14px',
-                fontWeight: 500,
-                fontSize: 15,
-                color: '#fff',
-                marginTop: 2,
-                minHeight: 60,
-                lineHeight: 1.5,
-                letterSpacing: 0.1,
-                fontFamily: 'system-ui, Avenir, Helvetica, Arial, sans-serif',
-                transition: 'transform 0.18s cubic-bezier(.4,1.3,.6,1), box-shadow 0.18s cubic-bezier(.4,1.3,.6,1)',
-                cursor: 'pointer'
-              }}
-              className="indicator-hover"
-            >
-              {/* Replace with actual plant description */}
-              <span>
-                This is a placeholder for a plant description. It should be up to 50 words and provide information about the plant, its habitat, care requirements, and any interesting facts or notes relevant to its identification or conservation.
-              </span>
-            </div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 10, background: 'rgba(255,255,255,0.10)', borderRadius: 12, padding: '8px 12px', fontWeight: 600, fontSize: 15, color: '#fff', transition: 'transform 0.18s cubic-bezier(.4,1.3,.6,1), box-shadow 0.18s cubic-bezier(.4,1.3,.6,1)', cursor: 'pointer' }} className="indicator-hover">
+            <MdLocationOn size={20} color="#2196f3" style={{ flexShrink: 0 }} />
+            <span>
+              Lat: <span style={{ fontWeight: 700 }}>{deletePin?.lat?.toFixed(4)}</span>, Lng: <span style={{ fontWeight: 700 }}>{deletePin?.lng?.toFixed(4)}</span>
+            </span>
           </div>
-          {/* --- End Plant Status Indicators --- */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: 10, background: 'rgba(255,255,255,0.10)', borderRadius: 12, padding: '8px 12px', fontWeight: 600, fontSize: 15, color: '#fff', transition: 'transform 0.18s cubic-bezier(.4,1.3,.6,1), box-shadow 0.18s cubic-bezier(.4,1.3,.6,1)', cursor: 'pointer' }} className="indicator-hover">
+            <MdOpacity size={18} color="#4CAF50" />
+            <span>
+              <span style={{ color: "#fff" }}>Next watering in</span> <span style={{ fontWeight: 700, color: '#4CAF50' }}>{plantInfo.watering}</span>
+            </span>
+          </div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 10, background: 'rgba(255,255,255,0.10)', borderRadius: 12, padding: '8px 12px', fontWeight: 600, fontSize: 15, color: '#fff', transition: 'transform 0.18s cubic-bezier(.4,1.3,.6,1), box-shadow 0.18s cubic-bezier(.4,1.3,.6,1)', cursor: 'pointer' }} className="indicator-hover">
+            <MdScience size={18} color="#81C784" />
+            <span>Soil pH: <span style={{ fontWeight: 700 }}>{plantInfo.soilPH}</span></span>
+          </div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 10, background: 'rgba(255,255,255,0.10)', borderRadius: 12, padding: '8px 12px', fontWeight: 600, fontSize: 15, color: '#fff', transition: 'transform 0.18s cubic-bezier(.4,1.3,.6,1), box-shadow 0.18s cubic-bezier(.4,1.3,.6,1)', cursor: 'pointer' }} className="indicator-hover">
+            <MdDeviceThermostat size={18} color="#FFD600" />
+            <span>Light: <span style={{ fontWeight: 700 }}>{plantInfo.light}</span></span>
+          </div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 10, background: 'rgba(255,255,255,0.10)', borderRadius: 12, padding: '8px 12px', fontWeight: 600, fontSize: 15, color: '#fff', transition: 'transform 0.18s cubic-bezier(.4,1.3,.6,1), box-shadow 0.18s cubic-bezier(.4,1.3,.6,1)', cursor: 'pointer' }} className="indicator-hover">
+            <MdWarning size={18} color="#E53935" />
+            <span>Endangered: <span style={{ fontWeight: 700 }}>{plantInfo.endangered}</span> | Invasive: <span style={{ fontWeight: 700 }}>{plantInfo.invasive}</span></span>
+          </div>
+          <div style={{ background: 'rgba(255,255,255,0.10)', borderRadius: 12, padding: '12px 14px', fontWeight: 500, fontSize: 15, color: '#fff', marginTop: 2, minHeight: 60, lineHeight: 1.5, letterSpacing: 0.1, fontFamily: 'system-ui, Avenir, Helvetica, Arial, sans-serif', transition: 'transform 0.18s cubic-bezier(.4,1.3,.6,1), box-shadow 0.18s cubic-bezier(.4,1.3,.6,1)', cursor: 'pointer' }} className="indicator-hover">
+            <span>
+              {plantInfo.blurb}
+            </span>
+          </div>
           <button
             onClick={handleDelete}
             style={{

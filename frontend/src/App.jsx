@@ -20,6 +20,21 @@ function App() {
     }
   };
 
+  // Handler to add Rose marker and fly to it
+  const handleAddRoseMarker = () => {
+    if (mapRef.current && mapRef.current.addRoseMarker) {
+      mapRef.current.addRoseMarker();
+      mapRef.current.flyToLocation(43.6532, -79.3832);
+    }
+  };
+
+  // Handler to add random markers
+  const handleAddRandomMarkers = () => {
+    if (mapRef.current && mapRef.current.addRandomMarkers) {
+      mapRef.current.addRandomMarkers();
+    }
+  };
+
   if (isAuthenticated) return (
     <>
       <div style={{ minHeight: '100vh', width: '100vw', position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden' }}>
@@ -38,7 +53,7 @@ function App() {
         }} />
         {/* Map and overlays */}
         <MapboxMap ref={mapRef} />
-        <Overlay onSearchResultClick={handleSearchResultClick} />
+        <Overlay onSearchResultClick={handleSearchResultClick} onAddRoseMarker={handleAddRoseMarker} onAddRandomMarkers={handleAddRandomMarkers} />
       </div>
     </>
   );
