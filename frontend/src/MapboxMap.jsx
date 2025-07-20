@@ -271,7 +271,7 @@ const MapboxMap = forwardRef((props, ref) => {
           .setLngLat([lon, lat])
           .addTo(mapRef.current);
 
-        markersRef.current.push(marker);
+        markersRef.current.push({ marker, lng: lon, lat: lat });
       }
     });
   }, [pins]);
@@ -1231,11 +1231,37 @@ const MapboxMap = forwardRef((props, ref) => {
                 fontFamily: "system-ui, Avenir, Helvetica, Arial, sans-serif",
               }}
             >
-              Daisies are cheerful, easy-to-grow perennials that thrive in a
-              variety of soils. Water every 4 days, provide full sun to partial
-              shade, and maintain a slightly acidic soil pH. Not endangered or
-              invasive.
+              {plantInfo.blurb}
             </div>
+            <button
+              onClick={() => {
+                if (deletePin && deletePin.marker) {
+                  deletePin.marker.remove();
+                  markersRef.current = markersRef.current.filter(m => m !== deletePin.marker);
+                }
+                setShowDeletePopup(false);
+                setDeletePin(null);
+              }}
+              style={{
+                padding: '14px 0',
+                width: '100%',
+                fontSize: 18,
+                background: 'rgba(76,175,80,0.08)',
+                color: '#fff',
+                border: '2px solid rgba(255,255,255,0.4)',
+                borderRadius: 32,
+                cursor: 'pointer',
+                marginTop: 12,
+                fontWeight: 700,
+                boxShadow: '0 2px 16px rgba(0,0,0,0.10)',
+                backdropFilter: 'blur(6px)',
+                WebkitBackdropFilter: 'blur(6px)',
+                letterSpacing: 0.2,
+                transition: 'background 0.2s',
+              }}
+            >
+              Delete
+            </button>
           </div>
         </div>
       )}
