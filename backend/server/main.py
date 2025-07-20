@@ -62,22 +62,24 @@ def get_pins_near():
 @app.route('/pins/cluster', methods=['GET'])
 def cluster_pins_grid(cell_size_meters=500):
     cell_size_meters = request.args.get('cell_size', 500)
-    pipeline = [
-        {
-            "$group": {
-                "_id": {
-                    "lat": { "$trunc": [{ "$arrayElemAt": ["$geometry.coordinates", 0] }, int(cell_size_meters / 111320)] },
-                    "lon": { "$trunc": [{ "$arrayElemAt": ["$geometry.coordinates", 1] }, int(cell_size_meters / 111320)] }
-                },
-                "count": { "$sum": 1 },
-                "pins": { "$push": "$$ROOT" }
+    query = {
+        "geometry": {
+            "$geoWithin": {
+                "$geometry": {
+                    "type": "Polygon",
+                    "coordinates": [[[-79+cell_size_meters*0.0002, 43+cell_size_meters*0.0002], [-78.9+cell_size_meters*0.0002, 43+cell_size_meters*0.0002], [-78.9+cell_size_meters*0.0002, 43.1+cell_size_meters*0.0002], [-79+cell_size_meters*0.0002, 43.1+cell_size_meters*0.0002], [-79+cell_size_meters*0.0002, 43+cell_size_meters*0.0002]]]
+                }
             }
         }
-    ]
+    }
     return list(db.detections.aggregate(pipeline))
 
 @app.route('/pins/bbox', methods=['GET'])
-def get_pins_in_bbox(min_lat, min_lon, max_lat, max_lon):
+def get_pins_in_bbox():
+    min_lat = request.args.get('min_lat')
+    min_lon = request.args.get('min_lon')
+    max_lat = request.args.get('max_lat')
+    max_lon = request.args.get('max_lon')
     query = {
         "geometry.coordinates.0": { "$gte": float(min_lat), "$lte": float(max_lat) },
         "geometry.coordinates.1": { "$gte": float(min_lon), "$lte": float(max_lon) }
