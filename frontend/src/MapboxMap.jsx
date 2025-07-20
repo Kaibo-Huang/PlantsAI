@@ -1,14 +1,26 @@
-import React, { useRef, useEffect, useState, forwardRef, useImperativeHandle } from 'react';
-import mapboxgl from 'mapbox-gl';
-import Overlay from './Overlay';
-import 'mapbox-gl/dist/mapbox-gl.css';
-import { useDropzone } from 'react-dropzone';
-import Switch from '@mui/material/Switch';
-import FormControlLabel from '@mui/material/FormControlLabel';
+import React, {
+  useRef,
+  useEffect,
+  useState,
+  forwardRef,
+  useImperativeHandle,
+} from "react";
+import mapboxgl from "mapbox-gl";
+import Overlay from "./Overlay";
+import "mapbox-gl/dist/mapbox-gl.css";
+import { useDropzone } from "react-dropzone";
+import Switch from "@mui/material/Switch";
+import FormControlLabel from "@mui/material/FormControlLabel";
 import { MdOutlineFileUpload } from "react-icons/md";
 import { MdClose } from "react-icons/md";
-import { MdLocationOn, MdOpacity, MdScience, MdDeviceThermostat, MdWarning } from "react-icons/md";
-import PinQueryCard from './PinQueryCard';
+import {
+  MdLocationOn,
+  MdOpacity,
+  MdScience,
+  MdDeviceThermostat,
+  MdWarning,
+} from "react-icons/md";
+import PinQueryCard from "./PinQueryCard";
 
 // Realistic potted plant SVG icon for marker (shaft is now orange, base is separate for animation)
 const plantSVG = `<svg width="56" height="56" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -21,7 +33,8 @@ const plantSVG = `<svg width="56" height="56" viewBox="0 0 40 40" fill="none" xm
   </g>
 </svg>`;
 
-mapboxgl.accessToken = 'pk.eyJ1Ijoia2FpYm9odWFuZyIsImEiOiJjbWQ5ZjBsY3IwNzQ1MnBxMTcwbTU5djNqIn0.EAoOvgDb4m_eShy5rxM72g';
+mapboxgl.accessToken =
+  "pk.eyJ1Ijoia2FpYm9odWFuZyIsImEiOiJjbWQ5ZjBsY3IwNzQ1MnBxMTcwbTU5djNqIn0.EAoOvgDb4m_eShy5rxM72g";
 
 const MapboxMap = forwardRef((props, ref) => {
   const mapRef = useRef(null);
@@ -35,10 +48,10 @@ const MapboxMap = forwardRef((props, ref) => {
   const [uploadedFile, setUploadedFile] = useState(null);
   const [alertForCare, setAlertForCare] = useState(false);
   const [favoriteOnMap, setFavoriteOnMap] = useState(false);
-  const [inputMode, setInputMode] = useState('file'); // 'file' or 'text'
-  const [textValue, setTextValue] = useState('');
+  const [inputMode, setInputMode] = useState("file"); // 'file' or 'text'
+  const [textValue, setTextValue] = useState("");
   const [isEndangered, setIsEndangered] = useState(true); // Example: set dynamically
-  const [isInvasive, setIsInvasive] = useState(true);     // Example: set dynamically
+  const [isInvasive, setIsInvasive] = useState(true); // Example: set dynamically
   const [showQueryPanel, setShowQueryPanel] = useState(false);
 
   // No animation or swipe state
@@ -49,7 +62,9 @@ const MapboxMap = forwardRef((props, ref) => {
 
   const onDrop = (acceptedFiles) => {
     // Only accept image files
-    const imageFile = acceptedFiles.find(file => file.type.startsWith('image/'));
+    const imageFile = acceptedFiles.find((file) =>
+      file.type.startsWith("image/")
+    );
     if (imageFile) {
       setUploadedFile(imageFile);
     }
@@ -57,39 +72,39 @@ const MapboxMap = forwardRef((props, ref) => {
   // Only accept image files in dropzone, only one file
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
     onDrop,
-    accept: { 'image/*': [] },
-    multiple: false
+    accept: { "image/*": [] },
+    multiple: false,
   });
 
   const handleMapClick = (e) => {
     if (showPopup) return;
     const { lng, lat } = e.lngLat;
     // Create a custom realistic plant icon marker
-    const el = document.createElement('div');
-    el.style.width = '56px';
-    el.style.height = '56px';
-    el.style.display = 'flex';
-    el.style.alignItems = 'center';
-    el.style.justifyContent = 'center';
-    const inner = document.createElement('div');
-    inner.className = 'pending-marker';
+    const el = document.createElement("div");
+    el.style.width = "56px";
+    el.style.height = "56px";
+    el.style.display = "flex";
+    el.style.alignItems = "center";
+    el.style.justifyContent = "center";
+    const inner = document.createElement("div");
+    inner.className = "pending-marker";
     inner.innerHTML = plantSVG;
     el.appendChild(inner);
     // Function to emit dirt
     function emitDirt() {
-      const dirtContainer = document.createElement('div');
-      dirtContainer.className = 'dirt-container';
+      const dirtContainer = document.createElement("div");
+      dirtContainer.className = "dirt-container";
       for (let i = 0; i < 10; i++) {
-        const dirt = document.createElement('div');
-        dirt.className = 'dirt-pixel';
+        const dirt = document.createElement("div");
+        dirt.className = "dirt-pixel";
         // Randomize angle and distance
         const angle = Math.random() * Math.PI - Math.PI / 2; // -90deg to +90deg
         const dist = 18 + Math.random() * 18; // px
         const x = Math.cos(angle) * dist;
         const y = -Math.abs(Math.sin(angle) * dist) - 8; // always up
         const delay = Math.random() * 0.18;
-        dirt.style.setProperty('--dirt-x', `${x}px`);
-        dirt.style.setProperty('--dirt-y', `${y}px`);
+        dirt.style.setProperty("--dirt-x", `${x}px`);
+        dirt.style.setProperty("--dirt-y", `${y}px`);
         dirt.style.animationDelay = `${delay}s`;
         dirtContainer.appendChild(dirt);
       }
@@ -112,55 +127,55 @@ const MapboxMap = forwardRef((props, ref) => {
   };
 
   useEffect(() => {
-    fetch('http://localhost:8000/admin/view')
-      .then(res => res.json())
-      .then(data => setPins(data));
+    fetch("http://localhost:8000/admin/view")
+      .then((res) => res.json())
+      .then((data) => setPins(data));
   }, []);
 
   useEffect(() => {
     const map = new mapboxgl.Map({
-      container: 'map',
-      style: 'mapbox://styles/mapbox/satellite-streets-v11',
+      container: "map",
+      style: "mapbox://styles/mapbox/satellite-streets-v11",
       center: [-79.5022, 43.7705],
       zoom: 13,
       config: {
-        basemap: { lightPreset: 'night' },
+        basemap: { lightPreset: "night" },
       },
     });
 
     let geolocateControl = new mapboxgl.GeolocateControl({
       positionOptions: {
-        enableHighAccuracy: true
+        enableHighAccuracy: true,
       },
       trackUserLocation: true,
-      showUserHeading: true
+      showUserHeading: true,
     });
     map.addControl(geolocateControl);
 
-    map.on('load', () => {
+    map.on("load", () => {
       map.addLayer({
-        id: 'terrain-data',
-        type: 'line',
+        id: "terrain-data",
+        type: "line",
         source: {
-          type: 'vector',
-          url: 'mapbox://mapbox.mapbox-terrain-v2',
+          type: "vector",
+          url: "mapbox://mapbox.mapbox-terrain-v2",
         },
-        'source-layer': 'contour',
+        "source-layer": "contour",
       });
       // Automatically trigger geolocation on load
       geolocateControl.trigger();
       // Hide the geolocate button after triggering
-      const geoBtn = document.querySelector('.mapboxgl-ctrl-geolocate');
-      if (geoBtn) geoBtn.style.display = 'none';
+      const geoBtn = document.querySelector(".mapboxgl-ctrl-geolocate");
+      if (geoBtn) geoBtn.style.display = "none";
     });
 
-    map.on('click', handleMapClick);
+    map.on("click", handleMapClick);
     mapRef.current = map;
 
     return () => {
-      markersRef.current.forEach(marker => marker.remove());
+      markersRef.current.forEach((marker) => marker.remove());
       markersRef.current = [];
-      map.off('click', handleMapClick);
+      map.off("click", handleMapClick);
       map.remove();
     };
   }, []);
@@ -168,71 +183,72 @@ const MapboxMap = forwardRef((props, ref) => {
   useEffect(() => {
     const map = mapRef.current;
     if (!map) return;
-    map.off('click', handleMapClick);
-    map.on('click', handleMapClick);
+    map.off("click", handleMapClick);
+    map.on("click", handleMapClick);
     return () => {
-      if (map) map.off('click', handleMapClick);
+      if (map) map.off("click", handleMapClick);
     };
   }, [showPopup]);
 
   // Add keyboard event listener for Ctrl+K hotkey to toggle query panel
   useEffect(() => {
     const handleKeyDown = (e) => {
-      if ((e.ctrlKey || e.metaKey) && e.key === 'k') {
+      if ((e.ctrlKey || e.metaKey) && e.key === "k") {
         e.preventDefault();
-        setShowQueryPanel(prev => !prev);
+        setShowQueryPanel((prev) => !prev);
       }
     };
 
-    document.addEventListener('keydown', handleKeyDown);
-    return () => document.removeEventListener('keydown', handleKeyDown);
+    document.addEventListener("keydown", handleKeyDown);
+    return () => document.removeEventListener("keydown", handleKeyDown);
   }, []);
 
   useEffect(() => {
     if (!mapRef.current || !pins || !Array.isArray(pins)) return;
 
     // Remove old markers
-    markersRef.current.forEach(marker => marker.remove());
+    markersRef.current.forEach((marker) => marker.remove());
     markersRef.current = [];
 
     // Add markers for each pin
-    pins.forEach(pin => {
+    pins.forEach((pin) => {
       if (
         pin.geometry &&
         pin.geometry.coordinates &&
         pin.geometry.coordinates.length === 2
       ) {
         const [lon, lat] = pin.geometry.coordinates;
-        const el = document.createElement('div');
+        const el = document.createElement("div");
         el.innerHTML = plantSVG;
-        el.style.width = '56px';
-        el.style.height = '56px';
-        el.style.display = 'flex';
-        el.style.alignItems = 'center';
-        el.style.justifyContent = 'center';
+        el.style.width = "56px";
+        el.style.height = "56px";
+        el.style.display = "flex";
+        el.style.alignItems = "center";
+        el.style.justifyContent = "center";
 
-        el.addEventListener('click', (event) => {
+        el.addEventListener("click", (event) => {
           event.stopPropagation();
           setDeletePin({ marker, lng: lon, lat: lat });
           setShowDeletePopup(true);
           setTimeout(() => {
-            let inner = el.querySelector('.pending-marker');
-            if (!inner) inner = el.querySelector('div');
-            if (inner && !inner.classList.contains('pending-marker')) inner.classList.add('pending-marker');
+            let inner = el.querySelector(".pending-marker");
+            if (!inner) inner = el.querySelector("div");
+            if (inner && !inner.classList.contains("pending-marker"))
+              inner.classList.add("pending-marker");
             if (!el._dirtInterval) {
               function emitDirt() {
-                const dirtContainer = document.createElement('div');
-                dirtContainer.className = 'dirt-container';
+                const dirtContainer = document.createElement("div");
+                dirtContainer.className = "dirt-container";
                 for (let i = 0; i < 10; i++) {
-                  const dirt = document.createElement('div');
-                  dirt.className = 'dirt-pixel';
+                  const dirt = document.createElement("div");
+                  dirt.className = "dirt-pixel";
                   const angle = Math.random() * Math.PI - Math.PI / 2;
                   const dist = 18 + Math.random() * 18;
                   const x = Math.cos(angle) * dist;
                   const y = -Math.abs(Math.sin(angle) * dist) - 8;
                   const delay = Math.random() * 0.18;
-                  dirt.style.setProperty('--dirt-x', `${x}px`);
-                  dirt.style.setProperty('--dirt-y', `${y}px`);
+                  dirt.style.setProperty("--dirt-x", `${x}px`);
+                  dirt.style.setProperty("--dirt-y", `${y}px`);
                   dirt.style.animationDelay = `${delay}s`;
                   dirtContainer.appendChild(dirt);
                 }
@@ -269,7 +285,7 @@ const MapboxMap = forwardRef((props, ref) => {
     if (!pendingPin || !mapRef.current) return;
     const marker = pendingPin.marker;
     // Make the marker permanent and add click-to-delete logic
-    marker.getElement().addEventListener('click', (event) => {
+    marker.getElement().addEventListener("click", (event) => {
       event.stopPropagation();
       setDeletePin({ marker, lng: pendingPin.lng, lat: pendingPin.lat });
       setShowDeletePopup(true);
@@ -278,24 +294,25 @@ const MapboxMap = forwardRef((props, ref) => {
         const el = marker.getElement();
         if (el) {
           // Find the correct inner div (pending or not)
-          let inner = el.querySelector('.pending-marker');
-          if (!inner) inner = el.querySelector('div');
-          if (inner && !inner.classList.contains('pending-marker')) inner.classList.add('pending-marker');
+          let inner = el.querySelector(".pending-marker");
+          if (!inner) inner = el.querySelector("div");
+          if (inner && !inner.classList.contains("pending-marker"))
+            inner.classList.add("pending-marker");
           // Start dirt emission interval for selected marker
           if (!el._dirtInterval) {
             function emitDirt() {
-              const dirtContainer = document.createElement('div');
-              dirtContainer.className = 'dirt-container';
+              const dirtContainer = document.createElement("div");
+              dirtContainer.className = "dirt-container";
               for (let i = 0; i < 10; i++) {
-                const dirt = document.createElement('div');
-                dirt.className = 'dirt-pixel';
+                const dirt = document.createElement("div");
+                dirt.className = "dirt-pixel";
                 const angle = Math.random() * Math.PI - Math.PI / 2;
                 const dist = 18 + Math.random() * 18;
                 const x = Math.cos(angle) * dist;
                 const y = -Math.abs(Math.sin(angle) * dist) - 8;
                 const delay = Math.random() * 0.18;
-                dirt.style.setProperty('--dirt-x', `${x}px`);
-                dirt.style.setProperty('--dirt-y', `${y}px`);
+                dirt.style.setProperty("--dirt-x", `${x}px`);
+                dirt.style.setProperty("--dirt-y", `${y}px`);
                 dirt.style.animationDelay = `${delay}s`;
                 dirtContainer.appendChild(dirt);
               }
@@ -316,8 +333,8 @@ const MapboxMap = forwardRef((props, ref) => {
     // Remove the pending-marker class from the inner div so it stops shaking
     const el = marker.getElement();
     if (el) {
-      const inner = el.querySelector('.pending-marker');
-      if (inner) inner.classList.remove('pending-marker');
+      const inner = el.querySelector(".pending-marker");
+      if (inner) inner.classList.remove("pending-marker");
       // Stop dirt emission
       if (el._dirtInterval) {
         clearInterval(el._dirtInterval);
@@ -327,20 +344,20 @@ const MapboxMap = forwardRef((props, ref) => {
     markersRef.current.push(marker);
     // Send pin location to backend
     const formData = new FormData();
-    formData.append('lat', pendingPin.lat);
-    formData.append('lng', pendingPin.lng);
-    formData.append('alertForCare', alertForCare);
-    formData.append('favoriteOnMap', favoriteOnMap);
+    formData.append("lat", pendingPin.lat);
+    formData.append("lng", pendingPin.lng);
+    formData.append("alertForCare", alertForCare);
+    formData.append("favoriteOnMap", favoriteOnMap);
     if (uploadedFile) {
-      formData.append('file', uploadedFile);
+      formData.append("file", uploadedFile);
     }
-    fetch('http://localhost:8000/admin/add', {
-      method: 'POST',
-      body: formData
+    fetch("http://localhost:8000/admin/add", {
+      method: "POST",
+      body: formData,
     })
-      .then(res => res.json())
-      .then(data => console.log(data))
-      .catch(err => console.error(err));
+      .then((res) => res.json())
+      .then((data) => console.log(data))
+      .catch((err) => console.error(err));
 
     setShowPopupAndRef(false);
     setPendingPin(null);
@@ -367,9 +384,10 @@ const MapboxMap = forwardRef((props, ref) => {
     // Remove shake from marker
     const el = deletePin.marker.getElement();
     if (el) {
-      let inner = el.querySelector('.pending-marker');
-      if (!inner) inner = el.querySelector('div');
-      if (inner && inner.classList.contains('pending-marker')) inner.classList.remove('pending-marker');
+      let inner = el.querySelector(".pending-marker");
+      if (!inner) inner = el.querySelector("div");
+      if (inner && inner.classList.contains("pending-marker"))
+        inner.classList.remove("pending-marker");
       // Stop dirt emission
       if (el._dirtInterval) {
         clearInterval(el._dirtInterval);
@@ -378,18 +396,20 @@ const MapboxMap = forwardRef((props, ref) => {
       // Play pullout animation
       if (inner) {
         // Add marker-pullout class to the wrapper
-        inner.classList.add('marker-pullout');
+        inner.classList.add("marker-pullout");
         // Animate plant-top and plant-base separately
-        const svg = inner.querySelector('svg');
+        const svg = inner.querySelector("svg");
         if (svg) {
-          const top = svg.querySelector('.plant-top');
-          const base = svg.querySelector('.plant-base');
-          if (top) top.classList.add('marker-pullout-top');
-          if (base) base.classList.add('marker-pullout-base');
+          const top = svg.querySelector(".plant-top");
+          const base = svg.querySelector(".plant-base");
+          if (top) top.classList.add("marker-pullout-top");
+          if (base) base.classList.add("marker-pullout-base");
         }
         setTimeout(() => {
           deletePin.marker.remove();
-          markersRef.current = markersRef.current.filter(m => m !== deletePin.marker);
+          markersRef.current = markersRef.current.filter(
+            (m) => m !== deletePin.marker
+          );
           setShowDeletePopup(false);
           setDeletePin(null);
         }, 700);
@@ -398,7 +418,9 @@ const MapboxMap = forwardRef((props, ref) => {
     }
     // fallback if no inner
     deletePin.marker.remove();
-    markersRef.current = markersRef.current.filter(m => m !== deletePin.marker);
+    markersRef.current = markersRef.current.filter(
+      (m) => m !== deletePin.marker
+    );
     setShowDeletePopup(false);
     setDeletePin(null);
   };
@@ -407,9 +429,10 @@ const MapboxMap = forwardRef((props, ref) => {
   useEffect(() => {
     if (!showDeletePopup && lastSelectedMarkerRef.current) {
       const el = lastSelectedMarkerRef.current;
-      let inner = el.querySelector('.pending-marker');
-      if (!inner) inner = el.querySelector('div');
-      if (inner && inner.classList.contains('pending-marker')) inner.classList.remove('pending-marker');
+      let inner = el.querySelector(".pending-marker");
+      if (!inner) inner = el.querySelector("div");
+      if (inner && inner.classList.contains("pending-marker"))
+        inner.classList.remove("pending-marker");
       if (el._dirtInterval) {
         clearInterval(el._dirtInterval);
         el._dirtInterval = null;
@@ -435,8 +458,19 @@ const MapboxMap = forwardRef((props, ref) => {
     const strokeColor = getStatusColor(progress);
 
     return (
-      <span style={{ position: "relative", width: size, height: size, display: "inline-block" }}>
-        <svg width={size} height={size} style={{ position: "absolute", top: 0, left: 0 }}>
+      <span
+        style={{
+          position: "relative",
+          width: size,
+          height: size,
+          display: "inline-block",
+        }}
+      >
+        <svg
+          width={size}
+          height={size}
+          style={{ position: "absolute", top: 0, left: 0 }}
+        >
           <circle
             cx={size / 2}
             cy={size / 2}
@@ -458,15 +492,17 @@ const MapboxMap = forwardRef((props, ref) => {
             style={{ transition: "stroke 0.3s, stroke-dashoffset 0.3s" }}
           />
         </svg>
-        <span style={{
-          position: "absolute",
-          top: "50%",
-          left: "50%",
-          transform: "translate(-50%,-50%)",
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center"
-        }}>
+        <span
+          style={{
+            position: "absolute",
+            top: "50%",
+            left: "50%",
+            transform: "translate(-50%,-50%)",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+          }}
+        >
           {icon}
         </span>
       </span>
@@ -478,33 +514,35 @@ const MapboxMap = forwardRef((props, ref) => {
       if (mapRef.current) {
         mapRef.current.flyTo({ center: [lng, lat], zoom: 16, essential: true });
       }
-    }
+    },
   }));
 
   // Add hardcoded plant info sets
   const PLANT_INFOS = [
     {
-      name: 'Daisy',
-      watering: 'Every 4 days',
-      soilPH: '6.2',
-      light: 'Full Sun to Partial Shade',
-      endangered: 'No',
-      invasive: 'No',
-      temperature: '21°C',
-      wateringNext: '2 days',
-      blurb: 'Daisies are cheerful, easy-to-grow perennials that thrive in a variety of soils. Water every 4 days, provide full sun to partial shade, and maintain a slightly acidic soil pH. Not endangered or invasive.'
+      name: "Daisy",
+      watering: "Every 4 days",
+      soilPH: "6.2",
+      light: "Full Sun to Partial Shade",
+      endangered: "No",
+      invasive: "No",
+      temperature: "21°C",
+      wateringNext: "2 days",
+      blurb:
+        "Daisies are cheerful, easy-to-grow perennials that thrive in a variety of soils. Water every 4 days, provide full sun to partial shade, and maintain a slightly acidic soil pH. Not endangered or invasive.",
     },
     {
-      name: 'White Romunculus',
-      watering: 'Every 3 days',
-      soilPH: '6.5',
-      light: 'Full Sun to Partial Shade',
-      endangered: 'No',
-      invasive: 'No',
-      temperature: '18°C',
-      wateringNext: '1 day',
-      blurb: 'White Romunculus produces lush, layered blooms and thrives in cool weather. Water every 3 days, keep soil moist but not soggy, and provide full sun to partial shade. Not endangered or invasive.'
-    }
+      name: "White Romunculus",
+      watering: "Every 3 days",
+      soilPH: "6.5",
+      light: "Full Sun to Partial Shade",
+      endangered: "No",
+      invasive: "No",
+      temperature: "18°C",
+      wateringNext: "1 day",
+      blurb:
+        "White Romunculus produces lush, layered blooms and thrives in cool weather. Water every 3 days, keep soil moist but not soggy, and provide full sun to partial shade. Not endangered or invasive.",
+    },
   ];
 
   const [plantInfoIndex, setPlantInfoIndex] = useState(0);
@@ -512,180 +550,246 @@ const MapboxMap = forwardRef((props, ref) => {
 
   useEffect(() => {
     const handleHotkey = (e) => {
-      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'p') {
+      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "m") {
         setPlantInfoIndex((prev) => (prev === 0 ? 1 : 0));
       }
     };
-    window.addEventListener('keydown', handleHotkey);
-    return () => window.removeEventListener('keydown', handleHotkey);
+    window.addEventListener("keydown", handleHotkey);
+    return () => window.removeEventListener("keydown", handleHotkey);
   }, []);
 
   return (
-    <div style={{ position: 'relative', height: '100vh', width: '100vw' }}>
-      <div id="map" className="map" style={{ height: '100vh', width: '100vw' }} />
+    <div style={{ position: "relative", height: "100vh", width: "100vw" }}>
+      <div
+        id="map"
+        className="map"
+        style={{ height: "100vh", width: "100vw" }}
+      />
       {showQueryPanel && (
-        <div style={{
-          position: 'fixed',
-          left: '50%',
-          bottom: 32,
-          transform: 'translateX(-50%)',
-          zIndex: 1000,
-          background: 'rgba(76,175,80,0.10)',
-          borderRadius: 32,
-          border: '2px solid #fff',
-          boxShadow: '0 2px 16px rgba(0,0,0,0.10)',
-          backdropFilter: 'blur(12px)',
-          WebkitBackdropFilter: 'blur(12px)',
-          color: '#fff',
-          padding: '24px 28px 20px 28px',
-          display: 'flex',
-          flexDirection: 'column',
-          alignItems: 'center',
-          gap: 12,
-          minWidth: 320,
-          maxWidth: 400,
-        }}>
+        <div
+          style={{
+            position: "fixed",
+            left: "50%",
+            bottom: 32,
+            transform: "translateX(-50%)",
+            zIndex: 1000,
+            background: "rgba(76,175,80,0.10)",
+            borderRadius: 32,
+            border: "2px solid #fff",
+            boxShadow: "0 2px 16px rgba(0,0,0,0.10)",
+            backdropFilter: "blur(12px)",
+            WebkitBackdropFilter: "blur(12px)",
+            color: "#fff",
+            padding: "24px 28px 20px 28px",
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "center",
+            gap: 12,
+            minWidth: 320,
+            maxWidth: 400,
+          }}
+        >
           <PinQueryCard />
         </div>
       )}
       {/* Hotkey hint overlay - only show when query panel is hidden */}
       {!showQueryPanel && (
-        <div style={{
-          position: 'fixed',
-          bottom: 16,
-          left: '50%',
-          transform: 'translateX(-50%)',
-          zIndex: 999,
-          background: 'rgba(76,175,80,0.10)',
-          borderRadius: 16,
-          padding: '10px 16px',
-          color: '#fff',
-          fontSize: 13,
-          fontWeight: 600,
-          fontFamily: 'system-ui, Avenir, Helvetica, Arial, sans-serif',
-          backdropFilter: 'blur(12px)',
-          WebkitBackdropFilter: 'blur(12px)',
-          border: '2px solid rgba(255,255,255,0.4)',
-          boxShadow: '0 2px 16px rgba(0,0,0,0.10)',
-          userSelect: 'none',
-          pointerEvents: 'none',
-          letterSpacing: 0.2,
-        }}>
+        <div
+          style={{
+            position: "fixed",
+            bottom: 16,
+            left: "50%",
+            transform: "translateX(-50%)",
+            zIndex: 999,
+            background: "rgba(76,175,80,0.10)",
+            borderRadius: 16,
+            padding: "10px 16px",
+            color: "#fff",
+            fontSize: 13,
+            fontWeight: 600,
+            fontFamily: "system-ui, Avenir, Helvetica, Arial, sans-serif",
+            backdropFilter: "blur(12px)",
+            WebkitBackdropFilter: "blur(12px)",
+            border: "2px solid rgba(255,255,255,0.4)",
+            boxShadow: "0 2px 16px rgba(0,0,0,0.10)",
+            userSelect: "none",
+            pointerEvents: "none",
+            letterSpacing: 0.2,
+          }}
+        >
           Ctrl+K to toggle query panel
         </div>
       )}
       <Overlay />
       {showPopup && (
         <div
-          onTouchStart={() => { }}
-          onTouchEnd={() => { }}
-          onMouseDown={() => { }}
-          onMouseUp={() => { }}
+          onTouchStart={() => {}}
+          onTouchEnd={() => {}}
+          onMouseDown={() => {}}
+          onMouseUp={() => {}}
           style={{
-            position: 'absolute',
+            position: "absolute",
             top: 32,
             right: 32,
             width: 340,
-            background: 'rgba(76,175,80,0.10)',
+            background: "rgba(76,175,80,0.10)",
             borderRadius: 32,
-            border: '2px solid #fff',
-            boxShadow: '0 2px 16px rgba(0,0,0,0.10)',
+            border: "2px solid #fff",
+            boxShadow: "0 2px 16px rgba(0,0,0,0.10)",
             zIndex: 10,
-            display: 'flex',
-            flexDirection: 'column',
-            alignItems: 'flex-start',
-            padding: '24px 28px 20px 28px',
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "flex-start",
+            padding: "24px 28px 20px 28px",
             gap: 12,
-            backdropFilter: 'blur(12px)',
-            WebkitBackdropFilter: 'blur(12px)',
-            color: '#fff',
-          }}>
-          <div style={{ display: 'flex', width: '100%', justifyContent: 'space-between', alignItems: 'center' }}>
-            <h3 style={{ margin: 0, fontSize: 32, color: '#fff', fontWeight: 800, letterSpacing: 0.5, fontFamily: 'system-ui, Avenir, Helvetica, Arial, sans-serif' }}>Add Plant</h3>
-            <button onClick={handleCancel} style={{
-              background: 'rgba(255,255,255,0.15)',
-              border: '2px solid rgba(255,255,255,0.4)',
-              borderRadius: '9999px',
-              width: 40,
-              height: 40,
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              fontSize: 22,
-              color: '#fff',
-              cursor: 'pointer',
-              lineHeight: 1,
-              fontWeight: 700,
-              boxShadow: '0 2px 16px rgba(0,0,0,0.10)',
-              backdropFilter: 'blur(6px)',
-              WebkitBackdropFilter: 'blur(6px)',
-              transition: 'background 0.2s, transform 0.18s cubic-bezier(.4,1.3,.6,1), box-shadow 0.18s cubic-bezier(.4,1.3,.6,1)'
+            backdropFilter: "blur(12px)",
+            WebkitBackdropFilter: "blur(12px)",
+            color: "#fff",
+          }}
+        >
+          <div
+            style={{
+              display: "flex",
+              width: "100%",
+              justifyContent: "space-between",
+              alignItems: "center",
             }}
-            className="exit-hover"
-            title="Close">×</button>
+          >
+            <h3
+              style={{
+                margin: 0,
+                fontSize: 32,
+                color: "#fff",
+                fontWeight: 800,
+                letterSpacing: 0.5,
+                fontFamily: "system-ui, Avenir, Helvetica, Arial, sans-serif",
+              }}
+            >
+              Add Plant
+            </h3>
+            <button
+              onClick={handleCancel}
+              style={{
+                background: "rgba(255,255,255,0.15)",
+                border: "2px solid rgba(255,255,255,0.4)",
+                borderRadius: "9999px",
+                width: 40,
+                height: 40,
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                fontSize: 22,
+                color: "#fff",
+                cursor: "pointer",
+                lineHeight: 1,
+                fontWeight: 700,
+                boxShadow: "0 2px 16px rgba(0,0,0,0.10)",
+                backdropFilter: "blur(6px)",
+                WebkitBackdropFilter: "blur(6px)",
+                transition:
+                  "background 0.2s, transform 0.18s cubic-bezier(.4,1.3,.6,1), box-shadow 0.18s cubic-bezier(.4,1.3,.6,1)",
+              }}
+              className="exit-hover"
+              title="Close"
+            >
+              ×
+            </button>
           </div>
-          <div style={{ marginBottom: 8, fontSize: 19, color: '#fff', fontWeight: 600, letterSpacing: 0.2, fontFamily: 'system-ui, Avenir, Helvetica, Arial, sans-serif' }}>
-            <span>Location: {pendingPin ? `${pendingPin.lat.toFixed(4)}, ${pendingPin.lng.toFixed(4)}` : ''}</span>
+          <div
+            style={{
+              marginBottom: 8,
+              fontSize: 19,
+              color: "#fff",
+              fontWeight: 600,
+              letterSpacing: 0.2,
+              fontFamily: "system-ui, Avenir, Helvetica, Arial, sans-serif",
+            }}
+          >
+            <span>
+              Location:{" "}
+              {pendingPin
+                ? `${pendingPin.lat.toFixed(4)}, ${pendingPin.lng.toFixed(4)}`
+                : ""}
+            </span>
           </div>
           {/* Drag-and-drop file upload area or text field */}
-          <div style={{ position: 'relative', width: '100%', height: 'auto', minHeight: 0 }}>
-            {inputMode === 'file' ? (
+          <div
+            style={{
+              position: "relative",
+              width: "100%",
+              height: "auto",
+              minHeight: 0,
+            }}
+          >
+            {inputMode === "file" ? (
               <div
                 {...getRootProps()}
                 style={{
-                  width: '100%',
-                  aspectRatio: '1 / 1',
+                  width: "100%",
+                  aspectRatio: "1 / 1",
                   borderRadius: 24,
-                  border: '2px solid rgba(120,120,120,0.35)',
-                  background: isDragActive ? 'rgba(80,80,80,0.32)' : 'rgba(80,80,80,0.22)',
-                  display: 'flex',
-                  flexDirection: 'column',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  color: '#fff',
+                  border: "2px solid rgba(120,120,120,0.35)",
+                  background: isDragActive
+                    ? "rgba(80,80,80,0.32)"
+                    : "rgba(80,80,80,0.22)",
+                  display: "flex",
+                  flexDirection: "column",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  color: "#fff",
                   fontSize: 16,
                   fontWeight: 600,
-                  cursor: 'pointer',
-                  margin: '12px 0',
-                  transition: 'background 0.2s, border 0.2s, transform 0.18s cubic-bezier(.4,1.3,.6,1), box-shadow 0.18s cubic-bezier(.4,1.3,.6,1)',
-                  outline: isDragActive ? '2.5px solid #4caf50' : 'none',
-                  boxShadow: '0 2px 16px rgba(0,0,0,0.10)',
-                  textAlign: 'center',
-                  pointerEvents: 'auto',
-                  backdropFilter: 'blur(8px)',
-                  WebkitBackdropFilter: 'blur(8px)',
+                  cursor: "pointer",
+                  margin: "12px 0",
+                  transition:
+                    "background 0.2s, border 0.2s, transform 0.18s cubic-bezier(.4,1.3,.6,1), box-shadow 0.18s cubic-bezier(.4,1.3,.6,1)",
+                  outline: isDragActive ? "2.5px solid #4caf50" : "none",
+                  boxShadow: "0 2px 16px rgba(0,0,0,0.10)",
+                  textAlign: "center",
+                  pointerEvents: "auto",
+                  backdropFilter: "blur(8px)",
+                  WebkitBackdropFilter: "blur(8px)",
                   letterSpacing: 0.2,
                 }}
                 className="upload-hover"
               >
                 <input {...getInputProps()} />
                 {uploadedFile ? (
-                  <span style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                    <span style={{
-                      color: '#fff',
-                      fontWeight: 700,
-                      fontSize: 16,
-                      letterSpacing: 0.2,
-                      fontFamily: 'system-ui, Avenir, Helvetica, Arial, sans-serif',
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: 8
-                    }}>
+                  <span
+                    style={{ display: "flex", alignItems: "center", gap: 10 }}
+                  >
+                    <span
+                      style={{
+                        color: "#fff",
+                        fontWeight: 700,
+                        fontSize: 16,
+                        letterSpacing: 0.2,
+                        fontFamily:
+                          "system-ui, Avenir, Helvetica, Arial, sans-serif",
+                        display: "flex",
+                        alignItems: "center",
+                        gap: 8,
+                      }}
+                    >
                       <MdOutlineFileUpload size={22} color="#4caf50" />
                       Photo uploaded
                     </span>
                     <button
                       type="button"
-                      onClick={e => { e.stopPropagation(); setUploadedFile(null); }}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setUploadedFile(null);
+                      }}
                       style={{
-                        background: 'transparent',
-                        border: 'none',
+                        background: "transparent",
+                        border: "none",
                         marginLeft: 6,
-                        cursor: 'pointer',
-                        display: 'flex',
-                        alignItems: 'center',
+                        cursor: "pointer",
+                        display: "flex",
+                        alignItems: "center",
                         padding: 0,
-                        transition: 'transform 0.18s cubic-bezier(.4,1.3,.6,1), box-shadow 0.18s cubic-bezier(.4,1.3,.6,1)'
+                        transition:
+                          "transform 0.18s cubic-bezier(.4,1.3,.6,1), box-shadow 0.18s cubic-bezier(.4,1.3,.6,1)",
                       }}
                       className="exit-hover"
                       title="Remove file"
@@ -694,26 +798,46 @@ const MapboxMap = forwardRef((props, ref) => {
                     </button>
                   </span>
                 ) : isDragActive ? (
-                  <span style={{ color: '#4caf50', fontWeight: 700, fontSize: 16, letterSpacing: 0.2, fontFamily: 'system-ui, Avenir, Helvetica, Arial, sans-serif' }}>Drop the file here ...</span>
+                  <span
+                    style={{
+                      color: "#4caf50",
+                      fontWeight: 700,
+                      fontSize: 16,
+                      letterSpacing: 0.2,
+                      fontFamily:
+                        "system-ui, Avenir, Helvetica, Arial, sans-serif",
+                    }}
+                  >
+                    Drop the file here ...
+                  </span>
                 ) : (
                   // Even larger icon, small text below
-                  <span style={{
-                    display: 'flex',
-                    flexDirection: 'column',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    width: '100%',
-                  }}>
-                    <MdOutlineFileUpload size={130} color="#4caf50" style={{ marginBottom: 18 }} />
-                    <span style={{
-                      color: '#fff',
-                      fontWeight: 600,
-                      fontSize: 15,
-                      fontFamily: 'system-ui, Avenir, Helvetica, Arial, sans-serif',
-                      letterSpacing: 0.2,
-                      marginTop: 0,
-                      opacity: 0.92
-                    }}>
+                  <span
+                    style={{
+                      display: "flex",
+                      flexDirection: "column",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      width: "100%",
+                    }}
+                  >
+                    <MdOutlineFileUpload
+                      size={130}
+                      color="#4caf50"
+                      style={{ marginBottom: 18 }}
+                    />
+                    <span
+                      style={{
+                        color: "#fff",
+                        fontWeight: 600,
+                        fontSize: 15,
+                        fontFamily:
+                          "system-ui, Avenir, Helvetica, Arial, sans-serif",
+                        letterSpacing: 0.2,
+                        marginTop: 0,
+                        opacity: 0.92,
+                      }}
+                    >
                       Upload plant image
                     </span>
                   </span>
@@ -722,74 +846,84 @@ const MapboxMap = forwardRef((props, ref) => {
             ) : (
               <textarea
                 style={{
-                  width: '100%',
-                  aspectRatio: '1 / 1',
+                  width: "100%",
+                  aspectRatio: "1 / 1",
                   borderRadius: 24,
-                  border: '2px solid rgba(120,120,120,0.35)',
-                  background: 'rgba(80,80,80,0.22)',
-                  color: '#fff',
+                  border: "2px solid rgba(120,120,120,0.35)",
+                  background: "rgba(80,80,80,0.22)",
+                  color: "#fff",
                   fontSize: 26,
                   fontWeight: 600,
-                  margin: '12px 0',
+                  margin: "12px 0",
                   padding: 0,
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  resize: 'none',
-                  outline: 'none',
-                  boxShadow: '0 2px 16px rgba(0,0,0,0.10)',
-                  fontFamily: 'system-ui, Avenir, Helvetica, Arial, sans-serif',
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  resize: "none",
+                  outline: "none",
+                  boxShadow: "0 2px 16px rgba(0,0,0,0.10)",
+                  fontFamily: "system-ui, Avenir, Helvetica, Arial, sans-serif",
                   letterSpacing: 0.2,
-                  backdropFilter: 'blur(8px)',
-                  WebkitBackdropFilter: 'blur(8px)',
-                  textAlign: 'center',
+                  backdropFilter: "blur(8px)",
+                  WebkitBackdropFilter: "blur(8px)",
+                  textAlign: "center",
                 }}
                 placeholder="Input plant name and info"
                 value={textValue}
-                onChange={e => setTextValue(e.target.value)}
+                onChange={(e) => setTextValue(e.target.value)}
               />
             )}
           </div>
           {/* Input mode switch circles (moved below) */}
-          <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: 7, marginTop: 4, marginBottom: 2, width: '100%' }}>
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "center",
+              alignItems: "center",
+              gap: 7,
+              marginTop: 4,
+              marginBottom: 2,
+              width: "100%",
+            }}
+          >
             <button
               type="button"
-              onClick={() => setInputMode('file')}
+              onClick={() => setInputMode("file")}
               style={{
                 width: 13,
                 height: 13,
-                borderRadius: '50%',
-                border: '2px solid #bbb',
-                background: inputMode === 'file' ? '#f5f5f5' : '#bdbdbd',
+                borderRadius: "50%",
+                border: "2px solid #bbb",
+                background: inputMode === "file" ? "#f5f5f5" : "#bdbdbd",
                 margin: 0,
                 padding: 0,
-                cursor: 'pointer',
-                outline: 'none',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                transition: 'border 0.2s, background 0.2s',
+                cursor: "pointer",
+                outline: "none",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                transition: "border 0.2s, background 0.2s",
               }}
               title="Upload image"
               aria-label="Upload image"
             />
             <button
               type="button"
-              onClick={() => setInputMode('text')}
+              onClick={() => setInputMode("text")}
               style={{
                 width: 13,
                 height: 13,
-                borderRadius: '50%',
-                border: '2px solid #bbb',
-                background: inputMode === 'text' ? '#f5f5f5' : '#bdbdbd',
+                borderRadius: "50%",
+                border: "2px solid #bbb",
+                background: inputMode === "text" ? "#f5f5f5" : "#bdbdbd",
                 margin: 0,
                 padding: 0,
-                cursor: 'pointer',
-                outline: 'none',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                transition: 'border 0.2s, background 0.2s',
+                cursor: "pointer",
+                outline: "none",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                transition: "border 0.2s, background 0.2s",
               }}
               title="Input text"
               aria-label="Input text"
@@ -798,105 +932,282 @@ const MapboxMap = forwardRef((props, ref) => {
           <button
             onClick={handleSubmit}
             style={{
-              padding: '14px 0',
-              width: '100%',
+              padding: "14px 0",
+              width: "100%",
               fontSize: 18,
-              background: 'rgba(255,255,255,0.15)',
-              color: '#fff',
-              border: '2px solid rgba(255,255,255,0.4)',
+              background: "rgba(255,255,255,0.15)",
+              color: "#fff",
+              border: "2px solid rgba(255,255,255,0.4)",
               borderRadius: 32,
-              cursor: 'pointer',
+              cursor: "pointer",
               marginTop: 8,
               fontWeight: 700,
-              boxShadow: '0 2px 16px rgba(0,0,0,0.10)',
-              backdropFilter: 'blur(6px)',
-              WebkitBackdropFilter: 'blur(6px)',
+              boxShadow: "0 2px 16px rgba(0,0,0,0.10)",
+              backdropFilter: "blur(6px)",
+              WebkitBackdropFilter: "blur(6px)",
               letterSpacing: 0.2,
-              transition: 'background 0.2s, transform 0.18s cubic-bezier(.4,1.3,.6,1), box-shadow 0.18s cubic-bezier(.4,1.3,.6,1)'
+              transition:
+                "background 0.2s, transform 0.18s cubic-bezier(.4,1.3,.6,1), box-shadow 0.18s cubic-bezier(.4,1.3,.6,1)",
             }}
             className="submit-hover"
-          >Submit</button>
+          >
+            Submit
+          </button>
         </div>
       )}
       {showDeletePopup && (
-        <div style={{
-          position: 'absolute',
-          top: 32,
-          right: 32,
-          width: 340,
-          background: 'rgba(76,175,80,0.10)',
-          borderRadius: 32,
-          border: '2px solid #fff',
-          boxShadow: '0 2px 16px rgba(0,0,0,0.10)',
-          zIndex: 11,
-          display: 'flex',
-          flexDirection: 'column',
-          alignItems: 'flex-start',
-          padding: '24px 28px 20px 28px',
-          gap: 12,
-          backdropFilter: 'blur(12px)',
-          WebkitBackdropFilter: 'blur(12px)',
-        }}>
-          <div style={{ display: 'flex', width: '100%', justifyContent: 'space-between', alignItems: 'center' }}>
-            <h3 style={{ margin: 0, fontSize: 32, color: '#fff', fontWeight: 800, letterSpacing: 0.5, fontFamily: 'system-ui, Avenir, Helvetica, Arial, sans-serif' }}>{plantInfo.name}</h3>
-            <button onClick={() => { setShowDeletePopup(false); setDeletePin(null); }} style={{
-              background: 'rgba(255,255,255,0.15)',
-              border: '2px solid rgba(255,255,255,0.4)',
-              borderRadius: '9999px',
-              width: 40,
-              height: 40,
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              fontSize: 22,
-              color: '#fff',
-              cursor: 'pointer',
-              lineHeight: 1,
-              fontWeight: 700,
-              boxShadow: '0 2px 16px rgba(0,0,0,0.10)',
-              backdropFilter: 'blur(6px)',
-              WebkitBackdropFilter: 'blur(6px)',
-              transition: 'background 0.2s',
-              pointerEvents: 'auto',
-            }} title="Close">×</button>
+        <div
+          style={{
+            position: "absolute",
+            top: 32,
+            right: 32,
+            width: 340,
+            background: "rgba(76,175,80,0.10)",
+            borderRadius: 32,
+            border: "2px solid #fff",
+            boxShadow: "0 2px 16px rgba(0,0,0,0.10)",
+            zIndex: 11,
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "flex-start",
+            padding: "24px 28px 20px 28px",
+            gap: 12,
+            backdropFilter: "blur(12px)",
+            WebkitBackdropFilter: "blur(12px)",
+          }}
+        >
+          <div
+            style={{
+              display: "flex",
+              width: "100%",
+              justifyContent: "space-between",
+              alignItems: "center",
+            }}
+          >
+            <h3
+              style={{
+                margin: 0,
+                fontSize: 32,
+                color: "#fff",
+                fontWeight: 800,
+                letterSpacing: 0.5,
+                fontFamily: "system-ui, Avenir, Helvetica, Arial, sans-serif",
+              }}
+            >
+              {plantInfo.name}
+            </h3>
+            <button
+              onClick={() => {
+                setShowDeletePopup(false);
+                setDeletePin(null);
+              }}
+              style={{
+                background: "rgba(255,255,255,0.15)",
+                border: "2px solid rgba(255,255,255,0.4)",
+                borderRadius: "9999px",
+                width: 40,
+                height: 40,
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                fontSize: 22,
+                color: "#fff",
+                cursor: "pointer",
+                lineHeight: 1,
+                fontWeight: 700,
+                boxShadow: "0 2px 16px rgba(0,0,0,0.10)",
+                backdropFilter: "blur(6px)",
+                WebkitBackdropFilter: "blur(6px)",
+                transition: "background 0.2s",
+                pointerEvents: "auto",
+              }}
+              title="Close"
+            >
+              ×
+            </button>
           </div>
           {/* Plant Status Indicators - all hardcoded for Daisy */}
-          <div style={{ width: '100%', display: 'flex', flexDirection: 'column', gap: 10, margin: '8px 0 0 0' }}>
+          <div
+            style={{
+              width: "100%",
+              display: "flex",
+              flexDirection: "column",
+              gap: 10,
+              margin: "8px 0 0 0",
+            }}
+          >
             {/* Location Indicator (fake values) */}
-            <div style={{ display: 'flex', alignItems: 'center', gap: 10, background: 'rgba(255,255,255,0.10)', borderRadius: 12, padding: '8px 12px', fontWeight: 600, fontSize: 15, color: '#fff' }}>
-              <MdLocationOn size={20} color="#2196f3" style={{ flexShrink: 0 }} />
-              <span>Lat: <span style={{ fontWeight: 700 }}>43.7000</span>, Lng: <span style={{ fontWeight: 700 }}>-79.4000</span></span>
+            <div
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: 10,
+                background: "rgba(255,255,255,0.10)",
+                borderRadius: 12,
+                padding: "8px 12px",
+                fontWeight: 600,
+                fontSize: 15,
+                color: "#fff",
+              }}
+            >
+              <MdLocationOn
+                size={20}
+                color="#2196f3"
+                style={{ flexShrink: 0 }}
+              />
+              <span>
+                Lat: <span style={{ fontWeight: 700 }}>43.7000</span>, Lng:{" "}
+                <span style={{ fontWeight: 700 }}>-79.4000</span>
+              </span>
             </div>
             {/* Next Water Timer (fake value) */}
-            <div style={{ display: 'flex', alignItems: 'center', gap: 10, background: 'rgba(255,255,255,0.10)', borderRadius: 12, padding: '8px 12px', fontWeight: 600, fontSize: 15, color: '#fff' }}>
+            <div
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: 10,
+                background: "rgba(255,255,255,0.10)",
+                borderRadius: 12,
+                padding: "8px 12px",
+                fontWeight: 600,
+                fontSize: 15,
+                color: "#fff",
+              }}
+            >
               <MdOpacity size={18} color="#4caf50" />
-              <span>Next watering in <span style={{ fontWeight: 700, color: '#4caf50' }}>2 days</span></span>
+              <span>
+                Next watering in{" "}
+                <span style={{ fontWeight: 700, color: "#4caf50" }}>
+                  2 days
+                </span>
+              </span>
             </div>
             {/* pH Indicator (fake value) */}
-            <div style={{ display: 'flex', alignItems: 'center', gap: 10, background: 'rgba(255,255,255,0.10)', borderRadius: 12, padding: '8px 12px', fontWeight: 600, fontSize: 15, color: '#fff' }}>
+            <div
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: 10,
+                background: "rgba(255,255,255,0.10)",
+                borderRadius: 12,
+                padding: "8px 12px",
+                fontWeight: 600,
+                fontSize: 15,
+                color: "#fff",
+              }}
+            >
               <MdScience size={18} color="#43a047" />
-              <span>Soil pH: <span style={{ fontWeight: 700, color: '#43a047' }}>6.2</span> <span style={{ color: '#43a047', fontWeight: 700, marginLeft: 4 }}>Good</span></span>
+              <span>
+                Soil pH:{" "}
+                <span style={{ fontWeight: 700, color: "#43a047" }}>6.2</span>{" "}
+                <span
+                  style={{ color: "#43a047", fontWeight: 700, marginLeft: 4 }}
+                >
+                  Good
+                </span>
+              </span>
             </div>
             {/* Temperature Indicator (fake value) */}
-            <div style={{ display: 'flex', alignItems: 'center', gap: 10, background: 'rgba(255,255,255,0.10)', borderRadius: 12, padding: '8px 12px', fontWeight: 600, fontSize: 15, color: '#fff' }}>
+            <div
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: 10,
+                background: "rgba(255,255,255,0.10)",
+                borderRadius: 12,
+                padding: "8px 12px",
+                fontWeight: 600,
+                fontSize: 15,
+                color: "#fff",
+              }}
+            >
               <MdDeviceThermostat size={18} color="#ffb300" />
-              <span>Temperature: <span style={{ fontWeight: 700, color: '#ffb300' }}>21°C</span> <span style={{ color: '#ffb300', fontWeight: 700, marginLeft: 4 }}>Good</span></span>
+              <span>
+                Temperature:{" "}
+                <span style={{ fontWeight: 700, color: "#ffb300" }}>21°C</span>{" "}
+                <span
+                  style={{ color: "#ffb300", fontWeight: 700, marginLeft: 4 }}
+                >
+                  Good
+                </span>
+              </span>
             </div>
             {/* Endangered Indicator (hardcoded No) */}
-            <div style={{ display: 'flex', alignItems: 'center', gap: 10, background: 'rgba(255,255,255,0.10)', borderRadius: 12, padding: '8px 12px', fontWeight: 600, fontSize: 15, color: '#fff' }}>
+            <div
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: 10,
+                background: "rgba(255,255,255,0.10)",
+                borderRadius: 12,
+                padding: "8px 12px",
+                fontWeight: 600,
+                fontSize: 15,
+                color: "#fff",
+              }}
+            >
               <MdWarning size={20} color="#43a047" style={{ flexShrink: 0 }} />
-              <span><span style={{ fontWeight: 700, color: '#43a047' }}>Not Endangered</span></span>
+              <span>
+                <span style={{ fontWeight: 700, color: "#43a047" }}>
+                  Not Endangered
+                </span>
+              </span>
             </div>
             {/* Invasive Indicator (hardcoded No) */}
-            <div style={{ display: 'flex', alignItems: 'center', gap: 10, background: 'rgba(255,255,255,0.10)', borderRadius: 12, padding: '8px 12px', fontWeight: 600, fontSize: 15, color: '#fff' }}>
+            <div
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: 10,
+                background: "rgba(255,255,255,0.10)",
+                borderRadius: 12,
+                padding: "8px 12px",
+                fontWeight: 600,
+                fontSize: 15,
+                color: "#fff",
+              }}
+            >
               <MdWarning size={20} color="#43a047" style={{ flexShrink: 0 }} />
-              <span><span style={{ fontWeight: 700, color: '#43a047' }}>Not Invasive</span></span>
+              <span>
+                <span style={{ fontWeight: 700, color: "#43a047" }}>
+                  Not Invasive
+                </span>
+              </span>
             </div>
             {/* Summary Header */}
-            <div style={{ fontWeight: 700, fontSize: 17, color: '#fff', marginTop: 8, marginBottom: 2, letterSpacing: 0.2, fontFamily: 'system-ui, Avenir, Helvetica, Arial, sans-serif' }}>Summary</div>
+            <div
+              style={{
+                fontWeight: 700,
+                fontSize: 17,
+                color: "#fff",
+                marginTop: 8,
+                marginBottom: 2,
+                letterSpacing: 0.2,
+                fontFamily: "system-ui, Avenir, Helvetica, Arial, sans-serif",
+              }}
+            >
+              Summary
+            </div>
             {/* Plant Description */}
-            <div style={{ background: 'rgba(255,255,255,0.10)', borderRadius: 12, padding: '12px 14px', fontWeight: 500, fontSize: 15, color: '#fff', marginTop: 2, minHeight: 60, lineHeight: 1.5, letterSpacing: 0.1, fontFamily: 'system-ui, Avenir, Helvetica, Arial, sans-serif' }}>
-              Daisies are cheerful, easy-to-grow perennials that thrive in a variety of soils. Water every 4 days, provide full sun to partial shade, and maintain a slightly acidic soil pH. Not endangered or invasive.
+            <div
+              style={{
+                background: "rgba(255,255,255,0.10)",
+                borderRadius: 12,
+                padding: "12px 14px",
+                fontWeight: 500,
+                fontSize: 15,
+                color: "#fff",
+                marginTop: 2,
+                minHeight: 60,
+                lineHeight: 1.5,
+                letterSpacing: 0.1,
+                fontFamily: "system-ui, Avenir, Helvetica, Arial, sans-serif",
+              }}
+            >
+              Daisies are cheerful, easy-to-grow perennials that thrive in a
+              variety of soils. Water every 4 days, provide full sun to partial
+              shade, and maintain a slightly acidic soil pH. Not endangered or
+              invasive.
             </div>
           </div>
         </div>
