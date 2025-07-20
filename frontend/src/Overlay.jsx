@@ -710,31 +710,57 @@ const Overlay = ({ onSearchResultClick }) => {
             <div style={{ color: '#6fffa7', fontWeight: 800, fontSize: 36, marginBottom: 18, letterSpacing: 0.5, fontFamily: 'system-ui, Avenir, Helvetica, Arial, sans-serif', textAlign: 'center' }}>
               Localized Gardening Guidebook
             </div>
-            <div style={{ display: 'flex', flexDirection: 'row', width: '100%', justifyContent: 'space-between', gap: 32 }}>
-              {/* Plants List */}
-              <div style={{ flex: 1, minWidth: 220 }}>
-                <div style={{ fontWeight: 700, color: '#fff', fontSize: 28, marginBottom: 10, letterSpacing: 0.2, fontFamily: 'system-ui, Avenir, Helvetica, Arial, sans-serif' }}>Plants</div>
-                <ul style={{ color: '#fff', fontSize: 21, margin: 0, paddingLeft: 24, fontWeight: 400, fontFamily: 'system-ui, Avenir, Helvetica, Arial, sans-serif' }}>
-                  <li>Blueberry</li>
-                  <li>Cranberry</li>
-                  <li>Rhubarb</li>
-                  <li>Elderberry</li>
-                  <li>Hardy kiwi</li>
-                  <li>Serviceberry</li>
-                  <li>Sea Buckthorn</li>
-                  <li>Highbush Cranberry</li>
-                  <li>Red Raspberry</li>
-                  <li>Gooseberry</li>
-                </ul>
-              </div>
-              {/* Technical Tips */}
-              <div style={{ flex: 1, minWidth: 280 }}>
-                <div style={{ fontWeight: 700, color: '#fff', fontSize: 28, marginBottom: 10, letterSpacing: 0.2, fontFamily: 'system-ui, Avenir, Helvetica, Arial, sans-serif' }}>Technical Tips</div>
-                <div style={{ color: '#fff', fontSize: 20, fontWeight: 400, lineHeight: 1.5, fontFamily: 'system-ui, Avenir, Helvetica, Arial, sans-serif' }}>
-                  Amend soil pH as needed, using sulfur for lowering or lime for raising. Ensure good drainage. Mulch to retain moisture and suppress weeds. Prune regularly for optimal fruit production. Provide adequate sunlight (at least 6 hours).
+            {geminiLoading || !geminiResult ? (
+              <div style={{ display: 'flex', flexDirection: 'row', width: '100%', justifyContent: 'space-between', gap: 32 }}>
+                {/* Plants List */}
+                <div style={{ flex: 1, minWidth: 220 }}>
+                  <div style={{ fontWeight: 700, color: '#fff', fontSize: 28, marginBottom: 10, letterSpacing: 0.2, fontFamily: 'system-ui, Avenir, Helvetica, Arial, sans-serif' }}>Plants</div>
+                  <ul style={{ color: '#fff', fontSize: 21, margin: 0, paddingLeft: 24, fontWeight: 400, fontFamily: 'system-ui, Avenir, Helvetica, Arial, sans-serif' }}>
+                    <li>Blueberry</li>
+                    <li>Cranberry</li>
+                    <li>Rhubarb</li>
+                    <li>Elderberry</li>
+                    <li>Hardy kiwi</li>
+                    <li>Serviceberry</li>
+                    <li>Sea Buckthorn</li>
+                    <li>Highbush Cranberry</li>
+                    <li>Red Raspberry</li>
+                    <li>Gooseberry</li>
+                  </ul>
+                </div>
+                {/* Technical Tips */}
+                <div style={{ flex: 1, minWidth: 280 }}>
+                  <div style={{ fontWeight: 700, color: '#fff', fontSize: 28, marginBottom: 10, letterSpacing: 0.2, fontFamily: 'system-ui, Avenir, Helvetica, Arial, sans-serif' }}>Technical Tips</div>
+                  <div style={{ color: '#fff', fontSize: 20, fontWeight: 400, lineHeight: 1.5, fontFamily: 'system-ui, Avenir, Helvetica, Arial, sans-serif' }}>
+                    Amend soil pH as needed, using sulfur for lowering or lime for raising. Ensure good drainage. Mulch to retain moisture and suppress weeds. Prune regularly for optimal fruit production. Provide adequate sunlight (at least 6 hours).
+                  </div>
                 </div>
               </div>
-            </div>
+            ) : (
+              (() => {
+                const { plants, tips } = parseGeminiResult(geminiResult);
+                return (
+                  <div style={{ display: 'flex', flexDirection: 'row', width: '100%', justifyContent: 'space-between', gap: 32 }}>
+                    {/* Plants column */}
+                    <div style={{ flex: 1, minWidth: 220 }}>
+                      <div style={{ fontWeight: 700, color: '#fff', fontSize: 28, marginBottom: 10, letterSpacing: 0.2, fontFamily: 'system-ui, Avenir, Helvetica, Arial, sans-serif' }}>Plants</div>
+                      <ul style={{ color: '#fff', fontSize: 21, margin: 0, paddingLeft: 24, fontWeight: 400, fontFamily: 'system-ui, Avenir, Helvetica, Arial, sans-serif' }}>
+                        {plants.length > 0 ? plants.map((item, idx) => (
+                          <li key={idx}>{item}</li>
+                        )) : <li>No plant list found.</li>}
+                      </ul>
+                    </div>
+                    {/* Technical Tips column */}
+                    <div style={{ flex: 1, minWidth: 280 }}>
+                      <div style={{ fontWeight: 700, color: '#fff', fontSize: 28, marginBottom: 10, letterSpacing: 0.2, fontFamily: 'system-ui, Avenir, Helvetica, Arial, sans-serif' }}>Technical Tips</div>
+                      <div style={{ color: '#fff', fontSize: 20, fontWeight: 400, lineHeight: 1.5, fontFamily: 'system-ui, Avenir, Helvetica, Arial, sans-serif' }}>
+                        {tips || 'No technical tips found.'}
+                      </div>
+                    </div>
+                  </div>
+                );
+              })()
+            )}
           </div>
         )}
         <style>{`
