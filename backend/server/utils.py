@@ -82,31 +82,31 @@ def view_data():
     return list(detections.find({}, {"_id": 0}))
 
 
-if __name__ == "__main__":
-    # file_paths = [r"C:\Users\yroeh\Documents\Github\plant-map\server\test_img.jpg"]
-    # plant_data = get_plantnet_data(file_paths)
-    # pprint(plant_data)
-    # weather_data = get_weather_data(43.7705, -79.5022)
-    # pprint(weather_data)
-    add_plant_data({
-      "type": "Feature",
-      "geometry": {
-        "type": "Point",
-        "coordinates": [125.6, 10.1]
-      },
-      "properties": {
-        "name": "Japanese Knotweed",
-        "confidence": 0.94,
-        "timestamp": "2025-07-18T22:00:00Z",
-        "imageUrl": "/detections/123.jpg",
-        "weather": {
-          "temperature": 26.1,
-          "humidity": 78
-        },
-        "soil": {
-          "moisture": 0.54,
-          "nitrogen": 13.2
-        }
-      }
-    })
-    pprint(view_data())
+# if __name__ == "__main__":
+#     # file_paths = [r"C:\Users\yroeh\Documents\Github\plant-map\server\test_img.jpg"]
+#     # plant_data = get_plantnet_data(file_paths)
+#     # pprint(plant_data)
+#     # weather_data = get_weather_data(43.7705, -79.5022)
+#     # pprint(weather_data)
+#     add_plant_data({
+#       "type": "Feature",
+#       "geometry": {
+#         "type": "Point",
+#         "coordinates": [125.6, 10.1]
+#       },
+#       "properties": {
+#         "name": "Japanese Knotweed",
+#         "confidence": 0.94,
+#         "timestamp": "2025-07-18T22:00:00Z",
+#         "imageUrl": "/detections/123.jpg",
+#         "weather": {
+#           "temperature": 26.1,
+#           "humidity": 78
+#         },
+#         "soil": {
+#           "moisture": 0.54,
+#           "nitrogen": 13.2
+#         }
+#       }
+#     })
+#     pprint(view_data())
