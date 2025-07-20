@@ -47,8 +47,8 @@ const MapboxMap = forwardRef((props, ref) => {
   const [deletePin, setDeletePin] = useState(null);
   const [showDeletePopup, setShowDeletePopup] = useState(false);
   const [uploadedFile, setUploadedFile] = useState(null);
-  const [alertForCare, setAlertForCare] = useState(false);
-  const [favoriteOnMap, setFavoriteOnMap] = useState(false);
+  // const [alertForCare, setAlertForCare] = useState(false);
+  // const [favoriteOnMap, setFavoriteOnMap] = useState(false);
   const [inputMode, setInputMode] = useState("file"); // 'file' or 'text'
   const [textValue, setTextValue] = useState("");
   // const [isEndangered, setIsEndangered] = useState(true); // Example: set dynamically
@@ -57,7 +57,22 @@ const MapboxMap = forwardRef((props, ref) => {
   const [popupClosing, setPopupClosing] = useState(false);
   // Add a state to control the loading animation duration
   const [showLoading, setShowLoading] = useState(false);
-  const [geminiTips, setGeminiTips] = useState(null);
+
+  const [selectedIsEndangered, setSelectedIsEndangered] = useState(false);
+  const [selectedIsInvasive, setSelectedIsInvasive] = useState(false);
+  const [selectedBlurb, setSelectedBlurb] = useState("");
+  const [selectedPHPercent, setSelectedPHPercent] = useState(null);
+  const [selectedTempPercent, setSelectedTempPercent] = useState(null);
+  const [selectedPHLabel, setSelectedPHLabel] = useState("");
+  const [selectedTempLabel, setSelectedTempLabel] = useState("");
+
+  const [selectedPH, setSelectedPH] = useState(null);
+  const [selectedTemperature, setSelectedTemperature] = useState(null);
+  const [selectedPinData, setSelectedPinData] = useState(null); // currently clicked pin's data
+  const [selectedPinId, setSelectedPinId] = useState(null);
+  const [tempSubmittedPins, setTempSubmittedPins] = useState([]);
+
+  // const [geminiTips, setGeminiTips] = useState(null);
 
   // No animation or swipe state
   // No swipe or animation handlers
@@ -124,9 +139,12 @@ const MapboxMap = forwardRef((props, ref) => {
     emitDirt();
     const dirtInterval = setInterval(emitDirt, 700);
     el._dirtInterval = dirtInterval;
+    const tempId = `temp-${Date.now()}`;
     const tempMarker = new mapboxgl.Marker({ element: el })
       .setLngLat([lng, lat])
       .addTo(mapRef.current);
+    el.dataset.tempId = tempId;
+
     setPendingPin({ lng, lat, marker: tempMarker });
     setShowPopup(true);
     setUploadedFile(null); // Reset upload file button when adding a new pin
@@ -135,7 +153,10 @@ const MapboxMap = forwardRef((props, ref) => {
   useEffect(() => {
     fetch("http://localhost:8000/admin/view")
       .then((res) => res.json())
-      .then((data) => setPins(data));
+      .then((data) => {
+        // console.log("checking pins have id", data);
+        setPins(data);
+      });
   }, []);
 
   useEffect(() => {
@@ -211,10 +232,12 @@ const MapboxMap = forwardRef((props, ref) => {
 
   useEffect(() => {
     if (!mapRef.current || !pins || !Array.isArray(pins)) return;
+    // console.log("Pins before update:", pins);
+    // console.log("Markers before update:", markersRef.current);
 
     // Remove old markers
-    markersRef.current.forEach((marker) => marker.remove());
-    markersRef.current = [];
+    // markersRef.current.forEach((marker) => marker.remove());
+    // markersRef.current = [];
 
     // Add markers for each pin
     pins.forEach((pin) => {
@@ -235,7 +258,10 @@ const MapboxMap = forwardRef((props, ref) => {
 
         el.addEventListener("click", (event) => {
           event.stopPropagation();
-          setDeletePin({ marker, lng: lon, lat: lat, pin });
+          setSelectedPinId(pin._id);
+          console.log("PIN ID:", pin._id);
+          setSelectedPinData(pin);
+          setDeletePin({ marker, lng: lon, lat, pin });
           setShowDeletePopup(true);
           setTimeout(() => {
             let inner = el.querySelector(".pending-marker");
@@ -280,6 +306,8 @@ const MapboxMap = forwardRef((props, ref) => {
         markersRef.current.push(marker);
       }
     });
+    // console.log("Pins after:", pins);
+    // console.log("Markers after:", markersRef.current);
   }, [pins]);
 
   const setShowPopupAndRef = (val) => {
@@ -289,6 +317,7 @@ const MapboxMap = forwardRef((props, ref) => {
 
   const handleSubmit = () => {
     if (!pendingPin || !mapRef.current) return;
+    console.log("Submitting pin:", pendingPin);
 
     setPopupClosing(true);
     setShowLoading(true);
@@ -297,9 +326,29 @@ const MapboxMap = forwardRef((props, ref) => {
     }, 700);
     setTimeout(() => {
       const marker = pendingPin.marker;
+      const tempId = marker.getElement().dataset.tempId;
       // Make the marker permanent and add click-to-delete logic
       marker.getElement().addEventListener("click", (event) => {
         event.stopPropagation();
+        setSelectedPinId(tempId);
+        setSelectedPinData({
+          id: tempId,
+          lat: pendingPin.lat,
+          lng: pendingPin.lng,
+          isTemp: true,
+          file: uploadedFile,
+        });
+        setTempSubmittedPins((prev) => [
+          ...prev,
+          {
+            tempId,
+            marker,
+            lat: pendingPin.lat,
+            lng: pendingPin.lng,
+            timestamp: Date.now(), // optional
+            file: uploadedFile, // optional
+          },
+        ]);
         setDeletePin({ marker, lng: pendingPin.lng, lat: pendingPin.lat });
         setShowDeletePopup(true);
         // Add shake to selected marker (after popup is shown)
@@ -359,8 +408,8 @@ const MapboxMap = forwardRef((props, ref) => {
       const formData = new FormData();
       formData.append("lat", pendingPin.lat);
       formData.append("lng", pendingPin.lng);
-      formData.append("alertForCare", alertForCare);
-      formData.append("favoriteOnMap", favoriteOnMap);
+      // formData.append("alertForCare", alertForCare);
+      // formData.append("favoriteOnMap", favoriteOnMap);
       if (uploadedFile) {
         formData.append("file", uploadedFile);
       }
@@ -370,21 +419,20 @@ const MapboxMap = forwardRef((props, ref) => {
       })
         .then((res) => res.json())
         .then((data) => {
-          console.log(data);
-
-          const props = data?.data?.properties;
-          const tips = props?.gemini_tips;
-          const weather = props?.weather;
-
-          if (tips) {
-            setGeminiTips({
-              blurb: tips.blurb || "No summary provided.",
-              soil_pH: tips.details?.soil_pH ?? "N/A",
-              temperature: weather?.temperature ?? "N/A",
-              endangered: tips.details?.endangered ?? "N/A",
-              invasive: tips.details?.invasive ?? "N/A",
-            });
-          }
+          console.log(data.data);
+          // console.log("PINS: ", pins); // Add new pin to state
+          // console.log("markersRef: ", markersRef.current);
+          // console.log("Pins before submit:", pins);
+          setPins((prev) => [...prev, data.data]);
+          // console.log("Pins after submit:", pins);
+          // setSelectedPinId(data.data._id); // <-- Set the new pin's ID here
+          setSelectedPinData(data.data);
+          setDeletePin({
+            marker,
+            lng: pendingPin.lng,
+            lat: pendingPin.lat,
+            pin: data.data,
+          });
         })
 
         .catch((err) => console.error(err));
@@ -394,6 +442,12 @@ const MapboxMap = forwardRef((props, ref) => {
       setPopupClosing(false);
     }, 700);
   };
+
+  // Debugging: log pins whenever they change
+  // Uncomment to see pin updates in console
+  useEffect(() => {
+    console.log("Pins updated");
+  }, [pins]);
 
   // Remove the temp marker if popup is closed without submitting
   const handleCancel = () => {
@@ -451,7 +505,6 @@ const MapboxMap = forwardRef((props, ref) => {
             (m) => m !== deletePin.marker
           );
           setShowDeletePopup(false);
-          setDeletePin(null);
         }, 700);
         return;
       }
@@ -462,7 +515,6 @@ const MapboxMap = forwardRef((props, ref) => {
       (m) => m !== deletePin.marker
     );
     setShowDeletePopup(false);
-    setDeletePin(null);
   };
 
   // Remove shake and dirt when delete popup is closed (not deleted)
@@ -557,36 +609,64 @@ const MapboxMap = forwardRef((props, ref) => {
     },
   }));
 
+  useEffect(() => {
+    if (selectedPinId) {
+      // Do something when a marker is clicked and its ID is set
+      const pin = pins.find((p) => p._id === selectedPinId);
+      console.log("Marker clicked, pin ID:", selectedPinId, "Pin data:", pin);
+      // You can fetch more data, open a popup, etc.
+    }
+  }, [selectedPinId, pins]);
+  // console.log("Pins: ", pins);
+
   // === Gemini Tips extraction for selected pin (delete popup) ===
-  let selectedGeminiTips = null;
-  let selectedWeather = null;
-  if (deletePin?.pin?.properties) {
-    selectedGeminiTips = deletePin.pin.properties.gemini_tips || {};
-    selectedWeather = deletePin.pin.properties.weather || {};
-  }
-  const selectedPH = selectedGeminiTips?.details?.soil_pH;
-  const selectedTemperature = selectedWeather?.temperature;
-  const selectedIsEndangered = selectedGeminiTips?.details?.endangered;
-  const selectedIsInvasive = selectedGeminiTips?.details?.invasive;
-  const selectedBlurb = selectedGeminiTips?.blurb;
+  useEffect(() => {
+    let selectedGeminiTips = null;
+    let selectedWeather = null;
+    const selectedPinData =
+      pins.find((p) => p._id === selectedPinId) ||
+      tempSubmittedPins.find((p) => p.tempId === selectedPinId) ||
+      null;
+    console.log("Selected pin data", selectedPinData);
 
-  // Normalized for visual indicators
-  const selectedPHPercent = selectedPH
-    ? Math.min(Math.max((selectedPH - 3) / 5, 0), 1)
-    : 0;
-  const selectedTempPercent = selectedTemperature
-    ? Math.min(Math.max((selectedTemperature - 5) / 30, 0), 1)
-    : 0;
+    if (selectedPinData?.properties) {
+      selectedGeminiTips = selectedPinData.properties.gemini_tips || {};
+      selectedWeather = selectedPinData.properties.weather || {};
+      // console.log("selectedGeminiTips: ", selectedGeminiTips);
+      // console.log("selectedWeather: ", selectedWeather);
+    }
+    setSelectedPH(selectedGeminiTips?.details?.soil_pH);
+    setSelectedTemperature(selectedWeather?.main?.temp);
 
-  // Label helpers
-  const selectedPHLabel =
-    selectedPH > 5.5 && selectedPH < 7.5 ? "Good" : "Out of Range";
-  const selectedTempLabel =
-    selectedTemperature >= 15 && selectedTemperature <= 30
-      ? "Good"
-      : "Too Low/High";
+    // console.log("selectedPH: ", selectedPH);
+    // console.log("selectedTemperature: ", selectedTemperature);
+    // console.log("selectedWeather: ", selectedWeather);
 
-  // ...existing code...
+    setSelectedIsEndangered(selectedGeminiTips?.details?.endangered);
+    setSelectedIsInvasive(selectedGeminiTips?.details?.invasive);
+    setSelectedBlurb(selectedGeminiTips?.blurb || "");
+
+    // Normalized for visual indicators
+    setSelectedPHPercent(
+      selectedPH ? Math.min(Math.max((selectedPH - 3) / 5, 0), 1) : 0
+    );
+    setSelectedTempPercent(
+      selectedTemperature
+        ? Math.min(Math.max((selectedTemperature - 5) / 30, 0), 1)
+        : 0
+    );
+
+    // Label helpers
+    setSelectedPHLabel(
+      selectedPH > 5.5 && selectedPH < 7.5 ? "Good" : "Out of Range"
+    );
+    setSelectedTempLabel(
+      selectedTemperature >= 15 && selectedTemperature <= 30
+        ? "Good"
+        : "Too Low/High"
+    );
+  }, [deletePin, selectedPH, selectedTemperature, selectedPinData]);
+
   return (
     <div style={{ position: "relative", height: "100vh", width: "100vw" }}>
       <div
@@ -1046,12 +1126,12 @@ const MapboxMap = forwardRef((props, ref) => {
                 letterSpacing: 0.5,
               }}
             >
-              INSERT PLANT NAME
+              {deletePin?.pin?.data?.properties?.plant?.bestmatch ??
+                "Unknown Plant"}
             </h3>
             <button
               onClick={() => {
                 setShowDeletePopup(false);
-                setDeletePin(null);
               }}
               style={{
                 background: "rgba(255,255,255,0.15)",
