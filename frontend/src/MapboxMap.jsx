@@ -9,6 +9,7 @@ import { MdOutlineFileUpload } from "react-icons/md";
 import { MdClose } from "react-icons/md";
 import { MdLocationOn, MdOpacity, MdScience, MdDeviceThermostat, MdWarning } from "react-icons/md";
 import PinQueryCard from './PinQueryCard';
+import { Mosaic } from 'react-loading-indicators';
 
 // Realistic potted plant SVG icon for marker (shaft is now orange, base is separate for animation)
 const plantSVG = `<svg width="56" height="56" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -40,6 +41,9 @@ const MapboxMap = forwardRef((props, ref) => {
   const [isEndangered, setIsEndangered] = useState(true); // Example: set dynamically
   const [isInvasive, setIsInvasive] = useState(true);     // Example: set dynamically
   const [showQueryPanel, setShowQueryPanel] = useState(false);
+  const [popupClosing, setPopupClosing] = useState(false);
+  // Add a state to control the loading animation duration
+  const [showLoading, setShowLoading] = useState(false);
 
   // No animation or swipe state
   // No swipe or animation handlers
@@ -266,98 +270,115 @@ const MapboxMap = forwardRef((props, ref) => {
 
   const handleSubmit = () => {
     if (!pendingPin || !mapRef.current) return;
-    const marker = pendingPin.marker;
-    // Make the marker permanent and add click-to-delete logic
-    marker.getElement().addEventListener('click', (event) => {
-      event.stopPropagation();
-      setDeletePin({ marker, lng: pendingPin.lng, lat: pendingPin.lat });
-      setShowDeletePopup(true);
-      // Add shake to selected marker (after popup is shown)
-      setTimeout(() => {
-        const el = marker.getElement();
-        if (el) {
-          // Find the correct inner div (pending or not)
-          let inner = el.querySelector('.pending-marker');
-          if (!inner) inner = el.querySelector('div');
-          if (inner && !inner.classList.contains('pending-marker')) inner.classList.add('pending-marker');
-          // Start dirt emission interval for selected marker
-          if (!el._dirtInterval) {
-            function emitDirt() {
-              const dirtContainer = document.createElement('div');
-              dirtContainer.className = 'dirt-container';
-              for (let i = 0; i < 10; i++) {
-                const dirt = document.createElement('div');
-                dirt.className = 'dirt-pixel';
-                const angle = Math.random() * Math.PI - Math.PI / 2;
-                const dist = 18 + Math.random() * 18;
-                const x = Math.cos(angle) * dist;
-                const y = -Math.abs(Math.sin(angle) * dist) - 8;
-                const delay = Math.random() * 0.18;
-                dirt.style.setProperty('--dirt-x', `${x}px`);
-                dirt.style.setProperty('--dirt-y', `${y}px`);
-                dirt.style.animationDelay = `${delay}s`;
-                dirtContainer.appendChild(dirt);
-              }
-              el.appendChild(dirtContainer);
-              setTimeout(() => {
-                if (dirtContainer && dirtContainer.parentNode) {
-                  dirtContainer.parentNode.removeChild(dirtContainer);
-                }
-              }, 700);
-            }
-            emitDirt();
-            el._dirtInterval = setInterval(emitDirt, 700);
-          }
-          lastSelectedMarkerRef.current = el;
-        }
-      }, 0);
-    });
-    // Remove the pending-marker class from the inner div so it stops shaking
-    const el = marker.getElement();
-    if (el) {
-      const inner = el.querySelector('.pending-marker');
-      if (inner) inner.classList.remove('pending-marker');
-      // Stop dirt emission
-      if (el._dirtInterval) {
-        clearInterval(el._dirtInterval);
-        el._dirtInterval = null;
-      }
-    }
-    markersRef.current.push(marker);
-    // Send pin location to backend
-    const formData = new FormData();
-    formData.append('lat', pendingPin.lat);
-    formData.append('lng', pendingPin.lng);
-    formData.append('alertForCare', alertForCare);
-    formData.append('favoriteOnMap', favoriteOnMap);
-    if (uploadedFile) {
-      formData.append('file', uploadedFile);
-    }
-    fetch('http://localhost:8000/admin/add', {
-      method: 'POST',
-      body: formData
-    })
-      .then(res => res.json())
-      .then(data => console.log(data))
-      .catch(err => console.error(err));
 
-    setShowPopupAndRef(false);
-    setPendingPin(null);
+    setPopupClosing(true);
+    setShowLoading(true);
+    setTimeout(() => {
+      setShowLoading(false);
+    }, 700);
+    setTimeout(() => {
+      const marker = pendingPin.marker;
+      // Make the marker permanent and add click-to-delete logic
+      marker.getElement().addEventListener('click', (event) => {
+        event.stopPropagation();
+        setDeletePin({ marker, lng: pendingPin.lng, lat: pendingPin.lat });
+        setShowDeletePopup(true);
+        // Add shake to selected marker (after popup is shown)
+        setTimeout(() => {
+          const el = marker.getElement();
+          if (el) {
+            // Find the correct inner div (pending or not)
+            let inner = el.querySelector('.pending-marker');
+            if (!inner) inner = el.querySelector('div');
+            if (inner && !inner.classList.contains('pending-marker')) inner.classList.add('pending-marker');
+            // Start dirt emission interval for selected marker
+            if (!el._dirtInterval) {
+              function emitDirt() {
+                const dirtContainer = document.createElement('div');
+                dirtContainer.className = 'dirt-container';
+                for (let i = 0; i < 10; i++) {
+                  const dirt = document.createElement('div');
+                  dirt.className = 'dirt-pixel';
+                  const angle = Math.random() * Math.PI - Math.PI / 2;
+                  const dist = 18 + Math.random() * 18;
+                  const x = Math.cos(angle) * dist;
+                  const y = -Math.abs(Math.sin(angle) * dist) - 8;
+                  const delay = Math.random() * 0.18;
+                  dirt.style.setProperty('--dirt-x', `${x}px`);
+                  dirt.style.setProperty('--dirt-y', `${y}px`);
+                  dirt.style.animationDelay = `${delay}s`;
+                  dirtContainer.appendChild(dirt);
+                }
+                el.appendChild(dirtContainer);
+                setTimeout(() => {
+                  if (dirtContainer && dirtContainer.parentNode) {
+                    dirtContainer.parentNode.removeChild(dirtContainer);
+                  }
+                }, 700);
+              }
+              emitDirt();
+              el._dirtInterval = setInterval(emitDirt, 700);
+            }
+            lastSelectedMarkerRef.current = el;
+          }
+        }, 0);
+      });
+      // Remove the pending-marker class from the inner div so it stops shaking
+      const el = marker.getElement();
+      if (el) {
+        const inner = el.querySelector('.pending-marker');
+        if (inner) inner.classList.remove('pending-marker');
+        // Stop dirt emission
+        if (el._dirtInterval) {
+          clearInterval(el._dirtInterval);
+          el._dirtInterval = null;
+        }
+      }
+      markersRef.current.push(marker);
+      // Send pin location to backend
+      const formData = new FormData();
+      formData.append('lat', pendingPin.lat);
+      formData.append('lng', pendingPin.lng);
+      formData.append('alertForCare', alertForCare);
+      formData.append('favoriteOnMap', favoriteOnMap);
+      if (uploadedFile) {
+        formData.append('file', uploadedFile);
+      }
+      fetch('http://localhost:8000/admin/add', {
+        method: 'POST',
+        body: formData
+      })
+        .then(res => res.json())
+        .then(data => console.log(data))
+        .catch(err => console.error(err));
+
+      setShowPopupAndRef(false);
+      setPendingPin(null);
+      setPopupClosing(false);
+    }, 700);
   };
 
   // Remove the temp marker if popup is closed without submitting
   const handleCancel = () => {
-    if (pendingPin && pendingPin.marker) {
-      // Stop dirt emission
-      const el = pendingPin.marker.getElement();
-      if (el && el._dirtInterval) {
-        clearInterval(el._dirtInterval);
-        el._dirtInterval = null;
+    setPopupClosing(true);
+    setShowLoading(true);
+    setTimeout(() => {
+      setShowLoading(false);
+    }, 700);
+    setTimeout(() => {
+      if (pendingPin && pendingPin.marker) {
+        // Stop dirt emission
+        const el = pendingPin.marker.getElement();
+        if (el && el._dirtInterval) {
+          clearInterval(el._dirtInterval);
+          el._dirtInterval = null;
+        }
+        pendingPin.marker.remove();
       }
-      pendingPin.marker.remove();
-    }
-    setShowPopupAndRef(false);
-    setPendingPin(null);
+      setShowPopupAndRef(false);
+      setPendingPin(null);
+      setPopupClosing(false);
+    }, 700);
   };
 
   // Handler for delete button in delete popup
@@ -559,223 +580,238 @@ const MapboxMap = forwardRef((props, ref) => {
             backdropFilter: 'blur(12px)',
             WebkitBackdropFilter: 'blur(12px)',
             color: '#fff',
+            minHeight: 470,
+            transition: 'all 0.3s'
           }}>
-          <div style={{ display: 'flex', width: '100%', justifyContent: 'space-between', alignItems: 'center' }}>
-            <h3 style={{ margin: 0, fontSize: 32, color: '#fff', fontWeight: 800, letterSpacing: 0.5, fontFamily: 'system-ui, Avenir, Helvetica, Arial, sans-serif' }}>Add Plant</h3>
-            <button onClick={handleCancel} style={{
-              background: 'rgba(255,255,255,0.15)',
-              border: '2px solid rgba(255,255,255,0.4)',
-              borderRadius: '9999px',
-              width: 40,
-              height: 40,
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              fontSize: 22,
-              color: '#fff',
-              cursor: 'pointer',
-              lineHeight: 1,
-              fontWeight: 700,
-              boxShadow: '0 2px 16px rgba(0,0,0,0.10)',
-              backdropFilter: 'blur(6px)',
-              WebkitBackdropFilter: 'blur(6px)',
-              transition: 'background 0.2s, transform 0.18s cubic-bezier(.4,1.3,.6,1), box-shadow 0.18s cubic-bezier(.4,1.3,.6,1)'
-            }}
-            className="exit-hover"
-            title="Close">×</button>
-          </div>
-          <div style={{ marginBottom: 8, fontSize: 19, color: '#fff', fontWeight: 600, letterSpacing: 0.2, fontFamily: 'system-ui, Avenir, Helvetica, Arial, sans-serif' }}>
-            <span>Location: {pendingPin ? `${pendingPin.lat.toFixed(4)}, ${pendingPin.lng.toFixed(4)}` : ''}</span>
-          </div>
-          {/* Drag-and-drop file upload area or text field */}
-          <div style={{ position: 'relative', width: '100%', height: 'auto', minHeight: 0 }}>
-            {inputMode === 'file' ? (
-              <div
-                {...getRootProps()}
+          <>
+            <div style={{ display: 'flex', width: '100%', justifyContent: 'space-between', alignItems: 'center' }}>
+              <h3 style={{ margin: 0, fontSize: 32, color: '#fff', fontWeight: 800, letterSpacing: 0.5, fontFamily: 'system-ui, Avenir, Helvetica, Arial, sans-serif' }}>Add Plant</h3>
+              <button
+                onClick={handleCancel}
                 style={{
-                  width: '100%',
-                  aspectRatio: '1 / 1',
-                  borderRadius: 24,
-                  border: '2px solid rgba(120,120,120,0.35)',
-                  background: isDragActive ? 'rgba(80,80,80,0.32)' : 'rgba(80,80,80,0.22)',
+                  background: 'rgba(255,255,255,0.15)',
+                  border: '2px solid rgba(255,255,255,0.4)',
+                  borderRadius: '9999px',
+                  width: 40,
+                  height: 40,
                   display: 'flex',
-                  flexDirection: 'column',
                   alignItems: 'center',
                   justifyContent: 'center',
+                  fontSize: 22,
                   color: '#fff',
-                  fontSize: 16,
-                  fontWeight: 600,
                   cursor: 'pointer',
-                  margin: '12px 0',
-                  transition: 'background 0.2s, border 0.2s, transform 0.18s cubic-bezier(.4,1.3,.6,1), box-shadow 0.18s cubic-bezier(.4,1.3,.6,1)',
-                  outline: isDragActive ? '2.5px solid #4caf50' : 'none',
+                  lineHeight: 1,
+                  fontWeight: 700,
                   boxShadow: '0 2px 16px rgba(0,0,0,0.10)',
-                  textAlign: 'center',
-                  pointerEvents: 'auto',
-                  backdropFilter: 'blur(8px)',
-                  WebkitBackdropFilter: 'blur(8px)',
-                  letterSpacing: 0.2,
+                  backdropFilter: 'blur(6px)',
+                  WebkitBackdropFilter: 'blur(6px)',
+                  transition: 'background 0.2s, transform 0.18s cubic-bezier(.4,1.3,.6,1), box-shadow 0.18s cubic-bezier(.4,1.3,.6,1)'
                 }}
-                className="upload-hover"
-              >
-                <input {...getInputProps()} />
-                {uploadedFile ? (
-                  <span style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                    <span style={{
-                      color: '#fff',
-                      fontWeight: 700,
-                      fontSize: 16,
-                      letterSpacing: 0.2,
-                      fontFamily: 'system-ui, Avenir, Helvetica, Arial, sans-serif',
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: 8
-                    }}>
-                      <MdOutlineFileUpload size={22} color="#4caf50" />
-                      Photo uploaded
-                    </span>
-                    <button
-                      type="button"
-                      onClick={e => { e.stopPropagation(); setUploadedFile(null); }}
-                      style={{
-                        background: 'transparent',
-                        border: 'none',
-                        marginLeft: 6,
-                        cursor: 'pointer',
-                        display: 'flex',
-                        alignItems: 'center',
-                        padding: 0,
-                        transition: 'transform 0.18s cubic-bezier(.4,1.3,.6,1), box-shadow 0.18s cubic-bezier(.4,1.3,.6,1)'
-                      }}
-                      className="exit-hover"
-                      title="Remove file"
-                    >
-                      <MdClose size={22} color="#fff" />
-                    </button>
-                  </span>
-                ) : isDragActive ? (
-                  <span style={{ color: '#4caf50', fontWeight: 700, fontSize: 16, letterSpacing: 0.2, fontFamily: 'system-ui, Avenir, Helvetica, Arial, sans-serif' }}>Drop the file here ...</span>
-                ) : (
-                  // Even larger icon, small text below
-                  <span style={{
+                className="exit-hover"
+                title="Close"
+                disabled={popupClosing}
+              >×</button>
+            </div>
+            <div style={{ marginBottom: 8, fontSize: 19, color: '#fff', fontWeight: 600, letterSpacing: 0.2, fontFamily: 'system-ui, Avenir, Helvetica, Arial, sans-serif' }}>
+              <span>Location: {pendingPin ? `${pendingPin.lat.toFixed(4)}, ${pendingPin.lng.toFixed(4)}` : ''}</span>
+            </div>
+            {/* Drag-and-drop file upload area or text field */}
+            <div style={{ position: 'relative', width: '100%', height: 'auto', minHeight: 0 }}>
+              {inputMode === 'file' ? (
+                <div
+                  {...getRootProps()}
+                  style={{
+                    width: '100%',
+                    aspectRatio: '1 / 1',
+                    borderRadius: 24,
+                    border: '2px solid rgba(120,120,120,0.35)',
+                    background: isDragActive ? 'rgba(80,80,80,0.32)' : 'rgba(80,80,80,0.22)',
                     display: 'flex',
                     flexDirection: 'column',
                     alignItems: 'center',
                     justifyContent: 'center',
+                    color: '#fff',
+                    fontSize: 16,
+                    fontWeight: 600,
+                    cursor: 'pointer',
+                    margin: '12px 0',
+                    transition: 'background 0.2s, border 0.2s, transform 0.18s cubic-bezier(.4,1.3,.6,1), box-shadow 0.18s cubic-bezier(.4,1.3,.6,1)',
+                    outline: isDragActive ? '2.5px solid #4caf50' : 'none',
+                    boxShadow: '0 2px 16px rgba(0,0,0,0.10)',
+                    textAlign: 'center',
+                    pointerEvents: 'auto',
+                    backdropFilter: 'blur(8px)',
+                    WebkitBackdropFilter: 'blur(8px)',
+                    letterSpacing: 0.2,
+                  }}
+                  className="upload-hover"
+                >
+                  <input {...getInputProps()} />
+                  {popupClosing && showLoading ? (
+                    <Mosaic color="#32cd32" size="medium" text="" textColor="" />
+                  ) : (
+                    uploadedFile ? (
+                      <span style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                        <span style={{
+                          color: '#fff',
+                          fontWeight: 700,
+                          fontSize: 16,
+                          letterSpacing: 0.2,
+                          fontFamily: 'system-ui, Avenir, Helvetica, Arial, sans-serif',
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: 8
+                        }}>
+                          <MdOutlineFileUpload size={22} color="#4caf50" />
+                          Photo uploaded
+                        </span>
+                        <button
+                          type="button"
+                          onClick={e => { e.stopPropagation(); setUploadedFile(null); }}
+                          style={{
+                            background: 'transparent',
+                            border: 'none',
+                            marginLeft: 6,
+                            cursor: 'pointer',
+                            display: 'flex',
+                            alignItems: 'center',
+                            padding: 0,
+                            transition: 'transform 0.18s cubic-bezier(.4,1.3,.6,1), box-shadow 0.18s cubic-bezier(.4,1.3,.6,1)'
+                          }}
+                          className="exit-hover"
+                          title="Remove file"
+                        >
+                          <MdClose size={22} color="#fff" />
+                        </button>
+                      </span>
+                    ) : isDragActive ? (
+                      <span style={{ color: '#4caf50', fontWeight: 700, fontSize: 16, letterSpacing: 0.2, fontFamily: 'system-ui, Avenir, Helvetica, Arial, sans-serif' }}>Drop the file here ...</span>
+                    ) : (
+                      <span style={{
+                        display: 'flex',
+                        flexDirection: 'column',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        width: '100%',
+                      }}>
+                        <MdOutlineFileUpload size={130} color="#4caf50" style={{ marginBottom: 18 }} />
+                        <span style={{
+                          color: '#fff',
+                          fontWeight: 600,
+                          fontSize: 15,
+                          fontFamily: 'system-ui, Avenir, Helvetica, Arial, sans-serif',
+                          letterSpacing: 0.2,
+                          marginTop: 0,
+                          opacity: 0.92
+                        }}>
+                          Upload plant image
+                        </span>
+                      </span>
+                    )
+                  )}
+                </div>
+              ) : (
+                <textarea
+                  style={{
                     width: '100%',
-                  }}>
-                    <MdOutlineFileUpload size={130} color="#4caf50" style={{ marginBottom: 18 }} />
-                    <span style={{
-                      color: '#fff',
-                      fontWeight: 600,
-                      fontSize: 15,
-                      fontFamily: 'system-ui, Avenir, Helvetica, Arial, sans-serif',
-                      letterSpacing: 0.2,
-                      marginTop: 0,
-                      opacity: 0.92
-                    }}>
-                      Upload plant image
-                    </span>
-                  </span>
-                )}
-              </div>
-            ) : (
-              <textarea
+                    aspectRatio: '1 / 1',
+                    borderRadius: 24,
+                    border: '2px solid rgba(120,120,120,0.35)',
+                    background: 'rgba(80,80,80,0.22)',
+                    color: '#fff',
+                    fontSize: 26,
+                    fontWeight: 600,
+                    margin: '12px 0',
+                    padding: 0,
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    resize: 'none',
+                    outline: 'none',
+                    boxShadow: '0 2px 16px rgba(0,0,0,0.10)',
+                    fontFamily: 'system-ui, Avenir, Helvetica, Arial, sans-serif',
+                    letterSpacing: 0.2,
+                    backdropFilter: 'blur(8px)',
+                    WebkitBackdropFilter: 'blur(8px)',
+                    textAlign: 'center',
+                  }}
+                  placeholder="Input plant name and info"
+                  value={textValue}
+                  onChange={e => setTextValue(e.target.value)}
+                  disabled={popupClosing}
+                />
+              )}
+            </div>
+            {/* Input mode switch circles */}
+            <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: 7, marginTop: 4, marginBottom: 2, width: '100%' }}>
+              <button
+                type="button"
+                onClick={() => setInputMode('file')}
                 style={{
-                  width: '100%',
-                  aspectRatio: '1 / 1',
-                  borderRadius: 24,
-                  border: '2px solid rgba(120,120,120,0.35)',
-                  background: 'rgba(80,80,80,0.22)',
-                  color: '#fff',
-                  fontSize: 26,
-                  fontWeight: 600,
-                  margin: '12px 0',
+                  width: 13,
+                  height: 13,
+                  borderRadius: '50%',
+                  border: '2px solid #bbb',
+                  background: inputMode === 'file' ? '#f5f5f5' : '#bdbdbd',
+                  margin: 0,
                   padding: 0,
+                  cursor: 'pointer',
+                  outline: 'none',
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
-                  resize: 'none',
-                  outline: 'none',
-                  boxShadow: '0 2px 16px rgba(0,0,0,0.10)',
-                  fontFamily: 'system-ui, Avenir, Helvetica, Arial, sans-serif',
-                  letterSpacing: 0.2,
-                  backdropFilter: 'blur(8px)',
-                  WebkitBackdropFilter: 'blur(8px)',
-                  textAlign: 'center',
+                  transition: 'border 0.2s, background 0.2s',
                 }}
-                placeholder="Input plant name and info"
-                value={textValue}
-                onChange={e => setTextValue(e.target.value)}
+                title="Upload image"
+                aria-label="Upload image"
+                disabled={popupClosing}
               />
-            )}
-          </div>
-          {/* Input mode switch circles (moved below) */}
-          <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: 7, marginTop: 4, marginBottom: 2, width: '100%' }}>
+              <button
+                type="button"
+                onClick={() => setInputMode('text')}
+                style={{
+                  width: 13,
+                  height: 13,
+                  borderRadius: '50%',
+                  border: '2px solid #bbb',
+                  background: inputMode === 'text' ? '#f5f5f5' : '#bdbdbd',
+                  margin: 0,
+                  padding: 0,
+                  cursor: 'pointer',
+                  outline: 'none',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  transition: 'border 0.2s, background 0.2s',
+                }}
+                title="Input text"
+                aria-label="Input text"
+                disabled={popupClosing}
+              />
+            </div>
             <button
-              type="button"
-              onClick={() => setInputMode('file')}
+              onClick={handleSubmit}
               style={{
-                width: 13,
-                height: 13,
-                borderRadius: '50%',
-                border: '2px solid #bbb',
-                background: inputMode === 'file' ? '#f5f5f5' : '#bdbdbd',
-                margin: 0,
-                padding: 0,
-                cursor: 'pointer',
-                outline: 'none',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                transition: 'border 0.2s, background 0.2s',
+                padding: '14px 0',
+                width: '100%',
+                fontSize: 18,
+                background: 'rgba(255,255,255,0.15)',
+                color: '#fff',
+                border: '2px solid rgba(255,255,255,0.4)',
+                borderRadius: 32,
+                cursor: popupClosing ? 'not-allowed' : 'pointer',
+                marginTop: 8,
+                fontWeight: 700,
+                boxShadow: '0 2px 16px rgba(0,0,0,0.10)',
+                backdropFilter: 'blur(6px)',
+                WebkitBackdropFilter: 'blur(6px)',
+                letterSpacing: 0.2,
+                transition: 'background 0.2s, transform 0.18s cubic-bezier(.4,1.3,.6,1), box-shadow 0.18s cubic-bezier(.4,1.3,.6,1)'
               }}
-              title="Upload image"
-              aria-label="Upload image"
-            />
-            <button
-              type="button"
-              onClick={() => setInputMode('text')}
-              style={{
-                width: 13,
-                height: 13,
-                borderRadius: '50%',
-                border: '2px solid #bbb',
-                background: inputMode === 'text' ? '#f5f5f5' : '#bdbdbd',
-                margin: 0,
-                padding: 0,
-                cursor: 'pointer',
-                outline: 'none',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                transition: 'border 0.2s, background 0.2s',
-              }}
-              title="Input text"
-              aria-label="Input text"
-            />
-          </div>
-          <button
-            onClick={handleSubmit}
-            style={{
-              padding: '14px 0',
-              width: '100%',
-              fontSize: 18,
-              background: 'rgba(255,255,255,0.15)',
-              color: '#fff',
-              border: '2px solid rgba(255,255,255,0.4)',
-              borderRadius: 32,
-              cursor: 'pointer',
-              marginTop: 8,
-              fontWeight: 700,
-              boxShadow: '0 2px 16px rgba(0,0,0,0.10)',
-              backdropFilter: 'blur(6px)',
-              WebkitBackdropFilter: 'blur(6px)',
-              letterSpacing: 0.2,
-              transition: 'background 0.2s, transform 0.18s cubic-bezier(.4,1.3,.6,1), box-shadow 0.18s cubic-bezier(.4,1.3,.6,1)'
-            }}
-            className="submit-hover"
-          >Submit</button>
+              className="submit-hover"
+              disabled={popupClosing}
+            >Submit</button>
+          </>
         </div>
       )}
       {showDeletePopup && (
@@ -1191,3 +1227,4 @@ const MapboxMap = forwardRef((props, ref) => {
 });
 
 export default MapboxMap;
+
