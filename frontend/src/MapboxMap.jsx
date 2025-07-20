@@ -551,11 +551,11 @@ const MapboxMap = forwardRef((props, ref) => {
   useEffect(() => {
     const handleHotkey = (e) => {
       // Ctrl+M toggles plant info
-      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'm') {
+      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "m") {
         setPlantInfoIndex((prev) => (prev === 0 ? 1 : 0));
       }
       // Ctrl+Y places 3 icons around user location
-      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'y') {
+      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "b") {
         if (!mapRef.current) return;
         if (navigator.geolocation) {
           navigator.geolocation.getCurrentPosition((pos) => {
@@ -565,22 +565,24 @@ const MapboxMap = forwardRef((props, ref) => {
               // Random offset within ~0.01 degrees
               const lat = userLat + (Math.random() - 0.5) * 0.02;
               const lng = userLng + (Math.random() - 0.5) * 0.02;
-              const el = document.createElement('div');
-              el.style.width = '56px';
-              el.style.height = '56px';
-              el.style.display = 'flex';
-              el.style.alignItems = 'center';
-              el.style.justifyContent = 'center';
-              el.style.background = 'transparent';
+              const el = document.createElement("div");
+              el.style.width = "56px";
+              el.style.height = "56px";
+              el.style.display = "flex";
+              el.style.alignItems = "center";
+              el.style.justifyContent = "center";
+              el.style.background = "transparent";
               el.innerHTML = plantSVG;
-              new mapboxgl.Marker(el).setLngLat([lng, lat]).addTo(mapRef.current);
+              new mapboxgl.Marker(el)
+                .setLngLat([lng, lat])
+                .addTo(mapRef.current);
             }
           });
         }
       }
     };
-    window.addEventListener('keydown', handleHotkey);
-    return () => window.removeEventListener('keydown', handleHotkey);
+    window.addEventListener("keydown", handleHotkey);
+    return () => window.removeEventListener("keydown", handleHotkey);
   }, []);
 
   return (
